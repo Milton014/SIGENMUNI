@@ -393,7 +393,14 @@ function calcularAntiguedadTexto($fechaAlta) {
 
     <div class="acciones">
         <a href="liquidacion_ver.php?id=<?php echo $liquidacionId; ?>" class="btn btn-volver">Volver</a>
+
         <a href="#" onclick="window.print();" class="btn btn-imprimir">Imprimir</a>
+
+        <a href="enviar_recibo_pdf.php?liquidacion_id=<?php echo $liquidacionId; ?>&empleado_id=<?php echo $empleadoId; ?>"
+           class="btn"
+           style="background:#2563eb;">
+            📧 Enviar PDF por Email
+        </a>
     </div>
 
     <div class="encabezado">

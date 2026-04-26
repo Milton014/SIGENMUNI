@@ -30,16 +30,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $dni = trim($_POST['dni'] ?? '');
         $cuil = trim($_POST['cuil'] ?? '');
         $fecha_alta = trim($_POST['fecha_alta'] ?? '');
-        $fecha_baja = trim($_POST['fecha_baja'] ?? '');
+
+        // Fecha baja oculta en el formulario.
+        // Al dar de alta un empleado, se guarda NULL.
+        $fecha_baja = null;
+
         $telefono = trim($_POST['telefono'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $domicilio = trim($_POST['domicilio'] ?? '');
         $observaciones = trim($_POST['observaciones'] ?? '');
 
         // Convertir vacíos a NULL donde corresponde
-        $fecha_baja = ($fecha_baja === '') ? null : $fecha_baja;
         $telefono = ($telefono === '') ? null : $telefono;
-        $email = ($email === '') ? null : $email;
         $domicilio = ($domicilio === '') ? null : $domicilio;
         $observaciones = ($observaciones === '') ? null : $observaciones;
 
@@ -47,6 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (
             $nro_legajo === '' || $apellido === '' || $nombre === '' ||
             $dni === '' || $cuil === '' || $fecha_alta === '' ||
+            $email === '' ||
             $institucion_id <= 0 || $oficina_id <= 0 || $situacion_id <= 0 ||
             $escalafon_id <= 0 || $categoria_id <= 0
         ) {
@@ -75,8 +78,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             throw new Exception("El CUIL debe tener exactamente 11 dígitos.");
         }
 
-        // Validar email solo si fue cargado
-        if ($email !== null && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        // Validar email obligatorio y formato válido
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new Exception("El email ingresado no tiene un formato válido.");
         }
 
@@ -110,16 +113,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             throw new Exception("Ya existe un empleado con ese CUIL.");
         }
 
-        // Validar email único solo si fue cargado
-        if ($email !== null) {
-            $stmtVal = $conexion->prepare("SELECT id FROM empleado WHERE email = ? LIMIT 1");
-            $stmtVal->bind_param("s", $email);
-            $stmtVal->execute();
-            $resVal = $stmtVal->get_result();
+        // Validar email único
+        $stmtVal = $conexion->prepare("SELECT id FROM empleado WHERE email = ? LIMIT 1");
+        $stmtVal->bind_param("s", $email);
+        $stmtVal->execute();
+        $resVal = $stmtVal->get_result();
 
-            if ($resVal->num_rows > 0) {
-                throw new Exception("Ya existe un empleado con ese email.");
-            }
+        if ($resVal->num_rows > 0) {
+            throw new Exception("Ya existe un empleado con ese email.");
         }
 
         // Insertar
@@ -159,7 +160,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $mensaje = "Empleado guardado correctamente.";
             $tipo_mensaje = "ok";
 
-            // Redirección
             header("refresh:1;url=empleados.php");
         } else {
             throw new Exception("No se pudo guardar el empleado.");
@@ -286,18 +286,13 @@ textarea{
 </div>
 
 <div>
-<label>Fecha Baja</label>
-<input type="date" name="fecha_baja" value="<?php echo htmlspecialchars($_POST['fecha_baja'] ?? ''); ?>">
-</div>
-
-<div>
 <label>Teléfono</label>
 <input name="telefono" value="<?php echo htmlspecialchars($_POST['telefono'] ?? ''); ?>">
 </div>
 
 <div>
-<label>Email</label>
-<input type="email" name="email" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+<label>Email *</label>
+<input type="email" name="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
 </div>
 
 <div>
