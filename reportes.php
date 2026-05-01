@@ -39,6 +39,7 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
             --color-liquidaciones: #16a34a;
             --color-recibos: #2563eb;
             --color-historial: #0f766e;
+            --color-estadisticas: #f59e0b;
         }
 
         body {
@@ -225,6 +226,7 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
         .liquidaciones .franja { background: var(--color-liquidaciones); }
         .recibos .franja { background: var(--color-recibos); }
         .historial .franja { background: var(--color-historial); }
+        .estadisticas .franja { background: var(--color-estadisticas); }
 
         .icono {
             width: 58px;
@@ -244,6 +246,7 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
         .liquidaciones .icono { background: var(--color-liquidaciones); }
         .recibos .icono { background: var(--color-recibos); }
         .historial .icono { background: var(--color-historial); }
+        .estadisticas .icono { background: var(--color-estadisticas); }
 
         .card-modulo h3 {
             font-size: 21px;
@@ -290,6 +293,7 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
         .liquidaciones .btn-modulo { background: var(--color-liquidaciones); }
         .recibos .btn-modulo { background: var(--color-recibos); }
         .historial .btn-modulo { background: var(--color-historial); }
+        .estadisticas .btn-modulo { background: var(--color-estadisticas); }
 
         .btn-modulo:hover {
             opacity: 0.92;
@@ -364,7 +368,7 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
 
         <div class="buscador-box">
             <label for="buscadorModulos">Buscar opción</label>
-            <input type="text" id="buscadorModulos" placeholder="Escribí por ejemplo: empleados, conceptos, categorías, liquidaciones, recibos, historial...">
+            <input type="text" id="buscadorModulos" placeholder="Escribí por ejemplo: empleados, conceptos, categorías, liquidaciones, recibos, historial, estadísticas...">
         </div>
 
         <div class="grid-modulos" id="gridModulos">
@@ -431,6 +435,19 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
                 <div class="card-footer">
                     <span class="estado">Disponible</span>
                     <a href="reporte_liquidaciones.php" class="btn-modulo">Ingresar</a>
+                </div>
+            </div>
+
+            <div class="card-modulo estadisticas" data-nombre="estadisticas gráficos graficos analisis análisis sueldos liquidaciones empleados categorias descuentos neto promedio">
+                <div class="franja"></div>
+                <div>
+                    <div class="icono">📊</div>
+                    <h3>Estadísticas</h3>
+                    <p>Análisis gráfico de sueldos, empleados, categorías, descuentos y liquidaciones del sistema.</p>
+                </div>
+                <div class="card-footer">
+                    <span class="estado">Nuevo</span>
+                    <a href="estadisticas.php" class="btn-modulo">Ingresar</a>
                 </div>
             </div>
 

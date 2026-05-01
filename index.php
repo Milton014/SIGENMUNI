@@ -15,6 +15,7 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGENMUNI - Menú Principal</title>
+
     <style>
         * {
             box-sizing: border-box;
@@ -274,6 +275,11 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
             border-radius: 999px;
         }
 
+        .estado-admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
         .btn-modulo {
             text-decoration: none;
             color: white;
@@ -335,167 +341,173 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
 </head>
 <body>
 
-    <div class="header">
-        <div class="header-top">
-            <div class="titulo-sistema">
-                <h1>SIGENMUNI</h1>
-                <p>Sistema de Gestión Municipal - Municipalidad de Fortín Lugones</p>
-            </div>
+<div class="header">
+    <div class="header-top">
+        <div class="titulo-sistema">
+            <h1>SIGENMUNI</h1>
+            <p>Sistema de Gestión Municipal - Municipalidad de Fortín Lugones</p>
+        </div>
 
-            <div class="usuario-box">
-                <div class="nombre"><?php echo htmlspecialchars($nombreCompleto); ?></div>
-                <div class="rol">Rol: <?php echo htmlspecialchars($rol); ?></div>
-            </div>
+        <div class="usuario-box">
+            <div class="nombre"><?php echo htmlspecialchars($nombreCompleto); ?></div>
+            <div class="rol">Rol: <?php echo htmlspecialchars($rol); ?></div>
+        </div>
+    </div>
+</div>
+
+<div class="contenedor">
+    <div class="panel-superior">
+        <div class="bienvenida">
+            <h2>Menú Principal</h2>
+            <p>Seleccioná un módulo para comenzar a trabajar en el sistema.</p>
+        </div>
+
+        <div class="acciones-superiores">
+            <a href="index.php" class="btn-top btn-inicio">Actualizar menú</a>
+            <a href="logout.php" class="btn-top btn-logout">Cerrar sesión</a>
         </div>
     </div>
 
-    <div class="contenedor">
-        <div class="panel-superior">
-            <div class="bienvenida">
-                <h2>Menú Principal</h2>
-                <p>Seleccioná un módulo para comenzar a trabajar en el sistema.</p>
-            </div>
-
-            <div class="acciones-superiores">
-                <a href="index.php" class="btn-top btn-inicio">Actualizar menú</a>
-                <a href="logout.php" class="btn-top btn-logout">Cerrar sesión</a>
-            </div>
-        </div>
-
-        <div class="buscador-box">
-            <label for="buscadorModulos">Buscar módulo</label>
-            <input type="text" id="buscadorModulos" placeholder="Escribí por ejemplo: empleados, liquidación, reportes...">
-        </div>
-
-        <div class="grid-modulos" id="gridModulos">
-
-            <div class="card-modulo empleados" data-nombre="gestion de empleados empleados personal alta modificacion consulta">
-                <div class="franja"></div>
-                <div>
-                    <div class="icono">👤</div>
-                    <h3>Gestión de Empleados</h3>
-                    <p>Alta, modificación, consulta y administración del personal municipal.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="estado">Disponible</span>
-                    <a href="empleados.php" class="btn-modulo">Ingresar</a>
-                </div>
-            </div>
-
-            <div class="card-modulo empleados" data-nombre="conceptos por empleado empleado conceptos asignacion adicional descuento haberes personal">
-                <div class="franja"></div>
-                <div>
-                    <div class="icono">🧾</div>
-                    <h3>Conceptos por Empleado</h3>
-                    <p>Asignación de conceptos específicos a cada empleado, con montos, porcentajes, cantidades y vigencias.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="estado">Disponible</span>
-                    <a href="empleado_conceptos.php" class="btn-modulo">Ingresar</a>
-                </div>
-            </div>
-
-            <div class="card-modulo conceptos" data-nombre="gestion de conceptos conceptos codigos haberes descuentos remunerativos no remunerativos">
-                <div class="franja"></div>
-                <div>
-                    <div class="icono">📘</div>
-                    <h3>Gestión de Conceptos</h3>
-                    <p>Administración de conceptos remunerativos, no remunerativos, descuentos y aportes.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="estado">Disponible</span>
-                    <a href="conceptos.php" class="btn-modulo">Ingresar</a>
-                </div>
-            </div>
-
-            <div class="card-modulo liquidacion" data-nombre="liquidacion liquidación sueldos recibos pdf haberes">
-                <div class="franja"></div>
-                <div>
-                    <div class="icono">💰</div>
-                    <h3>Liquidación</h3>
-                    <p>Generación de liquidaciones, recibos de sueldo y exportación en PDF.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="estado">Disponible</span>
-                    <a href="liquidacion.php" class="btn-modulo">Ingresar</a>
-                </div>
-            </div>
-
-            <div class="card-modulo reportes" data-nombre="consultas reportes reportes consultas historial reportes sueldos">
-                <div class="franja"></div>
-                <div>
-                    <div class="icono">📊</div>
-                    <h3>Consultas y Reportes</h3>
-                    <p>Consultas históricas, reportes mensuales y análisis de información del sistema.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="estado">Disponible</span>
-                    <a href="reportes.php" class="btn-modulo">Ingresar</a>
-                </div>
-            </div>
-
-            <?php if ($rol === 'ADMIN') { ?>
-            <div class="card-modulo usuarios" data-nombre="gestion de usuarios usuarios seguridad accesos permisos administracion">
-                <div class="franja"></div>
-                <div>
-                    <div class="icono">🔐</div>
-                    <h3>Gestión de Usuarios</h3>
-                    <p>Administración de usuarios del sistema, roles, estados y accesos.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="estado">Solo Admin</span>
-                    <a href="usuarios.php" class="btn-modulo">Ingresar</a>
-                </div>
-            </div>
-            <?php } ?>
-
-            <div class="card-modulo ayuda" data-nombre="ayuda manual soporte preguntas frecuentes informacion">
-                <div class="franja"></div>
-                <div>
-                    <div class="icono">❓</div>
-                    <h3>Ayuda</h3>
-                    <p>Manual de uso, orientación general del sistema y asistencia para los módulos.</p>
-                </div>
-                <div class="card-footer">
-                    <span class="estado">Disponible</span>
-                    <a href="ayuda.php" class="btn-modulo">Ingresar</a>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="sin-resultados" id="sinResultados">
-            No se encontraron módulos con ese nombre.
-        </div>
+    <div class="buscador-box">
+        <label for="buscadorModulos">Buscar módulo</label>
+        <input type="text" id="buscadorModulos" placeholder="Escribí por ejemplo: empleados, reportes, ayuda...">
     </div>
 
-    <div class="footer">
-        SIGENMUNI · Sistema de Gestión Municipal
+    <div class="grid-modulos" id="gridModulos">
+
+        <div class="card-modulo empleados" data-nombre="gestion de empleados empleados personal alta modificacion consulta">
+            <div class="franja"></div>
+            <div>
+                <div class="icono">👤</div>
+                <h3>Gestión de Empleados</h3>
+                <p>Alta, modificación, consulta y administración del personal municipal.</p>
+            </div>
+            <div class="card-footer">
+                <span class="estado">Disponible</span>
+                <a href="empleados.php" class="btn-modulo">Ingresar</a>
+            </div>
+        </div>
+
+        <?php if ($rol === 'ADMIN') { ?>
+
+        <div class="card-modulo empleados" data-nombre="conceptos por empleado empleado conceptos asignacion adicional descuento haberes personal">
+            <div class="franja"></div>
+            <div>
+                <div class="icono">🧾</div>
+                <h3>Conceptos por Empleado</h3>
+                <p>Asignación de conceptos específicos a cada empleado, con montos, porcentajes, cantidades y vigencias.</p>
+            </div>
+            <div class="card-footer">
+                <span class="estado estado-admin">Solo Admin</span>
+                <a href="empleado_conceptos.php" class="btn-modulo">Ingresar</a>
+            </div>
+        </div>
+
+        <div class="card-modulo conceptos" data-nombre="gestion de conceptos conceptos codigos haberes descuentos remunerativos no remunerativos">
+            <div class="franja"></div>
+            <div>
+                <div class="icono">📘</div>
+                <h3>Gestión de Conceptos</h3>
+                <p>Administración de conceptos remunerativos, no remunerativos, descuentos y aportes.</p>
+            </div>
+            <div class="card-footer">
+                <span class="estado estado-admin">Solo Admin</span>
+                <a href="conceptos.php" class="btn-modulo">Ingresar</a>
+            </div>
+        </div>
+
+        <div class="card-modulo liquidacion" data-nombre="liquidacion liquidación sueldos recibos pdf haberes">
+            <div class="franja"></div>
+            <div>
+                <div class="icono">💰</div>
+                <h3>Liquidación</h3>
+                <p>Generación de liquidaciones, recibos de sueldo y exportación en PDF.</p>
+            </div>
+            <div class="card-footer">
+                <span class="estado estado-admin">Solo Admin</span>
+                <a href="liquidacion.php" class="btn-modulo">Ingresar</a>
+            </div>
+        </div>
+
+        <?php } ?>
+
+        <div class="card-modulo reportes" data-nombre="consultas reportes historial sueldos estadisticas graficos informes">
+            <div class="franja"></div>
+            <div>
+                <div class="icono">📊</div>
+                <h3>Consultas y Reportes</h3>
+                <p>Consultas históricas, reportes mensuales y análisis de información del sistema.</p>
+            </div>
+            <div class="card-footer">
+                <span class="estado">Disponible</span>
+                <a href="reportes.php" class="btn-modulo">Ingresar</a>
+            </div>
+        </div>
+
+        <?php if ($rol === 'ADMIN') { ?>
+
+        <div class="card-modulo usuarios" data-nombre="gestion de usuarios usuarios seguridad accesos permisos administracion">
+            <div class="franja"></div>
+            <div>
+                <div class="icono">🔐</div>
+                <h3>Gestión de Usuarios</h3>
+                <p>Administración de usuarios del sistema, roles, estados y accesos.</p>
+            </div>
+            <div class="card-footer">
+                <span class="estado estado-admin">Solo Admin</span>
+                <a href="usuarios.php" class="btn-modulo">Ingresar</a>
+            </div>
+        </div>
+
+        <?php } ?>
+
+        <div class="card-modulo ayuda" data-nombre="ayuda manual soporte preguntas frecuentes informacion">
+            <div class="franja"></div>
+            <div>
+                <div class="icono">❓</div>
+                <h3>Ayuda</h3>
+                <p>Manual de uso, orientación general del sistema y asistencia para los módulos.</p>
+            </div>
+            <div class="card-footer">
+                <span class="estado">Disponible</span>
+                <a href="ayuda.php" class="btn-modulo">Ingresar</a>
+            </div>
+        </div>
+
     </div>
 
-    <script>
-        const buscador = document.getElementById('buscadorModulos');
-        const tarjetas = document.querySelectorAll('.card-modulo');
-        const sinResultados = document.getElementById('sinResultados');
+    <div class="sin-resultados" id="sinResultados">
+        No se encontraron módulos con ese nombre.
+    </div>
+</div>
 
-        buscador.addEventListener('input', function () {
-            const texto = this.value.toLowerCase().trim();
-            let visibles = 0;
+<div class="footer">
+    SIGENMUNI · Sistema de Gestión Municipal
+</div>
 
-            tarjetas.forEach(tarjeta => {
-                const nombre = tarjeta.getAttribute('data-nombre').toLowerCase();
+<script>
+    const buscador = document.getElementById('buscadorModulos');
+    const tarjetas = document.querySelectorAll('.card-modulo');
+    const sinResultados = document.getElementById('sinResultados');
 
-                if (nombre.includes(texto)) {
-                    tarjeta.classList.remove('oculto');
-                    visibles++;
-                } else {
-                    tarjeta.classList.add('oculto');
-                }
-            });
+    buscador.addEventListener('input', function () {
+        const texto = this.value.toLowerCase().trim();
+        let visibles = 0;
 
-            sinResultados.style.display = visibles === 0 ? 'block' : 'none';
+        tarjetas.forEach(tarjeta => {
+            const nombre = tarjeta.getAttribute('data-nombre').toLowerCase();
+
+            if (nombre.includes(texto)) {
+                tarjeta.classList.remove('oculto');
+                visibles++;
+            } else {
+                tarjeta.classList.add('oculto');
+            }
         });
-    </script>
+
+        sinResultados.style.display = visibles === 0 ? 'block' : 'none';
+    });
+</script>
 
 </body>
 </html>
