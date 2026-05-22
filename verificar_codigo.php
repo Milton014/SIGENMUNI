@@ -1,12 +1,24 @@
+<?php
+require_once("conexion.php");
+
+$correo = trim($_GET['correo'] ?? '');
+
+if ($correo === '') {
+    header("Location: recuperar.php");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recuperar Acceso - SIGENMUNI</title>
+<title>Verificar Código - SIGENMUNI</title>
 
 <style>
-* { box-sizing: border-box; }
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
@@ -21,19 +33,19 @@ body {
 
 .contenedor {
     width: 100%;
-    max-width: 420px;
+    max-width: 450px;
 }
 
 .card {
-    background: rgba(255, 255, 255, 0.97);
+    background: rgba(255,255,255,0.97);
     border-radius: 18px;
     padding: 32px 28px;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.18);
 }
 
 .logo {
     text-align: center;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
 }
 
 .logo-img {
@@ -43,12 +55,12 @@ body {
 
 .logo h1 {
     margin: 0;
-    font-size: 32px;
     color: #0f766e;
+    font-size: 32px;
 }
 
 .subtitulo {
-    margin: 6px 0 0;
+    margin-top: 6px;
     color: #6b7280;
     font-size: 15px;
 }
@@ -63,12 +75,12 @@ body {
 .descripcion {
     font-size: 14px;
     color: #6b7280;
-    margin-bottom: 18px;
     line-height: 1.5;
+    margin-bottom: 20px;
 }
 
 .grupo {
-    margin-bottom: 14px;
+    margin-bottom: 15px;
 }
 
 label {
@@ -92,22 +104,16 @@ input {
 
 input:focus {
     border-color: #14b8a6;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
-}
-
-.ayuda {
-    margin-top: 5px;
-    font-size: 12px;
-    color: #6b7280;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.15);
 }
 
 .btn {
     width: 100%;
     padding: 14px;
     background: #0f766e;
-    border-radius: 12px;
     border: none;
+    border-radius: 12px;
     color: white;
     font-size: 15px;
     font-weight: bold;
@@ -118,7 +124,6 @@ input:focus {
 
 .btn:hover {
     background: #115e59;
-    transform: translateY(-1px);
 }
 
 .volver {
@@ -154,40 +159,59 @@ input:focus {
         <div class="logo">
             <img src="img/escudo.jpg" class="logo-img" alt="Escudo">
             <h1>SIGENMUNI</h1>
-            <p class="subtitulo">Recuperación segura de acceso</p>
+            <p class="subtitulo">Verificación de seguridad</p>
         </div>
 
-        <div class="titulo">Recuperar acceso de ADMIN</div>
+        <div class="titulo">Ingresar código recibido</div>
 
-        <p class="descripcion">
-            Esta opción está disponible solo para usuarios con rol ADMIN.
-            Se enviará un código de verificación al correo registrado.
-        </p>
+        <div class="descripcion">
+            Se envió un código de recuperación al correo electrónico registrado.
+        </div>
 
-        <form action="recuperar_procesar.php" method="POST">
+        <form action="actualizar_acceso.php" method="POST">
 
-            <div class="grupo">
-                <label>Correo registrado</label>
-                <input type="email" name="correo" required>
-            </div>
+            <input type="hidden" name="correo" value="<?php echo htmlspecialchars($correo); ?>">
 
             <div class="grupo">
-                <label>DNI del administrador</label>
+                <label>Código de verificación</label>
                 <input 
-                    type="text"
-                    name="dni"
-                    required
-                    minlength="7"
-                    maxlength="8"
-                    inputmode="numeric"
-                    pattern="[0-9]{7,8}"
-                    title="El DNI debe contener solo números, entre 7 y 8 dígitos."
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                    type="text" 
+                    name="codigo" 
+                    required 
+                    maxlength="6"
                 >
-                <div class="ayuda">Ingrese solo números, sin puntos ni espacios.</div>
             </div>
 
-            <button type="submit" class="btn">Enviar código</button>
+            <div class="grupo">
+                <label>Nuevo nombre de usuario</label>
+                <input 
+                    type="text" 
+                    name="nuevo_usuario" 
+                    required
+                >
+            </div>
+
+            <div class="grupo">
+                <label>Nueva contraseña</label>
+                <input 
+                    type="password" 
+                    name="nueva_contra" 
+                    required
+                >
+            </div>
+
+            <div class="grupo">
+                <label>Confirmar contraseña</label>
+                <input 
+                    type="password" 
+                    name="confirmar_contra" 
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn">
+                Actualizar acceso
+            </button>
 
         </form>
 

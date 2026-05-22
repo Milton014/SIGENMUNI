@@ -11,6 +11,11 @@ if (isset($_SESSION['usuario'])) {
 }
 
 $mensaje = "";
+
+if (isset($_GET['error']) && $_GET['error'] === 'sin_permiso') {
+    $mensaje = "No tiene permisos para acceder a ese módulo.";
+}
+
 $existenUsuarios = false;
 
 $sqlUsuarios = "SELECT COUNT(*) AS total FROM usuario";
@@ -26,28 +31,34 @@ $existenUsuarios = ($totalUsuarios > 0);
 
 if (isset($_POST['btnIngresar'])) {
 
-    $usuario = trim($_POST['usuario']);
-    $pass    = trim($_POST['contrasena']);
+    $usuario = trim($_POST['usuario'] ?? '');
+    $pass    = trim($_POST['contrasena'] ?? '');
 
-    if (empty($usuario) || empty($pass)) {
+    if ($usuario === '' || $pass === '') {
         $mensaje = "Debe completar usuario y contraseña.";
     } else {
+
         $stmt = $conexion->prepare("
             SELECT id, nombre, apellido, nombre_usuario, clave, rol, activo
             FROM usuario
             WHERE nombre_usuario = ?
             LIMIT 1
         ");
+
         $stmt->bind_param("s", $usuario);
         $stmt->execute();
         $resultado = $stmt->get_result();
 
         if ($resultado->num_rows > 0) {
+
             $fila = $resultado->fetch_assoc();
 
             if ((int)$fila['activo'] !== 1) {
-                $mensaje = "El usuario está inactivo.";
+
+                $mensaje = "El usuario está inactivo. Comuníquese con el administrador.";
+
             } elseif (password_verify($pass, $fila['clave'])) {
+
                 $_SESSION['id_usuario'] = $fila['id'];
                 $_SESSION['usuario'] = $fila['nombre_usuario'];
                 $_SESSION['nombre_completo'] = $fila['nombre'] . ' ' . $fila['apellido'];
@@ -55,11 +66,13 @@ if (isset($_POST['btnIngresar'])) {
 
                 header("Location: index.php");
                 exit();
+
             } else {
-                $mensaje = "Contraseña incorrecta.";
+                $mensaje = "Usuario o contraseña incorrectos.";
             }
+
         } else {
-            $mensaje = "Usuario no encontrado.";
+            $mensaje = "Usuario o contraseña incorrectos.";
         }
 
         $stmt->close();
@@ -183,6 +196,24 @@ input:focus {
     box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
 }
 
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 48px;
+}
+
+.toggle-pass {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    user-select: none;
+    font-size: 18px;
+}
+
 .btn {
     width: 100%;
     padding: 14px;
@@ -231,6 +262,7 @@ input:focus {
 }
 </style>
 </head>
+
 <body>
 
 <div class="contenedor">
@@ -254,6 +286,7 @@ input:focus {
         <?php } ?>
 
         <form method="POST">
+
             <div class="grupo">
                 <label>Usuario</label>
                 <input type="text" name="usuario" required>
@@ -261,18 +294,39 @@ input:focus {
 
             <div class="grupo">
                 <label>Contraseña</label>
-                <input type="password" name="contrasena" required>
+
+                <div class="password-wrapper">
+                    <input 
+                        type="password" 
+                        name="contrasena" 
+                        id="contrasena" 
+                        required
+                    >
+
+                    <span class="toggle-pass" onclick="togglePassword()">👁</span>
+                </div>
             </div>
 
             <button type="submit" name="btnIngresar" class="btn">Ingresar</button>
+
         </form>
 
         <div class="links">
-            <p><a href="recuperar.php">¿Olvidaste tu usuario o contraseña?</a></p>
+
+            <p>
+                <a href="recuperar.php">
+                    Recuperación de acceso para administradores
+                </a>
+            </p>
 
             <?php if ($existenUsuarios === false) { ?>
-                <p><a href="registro_inicial.php">Registrar primer usuario</a></p>
+                <p>
+                    <a href="registro_inicial.php">
+                        Registrar primer usuario
+                    </a>
+                </p>
             <?php } ?>
+
         </div>
 
     </div>
@@ -282,6 +336,18 @@ input:focus {
     </div>
 
 </div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById("contrasena");
+
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+}
+</script>
 
 </body>
 </html>
