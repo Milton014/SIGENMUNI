@@ -67,6 +67,18 @@ body {
     line-height: 1.5;
 }
 
+.mensaje-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: bold;
+    display: none;
+}
+
 .grupo {
     margin-bottom: 14px;
 }
@@ -94,6 +106,12 @@ input:focus {
     border-color: #14b8a6;
     background: #fff;
     box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+
+input.input-error {
+    border-color: #dc2626;
+    background: #fff1f2;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }
 
 .ayuda {
@@ -164,24 +182,25 @@ input:focus {
             Se enviará un código de verificación al correo registrado.
         </p>
 
-        <form action="recuperar_procesar.php" method="POST">
+        <div id="alertaRecuperar" class="mensaje-error"></div>
+
+        <form action="recuperar_procesar.php" method="POST" id="formRecuperar" novalidate>
 
             <div class="grupo">
-                <label>Correo registrado</label>
-                <input type="email" name="correo" required>
+                <label for="correo">Correo registrado</label>
+                <input type="email" name="correo" id="correo">
             </div>
 
             <div class="grupo">
-                <label>DNI del administrador</label>
+                <label for="dni">DNI del administrador</label>
                 <input 
                     type="text"
                     name="dni"
-                    required
+                    id="dni"
                     minlength="7"
                     maxlength="8"
                     inputmode="numeric"
                     pattern="[0-9]{7,8}"
-                    title="El DNI debe contener solo números, entre 7 y 8 dígitos."
                     oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                 >
                 <div class="ayuda">Ingrese solo números, sin puntos ni espacios.</div>
@@ -202,6 +221,58 @@ input:focus {
     </div>
 
 </div>
+
+<script>
+document.getElementById("formRecuperar").addEventListener("submit", function(e) {
+    const correo = document.getElementById("correo");
+    const dni = document.getElementById("dni");
+    const alerta = document.getElementById("alertaRecuperar");
+
+    correo.classList.remove("input-error");
+    dni.classList.remove("input-error");
+
+    alerta.style.display = "none";
+    alerta.innerHTML = "";
+
+    if (correo.value.trim() === "") {
+        e.preventDefault();
+        alerta.innerHTML = "Debe ingresar el correo registrado.";
+        alerta.style.display = "block";
+        correo.classList.add("input-error");
+        correo.focus();
+        return;
+    }
+
+    const formatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formatoCorreo.test(correo.value.trim())) {
+        e.preventDefault();
+        alerta.innerHTML = "Debe ingresar un correo válido.";
+        alerta.style.display = "block";
+        correo.classList.add("input-error");
+        correo.focus();
+        return;
+    }
+
+    if (dni.value.trim() === "") {
+        e.preventDefault();
+        alerta.innerHTML = "Debe ingresar el DNI del administrador.";
+        alerta.style.display = "block";
+        dni.classList.add("input-error");
+        dni.focus();
+        return;
+    }
+
+    if (dni.value.trim().length < 7 || dni.value.trim().length > 8) {
+        e.preventDefault();
+        alerta.innerHTML = "El DNI debe tener entre 7 y 8 números.";
+        alerta.style.display = "block";
+        dni.classList.add("input-error");
+        dni.focus();
+        return;
+    }
+});
+</script>
 
 </body>
 </html>

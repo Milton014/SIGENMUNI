@@ -1,6 +1,11 @@
 <?php
 session_start();
 require_once("conexion.php");
+require_once("seguridad.php");
+
+verificarSesion();
+verificarPermisoModulo("conceptos.php");
+
 
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
@@ -10,182 +15,181 @@ if (!isset($_SESSION['usuario'])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Nuevo Concepto</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+<meta charset="UTF-8">
+<title>Nuevo Concepto</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            margin: 0;
-            background: #f4f6f9;
-        }
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
 
-        .contenedor {
-            width: 95%;
-            max-width: 900px;
-            margin: 30px auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
+body {
+    margin: 0;
+    background: #f4f6f9;
+}
 
-        h1 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
+.contenedor {
+    width: 95%;
+    max-width: 900px;
+    margin: 30px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
 
-        .fila {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
+h1 {
+    margin-top: 0;
+    color: #2c3e50;
+}
 
-        .campo {
-            display: flex;
-            flex-direction: column;
-        }
+.fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
 
-        .campo label {
-            margin-bottom: 6px;
-            font-weight: bold;
-            color: #333;
-        }
+.campo {
+    display: flex;
+    flex-direction: column;
+}
 
-        .campo input,
-        .campo select,
-        .campo textarea {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
+.campo label {
+    margin-bottom: 6px;
+    font-weight: bold;
+    color: #333;
+}
 
-        .campo textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
+.campo input,
+.campo select,
+.campo textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: .2s;
+}
 
-        .fila-completa {
-            margin-bottom: 15px;
-        }
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20,184,166,.15);
+}
 
-        .checks {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-        }
+.campo textarea {
+    resize: vertical;
+    min-height: 80px;
+}
 
-        .check-item {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 10px;
-        }
+.fila-completa {
+    margin-bottom: 15px;
+}
 
-        .acciones {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
+.checks {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
 
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            text-decoration: none;
-            border-radius: 6px;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
+.check-item {
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+}
 
-        .btn-guardar {
-            background: #28a745;
-        }
+.acciones {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
 
-        .btn-volver {
-            background: #6c757d;
-        }
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
 
-        .ayuda {
-            margin-top: 6px;
-            font-size: 13px;
-            color: #6c757d;
-        }
+.btn-guardar {
+    background: #28a745;
+}
 
-        @media (max-width: 768px) {
-            .fila,
-            .checks {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+.btn-volver {
+    background: #6c757d;
+}
 
-    <script>
-        function actualizarCampos() {
-            const forma = document.getElementById("forma_calculo").value;
-            const porcentaje = document.getElementById("porcentaje");
-            const montoFijo = document.getElementById("monto_fijo");
-            const ayuda = document.getElementById("ayuda_valores");
+.ayuda {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #6c757d;
+}
 
-            porcentaje.readOnly = true;
-            montoFijo.readOnly = true;
+.mensaje {
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 14px;
+}
 
-            porcentaje.style.backgroundColor = "#e9ecef";
-            montoFijo.style.backgroundColor = "#e9ecef";
-            ayuda.style.display = "none";
+.error {
+    background: #ffe5e5;
+    color: #b30000;
+    border: 1px solid #ffb3b3;
+}
 
-            if (forma === "PORCENTAJE") {
-                porcentaje.readOnly = false;
-                porcentaje.style.backgroundColor = "#fff";
-                montoFijo.value = "0.00";
-            } else if (forma === "FIJO") {
-                montoFijo.readOnly = false;
-                montoFijo.style.backgroundColor = "#fff";
-                porcentaje.value = "0.0000";
-            } else if (forma === "TABLA_CATEGORIA") {
-                porcentaje.value = "0.0000";
-                montoFijo.value = "0.00";
-                ayuda.style.display = "block";
-            } else if (forma === "MANUAL" || forma === "FORMULA") {
-                porcentaje.value = "0.0000";
-                montoFijo.value = "0.00";
-            }
-        }
+.input-error {
+    border-color: #dc2626 !important;
+    background: #fff1f2 !important;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.12) !important;
+}
 
-        window.onload = actualizarCampos;
-    </script>
+@media (max-width: 768px) {
+    .fila,
+    .checks {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 </head>
+
 <body>
 
 <div class="contenedor">
     <h1>Nuevo Concepto</h1>
 
-    <form action="concepto_guardar.php" method="POST">
+    <div id="alertaConcepto" class="mensaje error" style="display:none;"></div>
+
+    <form action="concepto_guardar.php" method="POST" id="formConcepto" novalidate>
+
         <div class="fila">
             <div class="campo">
-                <label for="codigo">Código</label>
-                <input type="number" name="codigo" id="codigo" required>
+                <label for="codigo">Código *</label>
+                <input type="number" name="codigo" id="codigo">
             </div>
 
             <div class="campo">
-                <label for="nombre">Nombre</label>
-                <input type="text" name="nombre" id="nombre" maxlength="150" required>
+                <label for="nombre">Nombre *</label>
+                <input type="text" name="nombre" id="nombre" maxlength="150">
             </div>
         </div>
 
         <div class="fila">
             <div class="campo">
-                <label for="categoria">Categoría</label>
-                <select name="categoria" id="categoria" required>
+                <label for="categoria">Categoría *</label>
+                <select name="categoria" id="categoria">
                     <option value="">-- Seleccionar --</option>
                     <option value="REMUNERATIVO">REMUNERATIVO</option>
                     <option value="NO_REMUNERATIVO">NO_REMUNERATIVO</option>
@@ -196,8 +200,8 @@ if (!isset($_SESSION['usuario'])) {
             </div>
 
             <div class="campo">
-                <label for="forma_calculo">Forma de Cálculo</label>
-                <select name="forma_calculo" id="forma_calculo" onchange="actualizarCampos()" required>
+                <label for="forma_calculo">Forma de Cálculo *</label>
+                <select name="forma_calculo" id="forma_calculo" onchange="actualizarCampos()">
                     <option value="FIJO">FIJO</option>
                     <option value="TABLA_CATEGORIA">TABLA POR CATEGORÍA</option>
                     <option value="PORCENTAJE">PORCENTAJE</option>
@@ -287,8 +291,132 @@ if (!isset($_SESSION['usuario'])) {
             <button type="submit" class="btn btn-guardar">Guardar</button>
             <a href="conceptos.php" class="btn btn-volver">Volver</a>
         </div>
+
     </form>
 </div>
+
+<script>
+function actualizarCampos() {
+    const forma = document.getElementById("forma_calculo").value;
+    const porcentaje = document.getElementById("porcentaje");
+    const montoFijo = document.getElementById("monto_fijo");
+    const ayuda = document.getElementById("ayuda_valores");
+
+    porcentaje.readOnly = true;
+    montoFijo.readOnly = true;
+
+    porcentaje.style.backgroundColor = "#e9ecef";
+    montoFijo.style.backgroundColor = "#e9ecef";
+    ayuda.style.display = "none";
+
+    if (forma === "PORCENTAJE") {
+        porcentaje.readOnly = false;
+        porcentaje.style.backgroundColor = "#fff";
+        montoFijo.value = "0.00";
+    } else if (forma === "FIJO") {
+        montoFijo.readOnly = false;
+        montoFijo.style.backgroundColor = "#fff";
+        porcentaje.value = "0.0000";
+    } else if (forma === "TABLA_CATEGORIA") {
+        porcentaje.value = "0.0000";
+        montoFijo.value = "0.00";
+        ayuda.style.display = "block";
+    } else if (forma === "MANUAL" || forma === "FORMULA") {
+        porcentaje.value = "0.0000";
+        montoFijo.value = "0.00";
+    }
+}
+
+document.getElementById("formConcepto").addEventListener("submit", function(e) {
+    const alerta = document.getElementById("alertaConcepto");
+
+    const campos = [
+        "codigo",
+        "nombre",
+        "categoria",
+        "forma_calculo",
+        "porcentaje",
+        "monto_fijo"
+    ];
+
+    campos.forEach(function(id) {
+        document.getElementById(id).classList.remove("input-error");
+    });
+
+    alerta.style.display = "none";
+    alerta.innerHTML = "";
+
+    function mostrarError(mensaje, id) {
+        e.preventDefault();
+
+        const campo = document.getElementById(id);
+
+        alerta.innerHTML = mensaje;
+        alerta.style.display = "block";
+
+        campo.classList.add("input-error");
+        campo.focus();
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+    const codigo = document.getElementById("codigo").value.trim();
+    const nombre = document.getElementById("nombre").value.trim();
+    const categoria = document.getElementById("categoria").value;
+    const formaCalculo = document.getElementById("forma_calculo").value;
+    const porcentaje = document.getElementById("porcentaje").value.trim();
+    const montoFijo = document.getElementById("monto_fijo").value.trim();
+
+    if (codigo === "") {
+        mostrarError("Debe ingresar el código del concepto.", "codigo");
+        return;
+    }
+
+    if (!/^[0-9]+$/.test(codigo)) {
+        mostrarError("El código debe contener solo números.", "codigo");
+        return;
+    }
+
+    if (parseInt(codigo) <= 0) {
+        mostrarError("El código debe ser mayor a cero.", "codigo");
+        return;
+    }
+
+    if (nombre === "") {
+        mostrarError("Debe ingresar el nombre del concepto.", "nombre");
+        return;
+    }
+
+    if (categoria === "") {
+        mostrarError("Debe seleccionar una categoría.", "categoria");
+        return;
+    }
+
+    if (formaCalculo === "") {
+        mostrarError("Debe seleccionar una forma de cálculo.", "forma_calculo");
+        return;
+    }
+
+    if (formaCalculo === "PORCENTAJE") {
+        if (porcentaje === "" || parseFloat(porcentaje) <= 0) {
+            mostrarError("Para la forma PORCENTAJE debe ingresar un porcentaje mayor a cero.", "porcentaje");
+            return;
+        }
+    }
+
+    if (formaCalculo === "FIJO") {
+        if (montoFijo === "" || parseFloat(montoFijo) <= 0) {
+            mostrarError("Para la forma FIJO debe ingresar un monto fijo mayor a cero.", "monto_fijo");
+            return;
+        }
+    }
+});
+
+window.onload = actualizarCampos;
+</script>
 
 </body>
 </html>

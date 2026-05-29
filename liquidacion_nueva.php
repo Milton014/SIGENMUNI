@@ -1,21 +1,25 @@
 <?php
 session_start();
 require_once("conexion.php");
+require_once("seguridad.php");
 
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
 }
+verificarSesion();
+verificarPermisoModulo("liquidacion_nueva.php");
+
 
 $mensaje = "";
 $error = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $tipo = trim($_POST['tipo_liquidacion']);
-    $periodo = trim($_POST['periodo']);
-    $fecha = $_POST['fecha_liquidacion'];
-    $descripcion = trim($_POST['descripcion']);
+    $tipo = trim($_POST['tipo_liquidacion'] ?? '');
+    $periodo = trim($_POST['periodo'] ?? '');
+    $fecha = trim($_POST['fecha_liquidacion'] ?? '');
+    $descripcion = trim($_POST['descripcion'] ?? '');
 
     if ($tipo == "" || $periodo == "" || $fecha == "") {
         $error = "Complete todos los campos obligatorios.";
@@ -58,6 +62,7 @@ body {
     background: white;
     padding: 25px;
     border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
 }
 
 h2 {
@@ -71,12 +76,24 @@ label {
     margin-top: 10px;
 }
 
-input, select, textarea {
+input, 
+select, 
+textarea {
     width: 100%;
     padding: 10px;
     margin-top: 5px;
     border-radius: 6px;
     border: 1px solid #ccc;
+    box-sizing: border-box;
+    outline: none;
+    transition: .2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20,184,166,.15);
 }
 
 textarea {
@@ -119,9 +136,17 @@ textarea {
 .mensaje-error {
     background: #fee2e2;
     color: #991b1b;
-    padding: 10px;
-    border-radius: 6px;
+    padding: 12px 14px;
+    border-radius: 8px;
     margin-bottom: 15px;
+    border: 1px solid #fecaca;
+    font-weight: bold;
+}
+
+.input-error {
+    border-color: #dc2626 !important;
+    background: #fff1f2 !important;
+    box-shadow: 0 0 0 3px rgba(220,38,38,.12) !important;
 }
 </style>
 
@@ -132,29 +157,41 @@ textarea {
 
 <h2>Nueva Liquidación</h2>
 
+<div id="alertaLiquidacion" class="mensaje-error" style="display:none;"></div>
+
 <?php if ($error) { ?>
-    <div class="mensaje-error"><?php echo $error; ?></div>
+    <div class="mensaje-error"><?php echo htmlspecialchars($error); ?></div>
 <?php } ?>
 
-<form method="POST">
+<form method="POST" id="formLiquidacion" novalidate>
 
-    <label>Tipo de Liquidación *</label>
-    <select name="tipo_liquidacion" required>
+    <label for="tipo_liquidacion">Tipo de Liquidación *</label>
+    <select name="tipo_liquidacion" id="tipo_liquidacion">
         <option value="">Seleccione</option>
-        <option value="MENSUAL">Mensual</option>
-        <option value="AGUINALDO">Aguinaldo</option>
-        <option value="AJUSTE">Ajuste</option>
-        <option value="OTRA">Otra</option>
+        <option value="MENSUAL" <?php echo (($_POST['tipo_liquidacion'] ?? '') === 'MENSUAL') ? 'selected' : ''; ?>>Mensual</option>
+        <option value="AGUINALDO" <?php echo (($_POST['tipo_liquidacion'] ?? '') === 'AGUINALDO') ? 'selected' : ''; ?>>Aguinaldo</option>
+        <option value="AJUSTE" <?php echo (($_POST['tipo_liquidacion'] ?? '') === 'AJUSTE') ? 'selected' : ''; ?>>Ajuste</option>
+        <option value="OTRA" <?php echo (($_POST['tipo_liquidacion'] ?? '') === 'OTRA') ? 'selected' : ''; ?>>Otra</option>
     </select>
 
-    <label>Período (YYYY-MM) *</label>
-    <input type="month" name="periodo" required>
+    <label for="periodo">Período (YYYY-MM) *</label>
+    <input 
+        type="month" 
+        name="periodo" 
+        id="periodo"
+        value="<?php echo htmlspecialchars($_POST['periodo'] ?? ''); ?>"
+    >
 
-    <label>Fecha de Liquidación *</label>
-    <input type="date" name="fecha_liquidacion" value="<?php echo date('Y-m-d'); ?>" required>
+    <label for="fecha_liquidacion">Fecha de Liquidación *</label>
+    <input 
+        type="date" 
+        name="fecha_liquidacion" 
+        id="fecha_liquidacion"
+        value="<?php echo htmlspecialchars($_POST['fecha_liquidacion'] ?? date('Y-m-d')); ?>"
+    >
 
-    <label>Descripción</label>
-    <textarea name="descripcion" rows="3"></textarea>
+    <label for="descripcion">Descripción</label>
+    <textarea name="descripcion" id="descripcion" rows="3"><?php echo htmlspecialchars($_POST['descripcion'] ?? ''); ?></textarea>
 
     <div class="botones">
         <button type="submit" class="btn btn-guardar">Guardar</button>
@@ -164,6 +201,63 @@ textarea {
 </form>
 
 </div>
+
+<script>
+document.getElementById("formLiquidacion").addEventListener("submit", function(e) {
+
+    const alerta = document.getElementById("alertaLiquidacion");
+
+    const campos = [
+        "tipo_liquidacion",
+        "periodo",
+        "fecha_liquidacion"
+    ];
+
+    campos.forEach(function(id) {
+        document.getElementById(id).classList.remove("input-error");
+    });
+
+    alerta.style.display = "none";
+    alerta.innerHTML = "";
+
+    function mostrarError(mensaje, id) {
+        e.preventDefault();
+
+        const campo = document.getElementById(id);
+
+        alerta.innerHTML = mensaje;
+        alerta.style.display = "block";
+
+        campo.classList.add("input-error");
+        campo.focus();
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+    const tipo = document.getElementById("tipo_liquidacion").value;
+    const periodo = document.getElementById("periodo").value;
+    const fecha = document.getElementById("fecha_liquidacion").value;
+
+    if (tipo === "") {
+        mostrarError("Debe seleccionar el tipo de liquidación.", "tipo_liquidacion");
+        return;
+    }
+
+    if (periodo === "") {
+        mostrarError("Debe seleccionar el período de liquidación.", "periodo");
+        return;
+    }
+
+    if (fecha === "") {
+        mostrarError("Debe seleccionar la fecha de liquidación.", "fecha_liquidacion");
+        return;
+    }
+
+});
+</script>
 
 </body>
 </html>

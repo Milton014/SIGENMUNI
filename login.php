@@ -154,6 +154,7 @@ body {
     border-radius: 10px;
     margin-bottom: 16px;
     font-size: 14px;
+    font-weight: bold;
 }
 
 .mensaje-info {
@@ -194,6 +195,12 @@ input:focus {
     border-color: #14b8a6;
     background: #ffffff;
     box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+
+input.input-error {
+    border-color: #dc2626;
+    background: #fff1f2;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }
 
 .password-wrapper {
@@ -277,6 +284,8 @@ input:focus {
 
         <div class="titulo-login">Iniciar sesión</div>
 
+        <div id="alertaLogin" style="display:none;"></div>
+
         <?php if (!empty($mensaje)) { ?>
             <div class="mensaje-error"><?php echo htmlspecialchars($mensaje); ?></div>
         <?php } ?>
@@ -285,22 +294,22 @@ input:focus {
             <div class="mensaje-info">No hay usuarios registrados todavía.</div>
         <?php } ?>
 
-        <form method="POST">
+        <form method="POST" id="formLogin" novalidate>
 
             <div class="grupo">
-                <label>Usuario</label>
-                <input type="text" name="usuario" required>
+                <label for="usuario">Usuario</label>
+                <input type="text" name="usuario" id="usuario" autocomplete="username">
             </div>
 
             <div class="grupo">
-                <label>Contraseña</label>
+                <label for="contrasena">Contraseña</label>
 
                 <div class="password-wrapper">
                     <input 
                         type="password" 
                         name="contrasena" 
-                        id="contrasena" 
-                        required
+                        id="contrasena"
+                        autocomplete="current-password"
                     >
 
                     <span class="toggle-pass" onclick="togglePassword()">👁</span>
@@ -347,6 +356,43 @@ function togglePassword() {
         input.type = "password";
     }
 }
+
+document.getElementById("formLogin").addEventListener("submit", function(e) {
+    const usuario = document.getElementById("usuario");
+    const contrasena = document.getElementById("contrasena");
+    const alerta = document.getElementById("alertaLogin");
+
+    usuario.classList.remove("input-error");
+    contrasena.classList.remove("input-error");
+
+    alerta.style.display = "none";
+    alerta.className = "";
+    alerta.innerHTML = "";
+
+    if (usuario.value.trim() === "") {
+        e.preventDefault();
+
+        alerta.className = "mensaje-error";
+        alerta.innerHTML = "Debe ingresar el usuario.";
+        alerta.style.display = "block";
+
+        usuario.classList.add("input-error");
+        usuario.focus();
+        return;
+    }
+
+    if (contrasena.value.trim() === "") {
+        e.preventDefault();
+
+        alerta.className = "mensaje-error";
+        alerta.innerHTML = "Debe ingresar la contraseña.";
+        alerta.style.display = "block";
+
+        contrasena.classList.add("input-error");
+        contrasena.focus();
+        return;
+    }
+});
 </script>
 
 </body>

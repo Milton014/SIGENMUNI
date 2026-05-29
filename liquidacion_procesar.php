@@ -1,6 +1,10 @@
 <?php
 session_start();
 require_once("conexion.php");
+require_once("seguridad.php");
+
+verificarSesion();
+verificarPermisoModulo("liquidacion_procesar.php");
 
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
@@ -828,61 +832,245 @@ try {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Procesar Liquidación</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            margin: 0;
-        }
-        .contenedor {
-            max-width: 900px;
-            margin: 40px auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-        }
-        h2 {
-            margin-top: 0;
-            color: #0f766e;
-        }
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-            padding: 14px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: white;
-            background: #6b7280;
-        }
-        .btn:hover {
-            background: #4b5563;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Procesando Liquidación - SIGENMUNI</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f4f7fb;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    width:100%;
+    max-width:540px;
+    padding:40px;
+    border-radius:22px;
+    box-shadow:0 12px 35px rgba(0,0,0,.10);
+    text-align:center;
+}
+
+.logo{
+    width:80px;
+    margin-bottom:15px;
+}
+
+h1{
+    margin:0;
+    color:#0f766e;
+    font-size:30px;
+}
+
+.subtitulo{
+    color:#6b7280;
+    margin-top:8px;
+    margin-bottom:25px;
+}
+
+.spinner{
+    width:75px;
+    height:75px;
+    border:7px solid #d1fae5;
+    border-top:7px solid #0f766e;
+    border-radius:50%;
+    margin:25px auto;
+    animation:girar 1s linear infinite;
+}
+
+@keyframes girar{
+    100%{
+        transform:rotate(360deg);
+    }
+}
+
+.texto{
+    color:#374151;
+    line-height:1.6;
+    font-size:15px;
+}
+
+.barra{
+    width:100%;
+    height:14px;
+    background:#e5e7eb;
+    border-radius:30px;
+    overflow:hidden;
+    margin-top:28px;
+}
+
+.progreso{
+    height:100%;
+    width:0%;
+    border-radius:30px;
+    background:linear-gradient(90deg,#0f766e,#14b8a6);
+    animation:cargar 4s ease forwards;
+}
+
+@keyframes cargar{
+
+    0%{
+        width:0%;
+    }
+
+    20%{
+        width:25%;
+    }
+
+    45%{
+        width:55%;
+    }
+
+    70%{
+        width:80%;
+    }
+
+    100%{
+        width:100%;
+    }
+}
+
+.estado{
+    margin-top:18px;
+    color:#374151;
+    font-size:14px;
+    min-height:20px;
+}
+
+.ok{
+    margin-top:22px;
+    color:#047857;
+    font-weight:bold;
+    font-size:15px;
+}
+
+.error{
+    background:#fee2e2;
+    color:#991b1b;
+    border:1px solid #fecaca;
+    padding:16px;
+    border-radius:12px;
+    margin-top:20px;
+    text-align:left;
+    line-height:1.5;
+}
+
+.btn{
+    display:inline-block;
+    margin-top:25px;
+    padding:12px 18px;
+    border-radius:10px;
+    text-decoration:none;
+    background:#374151;
+    color:white;
+    font-weight:bold;
+    transition:.2s;
+}
+
+.btn:hover{
+    background:#111827;
+    transform:translateY(-1px);
+}
+
+</style>
+
 </head>
+
 <body>
-<div class="contenedor">
-    <h2>Procesar Liquidación</h2>
 
-    <?php if ($error != "") { ?>
-        <div class="error">
-            <strong>Error:</strong> <?php echo htmlspecialchars($error); ?>
-        </div>
-    <?php } else { ?>
-        <p>Procesando liquidación...</p>
-    <?php } ?>
+<div class="card">
 
-    <a href="liquidacion.php" class="btn">Volver</a>
+<?php if ($error != "") { ?>
+
+    <h1>Error</h1>
+
+    <div class="subtitulo">
+        Ocurrió un problema al procesar la liquidación
+    </div>
+
+    <div class="error">
+        <?php echo htmlspecialchars($error); ?>
+    </div>
+
+    <a href="liquidacion.php" class="btn">
+        Volver
+    </a>
+
+<?php } else { ?>
+
+    <img src="img/escudo.jpg" class="logo" alt="Escudo">
+
+    <h1>SIGENMUNI</h1>
+
+    <div class="subtitulo">
+        Procesando liquidación municipal
+    </div>
+
+    <div class="spinner"></div>
+
+    <div class="texto">
+        El sistema está calculando haberes,
+        descuentos, asignaciones familiares,
+        aportes patronales y resúmenes finales.
+    </div>
+
+    <div class="barra">
+        <div class="progreso"></div>
+    </div>
+
+    <div class="estado" id="estado">
+        Iniciando proceso...
+    </div>
+
+    <div class="ok">
+        Liquidación generada correctamente
+    </div>
+
+<?php } ?>
+
 </div>
+
+<script>
+
+const mensajes = [
+    "Procesando empleados...",
+    "Calculando conceptos remunerativos...",
+    "Aplicando descuentos...",
+    "Calculando asignaciones familiares...",
+    "Generando aportes patronales...",
+    "Creando detalles de liquidación...",
+    "Generando resumen final...",
+    "Finalizando proceso..."
+];
+
+let i = 0;
+
+const estado = document.getElementById("estado");
+
+if(estado){
+
+    const intervalo = setInterval(() => {
+
+        estado.innerHTML = mensajes[i];
+
+        i++;
+
+        if(i >= mensajes.length){
+            clearInterval(intervalo);
+        }
+
+    }, 500);
+}
+
+</script>
+
 </body>
 </html>

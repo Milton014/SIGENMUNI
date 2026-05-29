@@ -1,14 +1,111 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['usuario'])) {
-    header("Location: login.php");
-    exit();
-}
+require_once("conexion.php");
+require_once("seguridad.php");
+
+verificarSesion();
 
 $nombreCompleto = $_SESSION['nombre_completo'] ?? $_SESSION['usuario'];
 $rol = $_SESSION['rol'] ?? 'OPERADOR';
+
+/*
+|--------------------------------------------------------------------------
+| MODULOS DEL SISTEMA
+|--------------------------------------------------------------------------
+*/
+
+$modulos = [
+
+    [
+        "nombre" => "Gestión de Empleados",
+        "archivo" => "empleados.php",
+        "clase" => "empleados",
+        "icono" => "👤",
+        "descripcion" => "Alta, modificación, consulta y administración del personal municipal.",
+        "keywords" => "gestion de empleados empleados personal alta modificacion consulta",
+        "admin" => false
+    ],
+
+    [
+        "nombre" => "Conceptos por Empleado",
+        "archivo" => "empleado_conceptos.php",
+        "clase" => "empleados",
+        "icono" => "🧾",
+        "descripcion" => "Asignación de conceptos específicos a cada empleado, con montos, porcentajes, cantidades y vigencias.",
+        "keywords" => "conceptos por empleado empleado conceptos asignacion adicional descuento haberes personal",
+        "admin" => true
+    ],
+
+    [
+        "nombre" => "Gestión de Conceptos",
+        "archivo" => "conceptos.php",
+        "clase" => "conceptos",
+        "icono" => "📘",
+        "descripcion" => "Administración de conceptos remunerativos, no remunerativos, descuentos y aportes.",
+        "keywords" => "gestion de conceptos conceptos codigos haberes descuentos remunerativos",
+        "admin" => true
+    ],
+
+    [
+        "nombre" => "Liquidación",
+        "archivo" => "liquidacion.php",
+        "clase" => "liquidacion",
+        "icono" => "💰",
+        "descripcion" => "Generación de liquidaciones, recibos de sueldo y exportación en PDF.",
+        "keywords" => "liquidacion liquidación sueldos recibos pdf haberes",
+        "admin" => true
+    ],
+
+    [
+        "nombre" => "Consultas y Reportes",
+        "archivo" => "reportes.php",
+        "clase" => "reportes",
+        "icono" => "📊",
+        "descripcion" => "Consultas históricas, reportes mensuales y análisis de información del sistema.",
+        "keywords" => "consultas reportes historial sueldos estadisticas graficos informes",
+        "admin" => false
+    ],
+
+    [
+        "nombre" => "Gestión de Usuarios",
+        "archivo" => "usuarios.php",
+        "clase" => "usuarios",
+        "icono" => "🔐",
+        "descripcion" => "Administración de usuarios del sistema, roles, estados y accesos.",
+        "keywords" => "gestion de usuarios usuarios seguridad accesos permisos administracion",
+        "admin" => true
+    ],
+
+    [
+        "nombre" => "Ayuda",
+        "archivo" => "ayuda.php",
+        "clase" => "ayuda",
+        "icono" => "❓",
+        "descripcion" => "Manual de uso, orientación general del sistema y asistencia para los módulos.",
+        "keywords" => "ayuda manual soporte preguntas frecuentes informacion",
+        "admin" => false
+    ]
+];
+
+/*
+|--------------------------------------------------------------------------
+| CARGAR PERMISOS
+|--------------------------------------------------------------------------
+*/
+
+$permisosOperador = [];
+
+$resultadoPermisos = $conexion->query("
+    SELECT archivo_principal, permitido_operador
+    FROM modulo_permiso
+");
+
+while ($fila = $resultadoPermisos->fetch_assoc()) {
+    $permisosOperador[$fila['archivo_principal']] = (int)$fila['permitido_operador'];
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -17,6 +114,7 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
     <title>SIGENMUNI - Menú Principal</title>
 
     <style>
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -320,165 +418,343 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
             font-size: 13px;
         }
 
+        /* =========================================
+           RESPONSIVE TABLET
+        ========================================= */
+
+        @media (max-width: 992px) {
+
+            .contenedor {
+                width: 95%;
+            }
+
+            .grid-modulos {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .usuario-box {
+                width: 100%;
+            }
+        }
+
+        /* =========================================
+           RESPONSIVE CELULAR
+        ========================================= */
+
         @media (max-width: 768px) {
+
+            .header {
+                padding: 20px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
             .titulo-sistema h1 {
                 font-size: 24px;
+            }
+
+            .titulo-sistema p {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+
+            .usuario-box {
+                width: 100%;
+                min-width: auto;
+                padding: 14px;
+            }
+
+            .usuario-box .nombre {
+                font-size: 15px;
+            }
+
+            .usuario-box .rol {
+                font-size: 12px;
+            }
+
+            .contenedor {
+                width: 94%;
+                margin: 20px auto;
+            }
+
+            .panel-superior {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 20px;
+            }
+
+            .bienvenida h2 {
+                font-size: 24px;
+            }
+
+            .bienvenida p {
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            .acciones-superiores {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-top {
+                width: 100%;
+                text-align: center;
+            }
+
+            .buscador-box {
+                padding: 16px;
+                border-radius: 16px;
+            }
+
+            .buscador-box input {
+                font-size: 14px;
+                padding: 13px;
+            }
+
+            .grid-modulos {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+
+            .card-modulo {
+                min-height: auto;
+                padding: 22px 18px;
+                border-radius: 18px;
+            }
+
+            .icono {
+                width: 52px;
+                height: 52px;
+                font-size: 24px;
+                margin-bottom: 14px;
+            }
+
+            .card-modulo h3 {
+                font-size: 20px;
+            }
+
+            .card-modulo p {
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            .card-footer {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .estado,
+            .estado-admin {
+                text-align: center;
+            }
+
+            .btn-modulo {
+                width: 100%;
+                text-align: center;
+            }
+
+            .footer {
+                padding: 25px 15px 35px;
+                font-size: 12px;
+            }
+        }
+
+        /* =========================================
+           CELULARES PEQUEÑOS
+        ========================================= */
+
+        @media (max-width: 480px) {
+
+            .header {
+                padding: 18px 16px;
+            }
+
+            .titulo-sistema h1 {
+                font-size: 22px;
             }
 
             .bienvenida h2 {
                 font-size: 22px;
             }
 
-            .contenedor {
-                width: 94%;
+            .buscador-box {
+                padding: 14px;
             }
 
             .card-modulo {
-                min-height: 200px;
+                padding: 18px 16px;
+            }
+
+            .card-modulo h3 {
+                font-size: 18px;
+            }
+
+            .card-modulo p {
+                font-size: 13px;
+            }
+
+            .btn-top,
+            .btn-modulo {
+                font-size: 13px;
+                padding: 11px;
+            }
+
+            .estado,
+            .estado-admin {
+                font-size: 11px;
             }
         }
+
     </style>
 </head>
+
 <body>
 
 <div class="header">
+
     <div class="header-top">
+
         <div class="titulo-sistema">
             <h1>SIGENMUNI</h1>
             <p>Sistema de Gestión Municipal - Municipalidad de Fortín Lugones</p>
         </div>
 
         <div class="usuario-box">
-            <div class="nombre"><?php echo htmlspecialchars($nombreCompleto); ?></div>
-            <div class="rol">Rol: <?php echo htmlspecialchars($rol); ?></div>
+            <div class="nombre">
+                <?php echo htmlspecialchars($nombreCompleto); ?>
+            </div>
+
+            <div class="rol">
+                Rol: <?php echo htmlspecialchars($rol); ?>
+            </div>
         </div>
+
     </div>
+
 </div>
 
 <div class="contenedor">
+
     <div class="panel-superior">
+
         <div class="bienvenida">
             <h2>Menú Principal</h2>
             <p>Seleccioná un módulo para comenzar a trabajar en el sistema.</p>
         </div>
 
         <div class="acciones-superiores">
-            <a href="index.php" class="btn-top btn-inicio">Actualizar menú</a>
-            <a href="logout.php" class="btn-top btn-logout">Cerrar sesión</a>
+            <a href="index.php" class="btn-top btn-inicio">
+                Actualizar menú
+            </a>
+
+            <a href="logout.php" class="btn-top btn-logout">
+                Cerrar sesión
+            </a>
         </div>
+
     </div>
 
     <div class="buscador-box">
-        <label for="buscadorModulos">Buscar módulo</label>
-        <input type="text" id="buscadorModulos" placeholder="Escribí por ejemplo: empleados, reportes, ayuda...">
+
+        <label for="buscadorModulos">
+            Buscar módulo
+        </label>
+
+        <input
+            type="text"
+            id="buscadorModulos"
+            placeholder="Escribí por ejemplo: empleados, reportes, ayuda..."
+        >
+
     </div>
 
     <div class="grid-modulos" id="gridModulos">
 
-        <div class="card-modulo empleados" data-nombre="gestion de empleados empleados personal alta modificacion consulta">
+        <?php foreach ($modulos as $modulo) { ?>
+
+        <?php
+
+        $mostrar = false;
+
+        if ($rol === 'ADMIN') {
+            $mostrar = true;
+        } else {
+            $mostrar =
+                isset($permisosOperador[$modulo['archivo']]) &&
+                $permisosOperador[$modulo['archivo']] == 1;
+        }
+
+        if (!$mostrar) {
+            continue;
+        }
+
+        ?>
+
+        <div class="card-modulo <?php echo $modulo['clase']; ?>"
+             data-nombre="<?php echo $modulo['keywords']; ?>">
+
             <div class="franja"></div>
+
             <div>
-                <div class="icono">👤</div>
-                <h3>Gestión de Empleados</h3>
-                <p>Alta, modificación, consulta y administración del personal municipal.</p>
+
+                <div class="icono">
+                    <?php echo $modulo['icono']; ?>
+                </div>
+
+                <h3>
+                    <?php echo $modulo['nombre']; ?>
+                </h3>
+
+                <p>
+                    <?php echo $modulo['descripcion']; ?>
+                </p>
+
             </div>
+
             <div class="card-footer">
-                <span class="estado">Disponible</span>
-                <a href="empleados.php" class="btn-modulo">Ingresar</a>
-            </div>
-        </div>
 
-        <?php if ($rol === 'ADMIN') { ?>
+                <?php if ($modulo['admin']) { ?>
 
-        <div class="card-modulo empleados" data-nombre="conceptos por empleado empleado conceptos asignacion adicional descuento haberes personal">
-            <div class="franja"></div>
-            <div>
-                <div class="icono">🧾</div>
-                <h3>Conceptos por Empleado</h3>
-                <p>Asignación de conceptos específicos a cada empleado, con montos, porcentajes, cantidades y vigencias.</p>
-            </div>
-            <div class="card-footer">
-                <span class="estado estado-admin">Solo Admin</span>
-                <a href="empleado_conceptos.php" class="btn-modulo">Ingresar</a>
-            </div>
-        </div>
+                    <span class="estado estado-admin">
+                        Configurable
+                    </span>
 
-        <div class="card-modulo conceptos" data-nombre="gestion de conceptos conceptos codigos haberes descuentos remunerativos no remunerativos">
-            <div class="franja"></div>
-            <div>
-                <div class="icono">📘</div>
-                <h3>Gestión de Conceptos</h3>
-                <p>Administración de conceptos remunerativos, no remunerativos, descuentos y aportes.</p>
-            </div>
-            <div class="card-footer">
-                <span class="estado estado-admin">Solo Admin</span>
-                <a href="conceptos.php" class="btn-modulo">Ingresar</a>
-            </div>
-        </div>
+                <?php } else { ?>
 
-        <div class="card-modulo liquidacion" data-nombre="liquidacion liquidación sueldos recibos pdf haberes">
-            <div class="franja"></div>
-            <div>
-                <div class="icono">💰</div>
-                <h3>Liquidación</h3>
-                <p>Generación de liquidaciones, recibos de sueldo y exportación en PDF.</p>
-            </div>
-            <div class="card-footer">
-                <span class="estado estado-admin">Solo Admin</span>
-                <a href="liquidacion.php" class="btn-modulo">Ingresar</a>
-            </div>
-        </div>
+                    <span class="estado">
+                        Disponible
+                    </span>
 
-        <?php } ?>
+                <?php } ?>
 
-        <div class="card-modulo reportes" data-nombre="consultas reportes historial sueldos estadisticas graficos informes">
-            <div class="franja"></div>
-            <div>
-                <div class="icono">📊</div>
-                <h3>Consultas y Reportes</h3>
-                <p>Consultas históricas, reportes mensuales y análisis de información del sistema.</p>
-            </div>
-            <div class="card-footer">
-                <span class="estado">Disponible</span>
-                <a href="reportes.php" class="btn-modulo">Ingresar</a>
-            </div>
-        </div>
+                <a href="<?php echo $modulo['archivo']; ?>"
+                   class="btn-modulo">
+                    Ingresar
+                </a>
 
-        <?php if ($rol === 'ADMIN') { ?>
+            </div>
 
-        <div class="card-modulo usuarios" data-nombre="gestion de usuarios usuarios seguridad accesos permisos administracion">
-            <div class="franja"></div>
-            <div>
-                <div class="icono">🔐</div>
-                <h3>Gestión de Usuarios</h3>
-                <p>Administración de usuarios del sistema, roles, estados y accesos.</p>
-            </div>
-            <div class="card-footer">
-                <span class="estado estado-admin">Solo Admin</span>
-                <a href="usuarios.php" class="btn-modulo">Ingresar</a>
-            </div>
         </div>
 
         <?php } ?>
-
-        <div class="card-modulo ayuda" data-nombre="ayuda manual soporte preguntas frecuentes informacion">
-            <div class="franja"></div>
-            <div>
-                <div class="icono">❓</div>
-                <h3>Ayuda</h3>
-                <p>Manual de uso, orientación general del sistema y asistencia para los módulos.</p>
-            </div>
-            <div class="card-footer">
-                <span class="estado">Disponible</span>
-                <a href="ayuda.php" class="btn-modulo">Ingresar</a>
-            </div>
-        </div>
 
     </div>
 
     <div class="sin-resultados" id="sinResultados">
         No se encontraron módulos con ese nombre.
     </div>
+
 </div>
 
 <div class="footer">
@@ -486,15 +762,18 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
 </div>
 
 <script>
+
     const buscador = document.getElementById('buscadorModulos');
     const tarjetas = document.querySelectorAll('.card-modulo');
     const sinResultados = document.getElementById('sinResultados');
 
     buscador.addEventListener('input', function () {
+
         const texto = this.value.toLowerCase().trim();
         let visibles = 0;
 
         tarjetas.forEach(tarjeta => {
+
             const nombre = tarjeta.getAttribute('data-nombre').toLowerCase();
 
             if (nombre.includes(texto)) {
@@ -507,6 +786,7 @@ $rol = $_SESSION['rol'] ?? 'OPERADOR';
 
         sinResultados.style.display = visibles === 0 ? 'block' : 'none';
     });
+
 </script>
 
 </body>

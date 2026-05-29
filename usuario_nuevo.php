@@ -90,6 +90,24 @@ select:focus{
     box-shadow:0 0 0 3px rgba(20,184,166,0.15);
 }
 
+.input-error{
+    border-color:#dc2626 !important;
+    background:#fff1f2 !important;
+    box-shadow:0 0 0 3px rgba(220,38,38,.12) !important;
+}
+
+.mensaje-error{
+    background:#fee2e2;
+    color:#991b1b;
+    border:1px solid #fecaca;
+    padding:12px 14px;
+    border-radius:10px;
+    margin-bottom:16px;
+    font-size:14px;
+    font-weight:bold;
+    display:none;
+}
+
 .ayuda{
     margin-top:5px;
     font-size:12px;
@@ -148,55 +166,55 @@ button,
 
         <h2>Nuevo Usuario</h2>
 
-        <form action="usuario_guardar.php" method="POST">
+        <div id="alertaUsuario" class="mensaje-error"></div>
+
+        <form action="usuario_guardar.php" method="POST" id="formUsuario" novalidate>
 
             <div class="form-grid">
 
                 <div class="campo">
-                    <label>Nombre</label>
-                    <input type="text" name="nombre" required>
+                    <label for="nombre">Nombre *</label>
+                    <input type="text" name="nombre" id="nombre">
                 </div>
 
                 <div class="campo">
-                    <label>Apellido</label>
-                    <input type="text" name="apellido" required>
+                    <label for="apellido">Apellido *</label>
+                    <input type="text" name="apellido" id="apellido">
                 </div>
 
                 <div class="campo">
-                    <label>DNI</label>
+                    <label for="dni">DNI *</label>
                     <input 
                         type="text"
                         name="dni"
-                        required
+                        id="dni"
                         minlength="7"
                         maxlength="8"
                         inputmode="numeric"
-                        pattern="[0-9]{7,8}"
-                        title="El DNI debe contener solo números, entre 7 y 8 dígitos."
                         oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                     >
                     <div class="ayuda">Ingrese solo números, sin puntos ni espacios.</div>
                 </div>
 
                 <div class="campo">
-                    <label>Usuario</label>
-                    <input type="text" name="usuario" required>
+                    <label for="usuario">Usuario *</label>
+                    <input type="text" name="usuario" id="usuario" autocomplete="username">
                 </div>
 
                 <div class="campo">
-                    <label>Email</label>
-                    <input type="email" name="email" required>
+                    <label for="email">Email *</label>
+                    <input type="email" name="email" id="email">
                 </div>
 
                 <div class="campo">
-                    <label>Contraseña</label>
-                    <input type="password" name="clave" required>
+                    <label for="clave">Contraseña *</label>
+                    <input type="password" name="clave" id="clave" autocomplete="new-password">
                 </div>
 
                 <div class="campo">
-                    <label>Rol</label>
+                    <label for="rol">Rol *</label>
 
-                    <select name="rol" required>
+                    <select name="rol" id="rol">
                         <option value="OPERADOR">OPERADOR</option>
                         <option value="ADMIN">ADMIN</option>
                     </select>
@@ -219,6 +237,108 @@ button,
     </div>
 
 </div>
+
+<script>
+document.getElementById("formUsuario").addEventListener("submit", function(e) {
+
+    const alerta = document.getElementById("alertaUsuario");
+
+    const campos = [
+        "nombre",
+        "apellido",
+        "dni",
+        "usuario",
+        "email",
+        "clave",
+        "rol"
+    ];
+
+    campos.forEach(function(id) {
+        document.getElementById(id).classList.remove("input-error");
+    });
+
+    alerta.style.display = "none";
+    alerta.innerHTML = "";
+
+    function mostrarError(mensaje, id) {
+        e.preventDefault();
+
+        const campo = document.getElementById(id);
+
+        alerta.innerHTML = mensaje;
+        alerta.style.display = "block";
+
+        campo.classList.add("input-error");
+        campo.focus();
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+    const nombre = document.getElementById("nombre").value.trim();
+    const apellido = document.getElementById("apellido").value.trim();
+    const dni = document.getElementById("dni").value.trim();
+    const usuario = document.getElementById("usuario").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const clave = document.getElementById("clave").value.trim();
+    const rol = document.getElementById("rol").value;
+
+    if (nombre === "") {
+        mostrarError("Debe ingresar el nombre.", "nombre");
+        return;
+    }
+
+    if (apellido === "") {
+        mostrarError("Debe ingresar el apellido.", "apellido");
+        return;
+    }
+
+    if (dni === "") {
+        mostrarError("Debe ingresar el DNI.", "dni");
+        return;
+    }
+
+    if (!/^[0-9]{7,8}$/.test(dni)) {
+        mostrarError("El DNI debe tener entre 7 y 8 números.", "dni");
+        return;
+    }
+
+    if (usuario === "") {
+        mostrarError("Debe ingresar el nombre de usuario.", "usuario");
+        return;
+    }
+
+    if (email === "") {
+        mostrarError("Debe ingresar el email.", "email");
+        return;
+    }
+
+    const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!formatoEmail.test(email)) {
+        mostrarError("Debe ingresar un email válido.", "email");
+        return;
+    }
+
+    if (clave === "") {
+        mostrarError("Debe ingresar una contraseña.", "clave");
+        return;
+    }
+
+    if (clave.length < 6) {
+        mostrarError("La contraseña debe tener al menos 6 caracteres.", "clave");
+        return;
+    }
+
+    if (rol === "") {
+        mostrarError("Debe seleccionar un rol.", "rol");
+        return;
+    }
+
+});
+</script>
 
 </body>
 </html>

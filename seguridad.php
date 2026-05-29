@@ -39,6 +39,56 @@ function permitirRoles($roles) {
     }
 }
 
+/* Verifica si el usuario tiene permiso para ingresar a un módulo */
+function verificarPermisoModulo($archivoModulo) {
+
+    iniciarSesionSiHaceFalta();
+
+    if (!isset($_SESSION['usuario'])) {
+        header("Location: login.php");
+        exit();
+    }
+
+    if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'ADMIN') {
+        return true;
+    }
+
+    if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'OPERADOR') {
+        header("Location: index.php?error=sin_permiso");
+        exit();
+    }
+
+    require_once("conexion.php");
+
+    global $conexion;
+
+    $stmt = $conexion->prepare("
+        SELECT permitido_operador
+        FROM modulo_permiso
+        WHERE archivo_principal = ?
+        LIMIT 1
+    ");
+
+    $stmt->bind_param("s", $archivoModulo);
+    $stmt->execute();
+
+    $resultado = $stmt->get_result();
+
+    if ($resultado->num_rows === 0) {
+        header("Location: index.php?error=sin_permiso");
+        exit();
+    }
+
+    $datos = $resultado->fetch_assoc();
+
+    if ((int)$datos['permitido_operador'] !== 1) {
+        header("Location: index.php?error=sin_permiso");
+        exit();
+    }
+
+    return true;
+}
+
 /* Devuelve el rol del usuario logueado */
 function rolUsuario() {
 

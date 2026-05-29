@@ -6,10 +6,49 @@ require_once("seguridad.php");
 verificarSesion();
 soloAdmin();
 
+$mensaje = "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['guardar_permisos'])) {
+
+    $conexion->query("UPDATE modulo_permiso SET permitido_operador = 0");
+
+    if (!empty($_POST['modulos']) && is_array($_POST['modulos'])) {
+
+        foreach ($_POST['modulos'] as $archivo) {
+
+            if ($archivo === "usuarios.php") {
+                continue;
+            }
+
+            $stmt = $conexion->prepare("
+                UPDATE modulo_permiso
+                SET permitido_operador = 1
+                WHERE archivo_principal = ?
+            ");
+
+            $stmt->bind_param("s", $archivo);
+            $stmt->execute();
+        }
+    }
+
+    header("Location: usuarios.php?ok=permisos");
+    exit();
+}
+
+if (isset($_GET['ok']) && $_GET['ok'] === 'permisos') {
+    $mensaje = "Permisos del OPERADOR actualizados correctamente.";
+}
+
 $usuarios = $conexion->query("
     SELECT id, nombre, apellido, dni, nombre_usuario, email, rol, activo
     FROM usuario
     ORDER BY id DESC
+");
+
+$modulos = $conexion->query("
+    SELECT id, modulo, archivo_principal, permitido_operador
+    FROM modulo_permiso
+    ORDER BY id ASC
 ");
 ?>
 
@@ -17,9 +56,15 @@ $usuarios = $conexion->query("
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión de Usuarios - SIGENMUNI</title>
 
 <style>
+
+*{
+    box-sizing:border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     background: #f4f7fb;
@@ -63,6 +108,12 @@ body {
     cursor: pointer;
     display: inline-block;
     font-size: 14px;
+    transition: 0.2s;
+}
+
+.btn:hover{
+    opacity:0.92;
+    transform:translateY(-1px);
 }
 
 .btn-nuevo {
@@ -85,12 +136,28 @@ body {
     color: white;
 }
 
+.btn-guardar {
+    background: #0f766e;
+    color: white;
+    margin-top: 18px;
+}
+
+.tabla-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tabla-responsive table {
+    min-width: 850px;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
     background: white;
     overflow: hidden;
     border-radius: 14px;
+    margin-top: 15px;
 }
 
 th, td {
@@ -114,6 +181,166 @@ th {
     color: #991b1b;
     font-weight: bold;
 }
+
+.alerta-ok {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    font-weight: bold;
+}
+
+.info {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    line-height: 1.5;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 54px;
+    height: 28px;
+}
+
+.switch input {
+    display: none;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #cbd5e1;
+    transition: .3s;
+    border-radius: 999px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+    background: #0f766e;
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.bloqueado {
+    color: #991b1b;
+    font-weight: bold;
+}
+
+.habilitado {
+    color: #166534;
+    font-weight: bold;
+}
+
+.deshabilitado {
+    color: #92400e;
+    font-weight: bold;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+    .header {
+        padding: 18px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .header p {
+        font-size: 14px;
+    }
+
+    .contenedor {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    .panel {
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .panel h2 {
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+
+    .acciones-superiores {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    table th,
+    table td {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    .switch {
+        transform: scale(0.90);
+    }
+
+    .alerta-ok,
+    .info {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .panel h2 {
+        font-size: 19px;
+    }
+
+    .header h1 {
+        font-size: 22px;
+    }
+
+    .btn {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    table th,
+    table td {
+        font-size: 12px;
+    }
+}
+
 </style>
 </head>
 
@@ -126,56 +353,229 @@ th {
 
 <div class="contenedor">
 
+    <?php if (!empty($mensaje)): ?>
+        <div class="alerta-ok">
+            <?php echo htmlspecialchars($mensaje); ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- ================================= -->
+    <!-- USUARIOS REGISTRADOS -->
+    <!-- ================================= -->
+
     <div class="panel">
 
         <h2>Usuarios Registrados</h2>
 
         <div class="acciones-superiores">
-            <a href="usuario_nuevo.php" class="btn btn-nuevo">+ Nuevo usuario</a>
-            <a href="index.php" class="btn btn-volver">Volver al menú</a>
+
+            <a href="usuario_nuevo.php" class="btn btn-nuevo">
+                + Nuevo usuario
+            </a>
+
+            <a href="index.php" class="btn btn-volver">
+                Volver al menú
+            </a>
+
         </div>
 
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Nombre completo</th>
-                <th>DNI</th>
-                <th>Usuario</th>
-                <th>Email</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
+        <div class="tabla-responsive">
 
-            <?php while ($u = $usuarios->fetch_assoc()): ?>
+            <table>
+
                 <tr>
-                    <td><?php echo (int)$u['id']; ?></td>
-                    <td><?php echo htmlspecialchars($u['nombre'] . ' ' . $u['apellido']); ?></td>
-                    <td><?php echo htmlspecialchars($u['dni'] ?? ''); ?></td>
-                    <td><?php echo htmlspecialchars($u['nombre_usuario']); ?></td>
-                    <td><?php echo htmlspecialchars($u['email'] ?? ''); ?></td>
-                    <td><?php echo htmlspecialchars($u['rol']); ?></td>
-                    <td>
-                        <?php if ((int)$u['activo'] === 1): ?>
-                            <span class="estado-activo">Activo</span>
-                        <?php else: ?>
-                            <span class="estado-inactivo">Inactivo</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <a class="btn btn-editar" href="usuario_editar.php?id=<?php echo (int)$u['id']; ?>">Editar</a>
-
-                        <a 
-                            class="btn btn-estado" 
-                            href="usuario_estado.php?id=<?php echo (int)$u['id']; ?>"
-                            onclick="return confirm('¿Está seguro de cambiar el estado de este usuario?');"
-                        >
-                            <?php echo ((int)$u['activo'] === 1) ? 'Inactivar' : 'Activar'; ?>
-                        </a>
-                    </td>
+                    <th>ID</th>
+                    <th>Nombre completo</th>
+                    <th>DNI</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
-            <?php endwhile; ?>
-        </table>
+
+                <?php while ($u = $usuarios->fetch_assoc()): ?>
+
+                    <tr>
+
+                        <td><?php echo (int)$u['id']; ?></td>
+
+                        <td>
+                            <?php echo htmlspecialchars($u['nombre'] . ' ' . $u['apellido']); ?>
+                        </td>
+
+                        <td>
+                            <?php echo htmlspecialchars($u['dni'] ?? ''); ?>
+                        </td>
+
+                        <td>
+                            <?php echo htmlspecialchars($u['nombre_usuario']); ?>
+                        </td>
+
+                        <td>
+                            <?php echo htmlspecialchars($u['email'] ?? ''); ?>
+                        </td>
+
+                        <td>
+                            <?php echo htmlspecialchars($u['rol']); ?>
+                        </td>
+
+                        <td>
+
+                            <?php if ((int)$u['activo'] === 1): ?>
+
+                                <span class="estado-activo">
+                                    Activo
+                                </span>
+
+                            <?php else: ?>
+
+                                <span class="estado-inactivo">
+                                    Inactivo
+                                </span>
+
+                            <?php endif; ?>
+
+                        </td>
+
+                        <td>
+
+                            <a
+                                class="btn btn-editar"
+                                href="usuario_editar.php?id=<?php echo (int)$u['id']; ?>"
+                            >
+                                Editar
+                            </a>
+
+                            <a
+                                class="btn btn-estado"
+                                href="usuario_estado.php?id=<?php echo (int)$u['id']; ?>"
+                                onclick="return confirm('¿Está seguro de cambiar el estado de este usuario?');"
+                            >
+                                <?php echo ((int)$u['activo'] === 1) ? 'Inactivar' : 'Activar'; ?>
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                <?php endwhile; ?>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- ================================= -->
+    <!-- PERMISOS DE MODULOS -->
+    <!-- ================================= -->
+
+    <div class="panel">
+
+        <h2>Permisos de Módulos para OPERADOR</h2>
+
+        
+
+        <form method="POST">
+
+            <div class="tabla-responsive">
+
+                <table>
+
+                    <tr>
+                        <th>Módulo</th>
+                        <th>Archivo principal</th>
+                        <th>Estado</th>
+                        <th>Permiso</th>
+                    </tr>
+
+                    <?php while ($m = $modulos->fetch_assoc()): ?>
+
+                        <?php
+                        $archivo = $m['archivo_principal'];
+                        $permitido = (int)$m['permitido_operador'];
+                        $esUsuarios = ($archivo === "usuarios.php");
+                        ?>
+
+                        <tr>
+
+                            <td>
+                                <?php echo htmlspecialchars($m['modulo']); ?>
+                            </td>
+
+                            <td>
+                                <?php echo htmlspecialchars($archivo); ?>
+                            </td>
+
+                            <td>
+
+                                <?php if ($esUsuarios): ?>
+
+                                    <span class="bloqueado">
+                                        Solo ADMIN
+                                    </span>
+
+                                <?php elseif ($permitido === 1): ?>
+
+                                    <span class="habilitado">
+                                        Habilitado
+                                    </span>
+
+                                <?php else: ?>
+
+                                    <span class="deshabilitado">
+                                        Deshabilitado
+                                    </span>
+
+                                <?php endif; ?>
+
+                            </td>
+
+                            <td>
+
+                                <?php if ($esUsuarios): ?>
+
+                                    <span class="bloqueado">
+                                        Bloqueado
+                                    </span>
+
+                                <?php else: ?>
+
+                                    <label class="switch">
+
+                                        <input
+                                            type="checkbox"
+                                            name="modulos[]"
+                                            value="<?php echo htmlspecialchars($archivo); ?>"
+                                            <?php echo ($permitido === 1) ? 'checked' : ''; ?>
+                                        >
+
+                                        <span class="slider"></span>
+
+                                    </label>
+
+                                <?php endif; ?>
+
+                            </td>
+
+                        </tr>
+
+                    <?php endwhile; ?>
+
+                </table>
+
+            </div>
+
+            <button
+                type="submit"
+                name="guardar_permisos"
+                class="btn btn-guardar"
+            >
+                Guardar permisos del OPERADOR
+            </button>
+
+        </form>
 
     </div>
 

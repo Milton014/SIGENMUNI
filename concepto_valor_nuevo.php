@@ -1,6 +1,12 @@
 <?php
 session_start();
 require_once("conexion.php");
+require_once("seguridad.php");
+
+verificarSesion();
+verificarPermisoModulo("conceptos.php");
+
+
 
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
@@ -16,8 +22,17 @@ $conceptos = $conexion->query("
     ORDER BY nombre ASC
 ");
 
-$categorias = $conexion->query("SELECT id, nombre FROM categoria ORDER BY nombre ASC");
-$escalafones = $conexion->query("SELECT id, nombre FROM escalafon ORDER BY nombre ASC");
+$categorias = $conexion->query("
+    SELECT id, nombre 
+    FROM categoria 
+    ORDER BY nombre ASC
+");
+
+$escalafones = $conexion->query("
+    SELECT id, nombre 
+    FROM escalafon 
+    ORDER BY nombre ASC
+");
 
 $formasConcepto = [];
 $opcionesConcepto = [];
@@ -31,246 +46,475 @@ while ($c = $conceptos->fetch_assoc()) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Nuevo Valor de Concepto</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+<meta charset="UTF-8">
+<title>Nuevo Valor de Concepto</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            margin: 0;
-            background: #f4f6f9;
-            padding: 20px;
-        }
+<style>
+*{
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
 
-        .contenedor {
-            max-width: 750px;
-            margin: auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.08);
-        }
+body{
+    margin:0;
+    background:#f4f6f9;
+    padding:20px;
+}
 
-        h2 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
+.contenedor{
+    max-width:750px;
+    margin:auto;
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.08);
+}
 
-        .grupo {
-            margin-bottom: 15px;
-        }
+h2{
+    margin-top:0;
+    color:#2c3e50;
+}
 
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
-        }
+.grupo{
+    margin-bottom:15px;
+}
 
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
+label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:bold;
+}
 
-        .acciones {
-            margin-top: 20px;
-        }
+input,
+select{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    box-sizing:border-box;
+    font-size:14px;
+    outline:none;
+    transition:.2s;
+}
 
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            text-decoration: none;
-            border-radius: 6px;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-right: 8px;
-            font-size: 14px;
-        }
+input:focus,
+select:focus{
+    border-color:#14b8a6;
+    box-shadow:0 0 0 3px rgba(20,184,166,.15);
+}
 
-        .btn-guardar {
-            background: #28a745;
-        }
+.acciones{
+    margin-top:20px;
+}
 
-        .btn-cancelar {
-            background: #6c757d;
-        }
+.btn{
+    display:inline-block;
+    padding:10px 16px;
+    text-decoration:none;
+    border-radius:6px;
+    color:white;
+    border:none;
+    cursor:pointer;
+    margin-right:8px;
+    font-size:14px;
+}
 
-        .ayuda {
-            margin-top: 6px;
-            font-size: 13px;
-            color: #6c757d;
-            line-height: 1.4;
-        }
+.btn-guardar{
+    background:#28a745;
+}
 
-        .deshabilitado {
-            background: #e9ecef !important;
-            color: #6c757d;
-        }
-    </style>
+.btn-cancelar{
+    background:#6c757d;
+}
 
-    <script>
-        const formasConcepto = <?php echo json_encode($formasConcepto, JSON_UNESCAPED_UNICODE); ?>;
+.ayuda{
+    margin-top:6px;
+    font-size:13px;
+    color:#6c757d;
+    line-height:1.4;
+}
 
-        function bloquearSelect(select, limpiar = true) {
-            select.disabled = true;
-            select.classList.add('deshabilitado');
-            if (limpiar) {
-                select.value = '';
-            }
-        }
+.deshabilitado{
+    background:#e9ecef !important;
+    color:#6c757d;
+}
 
-        function habilitarSelect(select) {
-            select.disabled = false;
-            select.classList.remove('deshabilitado');
-        }
+.mensaje-error{
+    background:#fee2e2;
+    color:#991b1b;
+    padding:12px 14px;
+    border-radius:8px;
+    margin-bottom:15px;
+    border:1px solid #fecaca;
+    font-weight:bold;
+    display:none;
+}
 
-        function bloquearInput(input, valor = '') {
-            input.readOnly = true;
-            input.classList.add('deshabilitado');
-            if (valor !== null) {
-                input.value = valor;
-            }
-        }
+.input-error{
+    border-color:#dc2626 !important;
+    background:#fff1f2 !important;
+    box-shadow:0 0 0 3px rgba(220,38,38,.12) !important;
+}
+</style>
 
-        function habilitarInput(input) {
-            input.readOnly = false;
-            input.classList.remove('deshabilitado');
-        }
+<script>
+const formasConcepto = <?php echo json_encode($formasConcepto, JSON_UNESCAPED_UNICODE); ?>;
 
-        function actualizarFormulario() {
-            const conceptoId = document.getElementById('concepto_id').value;
-            const forma = formasConcepto[conceptoId] || '';
+function bloquearSelect(select, limpiar = true) {
 
-            const categoria = document.getElementById('categoria_id');
-            const escalafon = document.getElementById('escalafon_id');
-            const monto = document.getElementById('monto');
-            const porcentaje = document.getElementById('porcentaje');
-            const ayuda = document.getElementById('mensaje_ayuda');
+    select.disabled = true;
+    select.classList.add('deshabilitado');
 
-            habilitarSelect(categoria);
-            habilitarSelect(escalafon);
-            bloquearInput(monto, '0.00');
-            bloquearInput(porcentaje, '0.00');
+    if (limpiar) {
+        select.value = '';
+    }
+}
 
-            ayuda.innerHTML = '';
+function habilitarSelect(select) {
+    select.disabled = false;
+    select.classList.remove('deshabilitado');
+}
 
-            if (forma === 'TABLA_CATEGORIA') {
-                habilitarSelect(categoria);
-                bloquearSelect(escalafon, true);
-                habilitarInput(monto);
-                bloquearInput(porcentaje, '0.00');
+function bloquearInput(input, valor = '') {
 
-                ayuda.innerHTML = 'Este concepto se carga por categoría. Seleccione la categoría e ingrese el monto correspondiente a la escala salarial.';
-            } else if (forma === 'PORCENTAJE') {
-                habilitarSelect(categoria);
-                habilitarSelect(escalafon);
-                bloquearInput(monto, '0.00');
-                habilitarInput(porcentaje);
+    input.readOnly = true;
+    input.classList.add('deshabilitado');
 
-                ayuda.innerHTML = 'Este concepto se carga por porcentaje. Complete el porcentaje y, si corresponde, asócielo a categoría o escalafón.';
-            } else if (forma === 'FIJO') {
-                habilitarSelect(categoria);
-                habilitarSelect(escalafon);
-                habilitarInput(monto);
-                bloquearInput(porcentaje, '0.00');
+    if (valor !== null) {
+        input.value = valor;
+    }
+}
 
-                ayuda.innerHTML = 'Este concepto usa un valor monetario fijo.';
-            } else if (forma === 'MANUAL' || forma === 'FORMULA') {
-                bloquearSelect(categoria, false);
-                bloquearSelect(escalafon, false);
-                bloquearInput(monto, '0.00');
-                bloquearInput(porcentaje, '0.00');
+function habilitarInput(input) {
+    input.readOnly = false;
+    input.classList.remove('deshabilitado');
+}
 
-                ayuda.innerHTML = 'Este concepto no admite carga directa de valores desde esta pantalla.';
-            } else {
-                bloquearInput(monto, '0.00');
-                bloquearInput(porcentaje, '0.00');
-                ayuda.innerHTML = 'Seleccione un concepto para continuar.';
-            }
-        }
+function actualizarFormulario() {
 
-        window.onload = actualizarFormulario;
-    </script>
+    const conceptoId = document.getElementById('concepto_id').value;
+    const forma = formasConcepto[conceptoId] || '';
+
+    const categoria = document.getElementById('categoria_id');
+    const escalafon = document.getElementById('escalafon_id');
+    const monto = document.getElementById('monto');
+    const porcentaje = document.getElementById('porcentaje');
+    const ayuda = document.getElementById('mensaje_ayuda');
+
+    habilitarSelect(categoria);
+    habilitarSelect(escalafon);
+
+    bloquearInput(monto, '0.00');
+    bloquearInput(porcentaje, '0.00');
+
+    ayuda.innerHTML = '';
+
+    if (forma === 'TABLA_CATEGORIA') {
+
+        habilitarSelect(categoria);
+
+        bloquearSelect(escalafon, true);
+
+        habilitarInput(monto);
+
+        bloquearInput(porcentaje, '0.00');
+
+        ayuda.innerHTML =
+        'Este concepto se carga por categoría. Seleccione la categoría e ingrese el monto correspondiente.';
+
+    } else if (forma === 'PORCENTAJE') {
+
+        habilitarSelect(categoria);
+        habilitarSelect(escalafon);
+
+        bloquearInput(monto, '0.00');
+
+        habilitarInput(porcentaje);
+
+        ayuda.innerHTML =
+        'Este concepto se carga por porcentaje.';
+
+    } else if (forma === 'FIJO') {
+
+        habilitarSelect(categoria);
+        habilitarSelect(escalafon);
+
+        habilitarInput(monto);
+
+        bloquearInput(porcentaje, '0.00');
+
+        ayuda.innerHTML =
+        'Este concepto usa un valor monetario fijo.';
+
+    } else if (forma === 'MANUAL' || forma === 'FORMULA') {
+
+        bloquearSelect(categoria, false);
+        bloquearSelect(escalafon, false);
+
+        bloquearInput(monto, '0.00');
+        bloquearInput(porcentaje, '0.00');
+
+        ayuda.innerHTML =
+        'Este concepto no admite carga directa de valores.';
+
+    } else {
+
+        bloquearInput(monto, '0.00');
+        bloquearInput(porcentaje, '0.00');
+
+        ayuda.innerHTML =
+        'Seleccione un concepto para continuar.';
+    }
+}
+
+window.onload = actualizarFormulario;
+</script>
+
 </head>
+
 <body>
 
 <div class="contenedor">
-    <h2>Nuevo Valor de Concepto</h2>
 
-    <form action="concepto_valor_guardar.php" method="POST">
+<h2>Nuevo Valor de Concepto</h2>
 
-        <div class="grupo">
-            <label for="concepto_id">Concepto</label>
-            <select name="concepto_id" id="concepto_id" onchange="actualizarFormulario()" required>
-                <option value="">Seleccione</option>
-                <?php foreach ($opcionesConcepto as $c) { ?>
-                    <option value="<?php echo $c['id']; ?>" <?php echo ($concepto_id_seleccionado == $c['id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($c['codigo'] . ' - ' . $c['nombre']); ?>
-                    </option>
-                <?php } ?>
-            </select>
-        </div>
+<div id="alertaValor" class="mensaje-error"></div>
 
-        <div class="grupo">
-            <label for="categoria_id">Categoría</label>
-            <select name="categoria_id" id="categoria_id">
-                <option value="">Seleccione</option>
-                <?php while ($cat = $categorias->fetch_assoc()) { ?>
-                    <option value="<?php echo $cat['id']; ?>">
-                        <?php echo htmlspecialchars($cat['nombre']); ?>
-                    </option>
-                <?php } ?>
-            </select>
-        </div>
+<form 
+    action="concepto_valor_guardar.php" 
+    method="POST"
+    id="formValor"
+    novalidate
+>
 
-        <div class="grupo">
-            <label for="escalafon_id">Escalafón</label>
-            <select name="escalafon_id" id="escalafon_id">
-                <option value="">Seleccione</option>
-                <?php while ($esc = $escalafones->fetch_assoc()) { ?>
-                    <option value="<?php echo $esc['id']; ?>">
-                        <?php echo htmlspecialchars($esc['nombre']); ?>
-                    </option>
-                <?php } ?>
-            </select>
-        </div>
+<div class="grupo">
 
-        <div class="grupo">
-            <label for="monto">Monto</label>
-            <input type="number" step="0.01" name="monto" id="monto" value="0.00">
-        </div>
+<label for="concepto_id">Concepto *</label>
 
-        <div class="grupo">
-            <label for="porcentaje">Porcentaje</label>
-            <input type="number" step="0.01" name="porcentaje" id="porcentaje" value="0.00">
-        </div>
+<select 
+    name="concepto_id"
+    id="concepto_id"
+    onchange="actualizarFormulario()"
+>
 
-        <div id="mensaje_ayuda" class="ayuda"></div>
+<option value="">Seleccione</option>
 
-        <div class="grupo">
-            <label for="fecha_desde">Fecha Desde</label>
-            <input type="date" name="fecha_desde" id="fecha_desde" required>
-        </div>
+<?php foreach ($opcionesConcepto as $c) { ?>
 
-        <div class="grupo">
-            <label for="fecha_hasta">Fecha Hasta</label>
-            <input type="date" name="fecha_hasta" id="fecha_hasta">
-        </div>
+<option 
+    value="<?php echo $c['id']; ?>"
+    <?php echo ($concepto_id_seleccionado == $c['id']) ? 'selected' : ''; ?>
+>
+<?php echo htmlspecialchars($c['codigo'] . ' - ' . $c['nombre']); ?>
+</option>
 
-        <div class="acciones">
-            <button type="submit" class="btn btn-guardar">Guardar</button>
-            <a href="concepto_valores.php<?php echo ($concepto_id_seleccionado > 0) ? '?concepto_id=' . $concepto_id_seleccionado : ''; ?>" class="btn btn-cancelar">Cancelar</a>
-        </div>
-    </form>
+<?php } ?>
+
+</select>
+
 </div>
+
+<div class="grupo">
+
+<label for="categoria_id">Categoría</label>
+
+<select name="categoria_id" id="categoria_id">
+
+<option value="">Seleccione</option>
+
+<?php while ($cat = $categorias->fetch_assoc()) { ?>
+
+<option value="<?php echo $cat['id']; ?>">
+<?php echo htmlspecialchars($cat['nombre']); ?>
+</option>
+
+<?php } ?>
+
+</select>
+
+</div>
+
+<div class="grupo">
+
+<label for="escalafon_id">Escalafón</label>
+
+<select name="escalafon_id" id="escalafon_id">
+
+<option value="">Seleccione</option>
+
+<?php while ($esc = $escalafones->fetch_assoc()) { ?>
+
+<option value="<?php echo $esc['id']; ?>">
+<?php echo htmlspecialchars($esc['nombre']); ?>
+</option>
+
+<?php } ?>
+
+</select>
+
+</div>
+
+<div class="grupo">
+
+<label for="monto">Monto</label>
+
+<input 
+    type="number"
+    step="0.01"
+    name="monto"
+    id="monto"
+    value="0.00"
+>
+
+</div>
+
+<div class="grupo">
+
+<label for="porcentaje">Porcentaje</label>
+
+<input 
+    type="number"
+    step="0.01"
+    name="porcentaje"
+    id="porcentaje"
+    value="0.00"
+>
+
+</div>
+
+<div id="mensaje_ayuda" class="ayuda"></div>
+
+<div class="grupo">
+
+<label for="fecha_desde">Fecha Desde *</label>
+
+<input 
+    type="date"
+    name="fecha_desde"
+    id="fecha_desde"
+>
+
+</div>
+
+<div class="grupo">
+
+<label for="fecha_hasta">Fecha Hasta</label>
+
+<input 
+    type="date"
+    name="fecha_hasta"
+    id="fecha_hasta"
+>
+
+</div>
+
+<div class="acciones">
+
+<button type="submit" class="btn btn-guardar">
+Guardar
+</button>
+
+<a 
+href="concepto_valores.php<?php echo ($concepto_id_seleccionado > 0) ? '?concepto_id=' . $concepto_id_seleccionado : ''; ?>" 
+class="btn btn-cancelar"
+>
+Cancelar
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+<script>
+document.getElementById("formValor").addEventListener("submit", function(e){
+
+    const alerta = document.getElementById("alertaValor");
+
+    const campos = [
+        "concepto_id",
+        "categoria_id",
+        "escalafon_id",
+        "monto",
+        "porcentaje",
+        "fecha_desde"
+    ];
+
+    campos.forEach(function(id){
+        document.getElementById(id).classList.remove("input-error");
+    });
+
+    alerta.style.display = "none";
+    alerta.innerHTML = "";
+
+    function mostrarError(mensaje,id){
+
+        e.preventDefault();
+
+        const campo = document.getElementById(id);
+
+        alerta.innerHTML = mensaje;
+        alerta.style.display = "block";
+
+        campo.classList.add("input-error");
+
+        campo.focus();
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+    }
+
+    const concepto = document.getElementById("concepto_id").value;
+    const fechaDesde = document.getElementById("fecha_desde").value;
+    const forma = formasConcepto[concepto] || '';
+
+    const monto = parseFloat(document.getElementById("monto").value || 0);
+    const porcentaje = parseFloat(document.getElementById("porcentaje").value || 0);
+
+    if(concepto === ""){
+        mostrarError(
+            "Debe seleccionar un concepto.",
+            "concepto_id"
+        );
+        return;
+    }
+
+    if(fechaDesde === ""){
+        mostrarError(
+            "Debe seleccionar la fecha desde.",
+            "fecha_desde"
+        );
+        return;
+    }
+
+    if(forma === "FIJO" || forma === "TABLA_CATEGORIA"){
+
+        if(monto <= 0){
+            mostrarError(
+                "Debe ingresar un monto mayor a cero.",
+                "monto"
+            );
+            return;
+        }
+    }
+
+    if(forma === "PORCENTAJE"){
+
+        if(porcentaje <= 0){
+            mostrarError(
+                "Debe ingresar un porcentaje mayor a cero.",
+                "porcentaje"
+            );
+            return;
+        }
+    }
+
+});
+</script>
 
 </body>
 </html>

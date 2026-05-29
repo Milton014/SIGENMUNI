@@ -1,6 +1,11 @@
 <?php
 session_start();
 require_once("conexion.php");
+require_once("seguridad.php");
+
+verificarSesion();
+verificarPermisoModulo("liquidacion_concepto_manual.php");
+
 
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");

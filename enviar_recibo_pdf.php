@@ -3,7 +3,6 @@ session_start();
 require_once("conexion.php");
 require_once("fpdf/fpdf.php");
 
-// PHPMailer sin Composer
 require 'phpmailer/src/Exception.php';
 require 'phpmailer/src/PHPMailer.php';
 require 'phpmailer/src/SMTP.php';
@@ -28,9 +27,7 @@ function dinero($valor) {
 }
 
 function antiguedadTexto($fechaAlta) {
-    if (empty($fechaAlta) || $fechaAlta === '0000-00-00') {
-        return "0 años";
-    }
+    if (empty($fechaAlta) || $fechaAlta === '0000-00-00') return "0 años";
 
     try {
         $inicio = new DateTime($fechaAlta);
@@ -67,13 +64,8 @@ $stmt->bind_param("ii", $liquidacionId, $empleadoId);
 $stmt->execute();
 $datos = $stmt->get_result()->fetch_assoc();
 
-if (!$datos) {
-    die("No se encontró el recibo.");
-}
-
-if (empty($datos['email'])) {
-    die("El empleado no tiene email cargado.");
-}
+if (!$datos) die("No se encontró el recibo.");
+if (empty($datos['email'])) die("El empleado no tiene email cargado.");
 
 $stmtDetalle = $conexion->prepare("
     SELECT 
@@ -125,145 +117,197 @@ while ($row = $resDetalle->fetch_assoc()) {
 $neto = ($totalHaberesRem + $totalHaberesNoRem + $totalAsignaciones) - $totalDescuentos;
 
 class PDFRecibo extends FPDF {
+
     function tituloSeccion($titulo) {
         $this->Ln(4);
-        $this->SetFont('Arial', 'B', 11);
-        $this->SetFillColor(230, 245, 242);
-        $this->Cell(190, 8, utf8_decode($titulo), 1, 1, 'L', true);
-    }
-
-    function filaTabla($codigo, $concepto, $cantidad, $porcentaje, $monto) {
-        $this->SetFont('Arial', '', 9);
-        $this->Cell(22, 7, $codigo, 1, 0, 'C');
-        $this->Cell(78, 7, utf8_decode($concepto), 1, 0, 'L');
-        $this->Cell(25, 7, number_format((float)$cantidad, 2, ',', '.'), 1, 0, 'R');
-        $this->Cell(25, 7, number_format((float)$porcentaje, 2, ',', '.'), 1, 0, 'R');
-        $this->Cell(40, 7, dinero($monto), 1, 1, 'R');
-    }
-
-    function totalTabla($texto, $monto) {
-        $this->SetFont('Arial', 'B', 9);
-        $this->SetFillColor(245, 245, 245);
-        $this->Cell(150, 7, utf8_decode($texto), 1, 0, 'R', true);
-        $this->Cell(40, 7, dinero($monto), 1, 1, 'R', true);
+        $this->SetFont('Arial', 'B', 10);
+        $this->SetTextColor(15, 118, 110);
+        $this->SetFillColor(236, 253, 245);
+        $this->SetDrawColor(153, 246, 228);
+        $this->Cell(186, 8, utf8_decode($titulo), 1, 1, 'L', true);
+        $this->SetTextColor(31, 41, 55);
     }
 
     function cabeceraTabla() {
-        $this->SetFont('Arial', 'B', 9);
+        $this->SetFont('Arial', 'B', 8);
         $this->SetFillColor(243, 244, 246);
+        $this->SetDrawColor(229, 231, 235);
+
         $this->Cell(22, 7, utf8_decode('Código'), 1, 0, 'C', true);
         $this->Cell(78, 7, 'Concepto', 1, 0, 'C', true);
         $this->Cell(25, 7, 'Cantidad', 1, 0, 'C', true);
         $this->Cell(25, 7, '%', 1, 0, 'C', true);
-        $this->Cell(40, 7, 'Monto', 1, 1, 'C', true);
+        $this->Cell(36, 7, 'Monto', 1, 1, 'C', true);
+    }
+
+    function filaTabla($codigo, $concepto, $cantidad, $porcentaje, $monto) {
+        $this->SetFont('Arial', '', 8);
+        $this->SetDrawColor(229, 231, 235);
+
+        $this->Cell(22, 7, $codigo, 1, 0, 'C');
+        $this->Cell(78, 7, utf8_decode(substr($concepto, 0, 45)), 1, 0, 'L');
+        $this->Cell(25, 7, number_format((float)$cantidad, 2, ',', '.'), 1, 0, 'R');
+        $this->Cell(25, 7, number_format((float)$porcentaje, 2, ',', '.'), 1, 0, 'R');
+        $this->Cell(36, 7, dinero($monto), 1, 1, 'R');
+    }
+
+    function totalTabla($texto, $monto) {
+        $this->SetFont('Arial', 'B', 8);
+        $this->SetFillColor(240, 253, 250);
+        $this->SetDrawColor(153, 246, 228);
+
+        $this->Cell(150, 7, utf8_decode($texto), 1, 0, 'R', true);
+        $this->Cell(36, 7, dinero($monto), 1, 1, 'R', true);
     }
 }
 
-$pdf = new PDFRecibo();
+$pdf = new PDFRecibo('P', 'mm', 'A4');
+$pdf->SetMargins(12, 12, 12);
+$pdf->SetAutoPageBreak(true, 15);
 $pdf->AddPage();
-$pdf->SetMargins(10, 10, 10);
+
+$pdf->SetDrawColor(15, 118, 110);
+$pdf->SetFillColor(15, 118, 110);
+$pdf->Rect(0, 0, 210, 25, 'F');
 
 if (file_exists("img/escudo.jpg")) {
-    $pdf->Image("img/escudo.jpg", 170, 12, 25);
+    $pdf->Image("img/escudo.jpg", 15, 5, 17);
 }
 
-$pdf->SetFont('Arial', 'B', 16);
-$pdf->Cell(190, 8, 'RECIBO DE SUELDO', 0, 1, 'C');
-
-$pdf->SetFont('Arial', '', 11);
-$pdf->Cell(190, 6, utf8_decode('Municipalidad de Fortín Lugones'), 0, 1, 'C');
-$pdf->Cell(
-    190,
-    6,
-    utf8_decode('Liquidación: ' . $datos['tipo_liquidacion'] . ' | Período: ' . $datos['periodo']),
-    0,
-    1,
-    'C'
-);
-
-$pdf->Ln(8);
-
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(95, 8, 'Empleado', 1, 0, 'L');
-$pdf->Cell(95, 8, 'Legajo', 1, 1, 'L');
+$pdf->SetTextColor(255,255,255);
+$pdf->SetFont('Arial', 'B', 17);
+$pdf->Cell(186, 8, utf8_decode('RECIBO DE SUELDO'), 0, 1, 'C');
 
 $pdf->SetFont('Arial', '', 10);
-$pdf->Cell(95, 8, utf8_decode($datos['apellido'] . ', ' . $datos['nombre']), 1, 0, 'L');
-$pdf->Cell(95, 8, utf8_decode($datos['nro_legajo']), 1, 1, 'L');
+$pdf->Cell(186, 6, utf8_decode('Municipalidad de Fortín Lugones'), 0, 1, 'C');
+
+$pdf->Ln(12);
+$pdf->SetTextColor(31,41,55);
 
 $pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(95, 8, utf8_decode('Categoría'), 1, 0, 'L');
-$pdf->Cell(95, 8, 'Fecha de Alta', 1, 1, 'L');
+$pdf->SetFillColor(243,244,246);
+$pdf->SetDrawColor(209,213,219);
 
-$pdf->SetFont('Arial', '', 10);
-$pdf->Cell(95, 8, utf8_decode(($datos['categoria_codigo'] ?? '-') . ' - ' . ($datos['categoria_nombre'] ?? '-')), 1, 0, 'L');
-$pdf->Cell(95, 8, date("d/m/Y", strtotime($datos['fecha_alta'])), 1, 1, 'L');
+$pdf->Cell(93, 8, utf8_decode('Tipo Liquidación: ' . $datos['tipo_liquidacion']), 1, 0, 'L', true);
+$pdf->Cell(93, 8, utf8_decode('Período: ' . $datos['periodo']), 1, 1, 'L', true);
 
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->Cell(95, 8, utf8_decode('Antigüedad'), 1, 0, 'L');
-$pdf->Cell(95, 8, utf8_decode('Fecha de Liquidación'), 1, 1, 'L');
+$pdf->Cell(93, 8, utf8_decode('Fecha Liquidación: ' . date("d/m/Y", strtotime($datos['fecha_liquidacion']))), 1, 0, 'L', true);
+$pdf->Cell(93, 8, utf8_decode('Estado: GENERADO'), 1, 1, 'L', true);
 
-$pdf->SetFont('Arial', '', 10);
-$pdf->Cell(95, 8, utf8_decode(antiguedadTexto($datos['fecha_alta'])), 1, 0, 'L');
-$pdf->Cell(95, 8, date("d/m/Y", strtotime($datos['fecha_liquidacion'])), 1, 1, 'L');
+$pdf->Ln(5);
+
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell(93, 8, 'Empleado', 1, 0, 'L');
+$pdf->Cell(93, 8, 'Legajo', 1, 1, 'L');
+
+$pdf->SetFont('Arial', '', 9);
+$pdf->Cell(93, 8, utf8_decode($datos['apellido'] . ', ' . $datos['nombre']), 1, 0, 'L');
+$pdf->Cell(93, 8, utf8_decode($datos['nro_legajo']), 1, 1, 'L');
+
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell(93, 8, utf8_decode('Categoría'), 1, 0, 'L');
+$pdf->Cell(93, 8, 'Fecha de Alta', 1, 1, 'L');
+
+$pdf->SetFont('Arial', '', 9);
+$pdf->Cell(93, 8, utf8_decode(($datos['categoria_codigo'] ?? '-') . ' - ' . ($datos['categoria_nombre'] ?? '-')), 1, 0, 'L');
+$pdf->Cell(93, 8, !empty($datos['fecha_alta']) ? date("d/m/Y", strtotime($datos['fecha_alta'])) : '-', 1, 1, 'L');
+
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->Cell(93, 8, utf8_decode('Antigüedad'), 1, 0, 'L');
+$pdf->Cell(93, 8, utf8_decode('Fecha de Emisión'), 1, 1, 'L');
+
+$pdf->SetFont('Arial', '', 9);
+$pdf->Cell(93, 8, utf8_decode(antiguedadTexto($datos['fecha_alta'])), 1, 0, 'L');
+$pdf->Cell(93, 8, date("d/m/Y H:i"), 1, 1, 'L');
 
 $pdf->tituloSeccion('Haberes Remunerativos');
 $pdf->cabeceraTabla();
+
 if (count($haberesRem) > 0) {
     foreach ($haberesRem as $item) {
         $pdf->filaTabla($item['codigo'], $item['nombre'], $item['cantidad'], $item['porcentaje_aplicado'], $item['monto']);
     }
 }
+
 $pdf->totalTabla('Total Haberes Remunerativos', $totalHaberesRem);
 
 $pdf->tituloSeccion('Haberes No Remunerativos');
 $pdf->cabeceraTabla();
+
 if (count($haberesNoRem) > 0) {
     foreach ($haberesNoRem as $item) {
         $pdf->filaTabla($item['codigo'], $item['nombre'], $item['cantidad'], $item['porcentaje_aplicado'], $item['monto']);
     }
 }
+
 $pdf->totalTabla('Total Haberes No Remunerativos', $totalHaberesNoRem);
 
 $pdf->tituloSeccion('Asignaciones Familiares');
 $pdf->cabeceraTabla();
+
 if (count($asignaciones) > 0) {
     foreach ($asignaciones as $item) {
         $pdf->filaTabla($item['codigo'], $item['nombre'], $item['cantidad'], $item['porcentaje_aplicado'], $item['monto']);
     }
 }
+
 $pdf->totalTabla('Total Asignaciones', $totalAsignaciones);
 
 $pdf->tituloSeccion('Descuentos');
 $pdf->cabeceraTabla();
+
 if (count($descuentos) > 0) {
     foreach ($descuentos as $item) {
         $pdf->filaTabla($item['codigo'], $item['nombre'], $item['cantidad'], $item['porcentaje_aplicado'], $item['monto']);
     }
 }
+
 $pdf->totalTabla('Total Descuentos', $totalDescuentos);
 
 $pdf->Ln(6);
-$pdf->SetFont('Arial', 'B', 10);
-$pdf->SetFillColor(220, 252, 231);
 
-$pdf->Cell(95, 8, 'Total Remunerativo: ' . dinero($totalHaberesRem), 1, 0, 'L');
-$pdf->Cell(95, 8, 'Total No Remunerativo: ' . dinero($totalHaberesNoRem), 1, 1, 'L');
+$pdf->SetFont('Arial', 'B', 9);
+$pdf->SetFillColor(249,250,251);
+$pdf->SetDrawColor(209,213,219);
 
-$pdf->Cell(95, 8, 'Total Asignaciones: ' . dinero($totalAsignaciones), 1, 0, 'L');
-$pdf->Cell(95, 8, 'Total Descuentos: ' . dinero($totalDescuentos), 1, 1, 'L');
+$pdf->Cell(93, 8, 'Total Remunerativo: ' . dinero($totalHaberesRem), 1, 0, 'L', true);
+$pdf->Cell(93, 8, 'Total No Remunerativo: ' . dinero($totalHaberesNoRem), 1, 1, 'L', true);
 
-$pdf->Cell(190, 10, 'NETO A COBRAR: ' . dinero($neto), 1, 1, 'C', true);
+$pdf->Cell(93, 8, 'Total Asignaciones: ' . dinero($totalAsignaciones), 1, 0, 'L', true);
+$pdf->Cell(93, 8, 'Total Descuentos: ' . dinero($totalDescuentos), 1, 1, 'L', true);
 
-$pdf->Ln(20);
+$pdf->Ln(4);
+
+$pdf->SetFillColor(220,252,231);
+$pdf->SetDrawColor(22,163,74);
+$pdf->SetFont('Arial', 'B', 15);
+
+$pdf->Cell(186, 14, utf8_decode('NETO A COBRAR: ') . dinero($neto), 1, 1, 'C', true);
+
+$pdf->Ln(8);
+
+$pdf->SetFont('Arial', '', 8);
+$pdf->SetTextColor(107,114,128);
+$pdf->MultiCell(
+    186,
+    5,
+    utf8_decode('Documento generado automáticamente por SIGENMUNI. Este recibo corresponde a la liquidación indicada y se emite para constancia del empleado y la Municipalidad de Fortín Lugones.'),
+    0,
+    'C'
+);
+
+$pdf->SetTextColor(31,41,55);
+
+$pdf->Ln(15);
 $pdf->SetFont('Arial', '', 9);
-$pdf->Cell(63, 8, '_________________________', 0, 0, 'C');
-$pdf->Cell(63, 8, '_________________________', 0, 0, 'C');
-$pdf->Cell(63, 8, '_________________________', 0, 1, 'C');
 
-$pdf->Cell(63, 6, 'Firma del Empleado', 0, 0, 'C');
-$pdf->Cell(63, 6, utf8_decode('Tesorería'), 0, 0, 'C');
-$pdf->Cell(63, 6, 'Autoridad Municipal', 0, 1, 'C');
+$pdf->Cell(62, 8, '_________________________', 0, 0, 'C');
+$pdf->Cell(62, 8, '_________________________', 0, 0, 'C');
+$pdf->Cell(62, 8, '_________________________', 0, 1, 'C');
+
+$pdf->Cell(62, 6, 'Firma del Empleado', 0, 0, 'C');
+$pdf->Cell(62, 6, utf8_decode('Tesorería'), 0, 0, 'C');
+$pdf->Cell(62, 6, 'Autoridad Municipal', 0, 1, 'C');
 
 $carpetaTemp = "temp_recibos";
 if (!is_dir($carpetaTemp)) {
@@ -282,14 +326,12 @@ try {
     $mail->Host       = 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
 
-    // CAMBIAR ESTOS DATOS
     $mail->Username   = 'chavezmilton082@gmail.com';
-    $mail->Password   = 'hemgotgudzvcepch'; // la que generaste
+    $mail->Password   = 'hemgotgudzvcepch';
 
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
-
-    $mail->CharSet = 'UTF-8';
+    $mail->CharSet    = 'UTF-8';
 
     $mail->setFrom('chavezmilton082@gmail.com', 'Municipalidad de Fortín Lugones');
     $mail->addAddress($datos['email'], $datos['apellido'] . ' ' . $datos['nombre']);
@@ -313,16 +355,61 @@ try {
         unlink($rutaPDF);
     }
 
-    echo "<script>
-        alert('Recibo enviado correctamente al email del empleado.');
-        window.location.href='recibo_sueldo.php?liquidacion_id=$liquidacionId&empleado_id=$empleadoId';
-    </script>";
+    echo "
+    <!DOCTYPE html>
+    <html lang='es'>
+    <head>
+        <meta charset='UTF-8'>
+        <title>Recibo enviado</title>
+        <style>
+            body{
+                font-family:Arial,sans-serif;
+                background:#f4f7fb;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                min-height:100vh;
+                margin:0;
+            }
+            .card{
+                background:white;
+                padding:30px;
+                border-radius:16px;
+                box-shadow:0 8px 22px rgba(0,0,0,.10);
+                text-align:center;
+                max-width:480px;
+            }
+            h2{
+                color:#0f766e;
+            }
+            a{
+                display:inline-block;
+                margin-top:15px;
+                padding:12px 18px;
+                background:#0f766e;
+                color:white;
+                text-decoration:none;
+                border-radius:10px;
+                font-weight:bold;
+            }
+        </style>
+    </head>
+    <body>
+        <div class='card'>
+            <h2>Recibo enviado correctamente</h2>
+            <p>El recibo fue enviado al email del empleado.</p>
+            <a href='recibo_sueldo.php?liquidacion_id=$liquidacionId&empleado_id=$empleadoId'>Volver al recibo</a>
+        </div>
+    </body>
+    </html>
+    ";
 
 } catch (Exception $e) {
+
     if (file_exists($rutaPDF)) {
         unlink($rutaPDF);
     }
 
-    echo 'Error al enviar el correo: ' . $mail->ErrorInfo;
+    echo "Error al enviar el correo: " . htmlspecialchars($mail->ErrorInfo);
 }
 ?>

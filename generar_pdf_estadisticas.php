@@ -1,6 +1,11 @@
 <?php
 session_start();
 require_once("fpdf/fpdf.php");
+require_once("seguridad.php");
+
+
+verificarSesion();
+verificarPermisoModulo("generar_pdf_estadisticas.php");
 
 if (!isset($_SESSION['usuario'])) {
     die("Acceso no autorizado");

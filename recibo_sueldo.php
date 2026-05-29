@@ -1,6 +1,12 @@
 <?php
 session_start();
 require_once("conexion.php");
+require_once("seguridad.php");
+
+verificarSesion();
+verificarPermisoModulo("recibo_sueldo.php");
+
+
 
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
@@ -131,261 +137,330 @@ function calcularAntiguedadTexto($fechaAlta) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recibo de Sueldo</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
-        }
+*{
+    box-sizing:border-box;
+}
 
-        .contenedor {
-            max-width: 1100px;
-            margin: 25px auto;
-            background: #fff;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-        }
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#eef2f7;
+    color:#1f2937;
+}
 
-        .acciones {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
+.contenedor{
+    max-width:1200px;
+    margin:25px auto;
+    background:#fff;
+    padding:28px;
+    border-radius:22px;
+    box-shadow:0 12px 35px rgba(0,0,0,.08);
+}
 
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            color: #fff;
-        }
+.acciones{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:22px;
+}
 
-        .btn-volver {
-            background: #6b7280;
-        }
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:11px 18px;
+    text-decoration:none;
+    border-radius:12px;
+    font-weight:bold;
+    color:#fff;
+    transition:.2s;
+    font-size:14px;
+}
 
-        .btn-volver:hover {
-            background: #4b5563;
-        }
+.btn:hover{
+    transform:translateY(-1px);
+}
 
-        .btn-imprimir {
-            background: #0f766e;
-        }
+.btn-volver{
+    background:#6b7280;
+}
 
-        .btn-imprimir:hover {
-            background: #115e59;
-        }
+.btn-volver:hover{
+    background:#4b5563;
+}
 
-        .encabezado {
-            border: 2px solid #d1d5db;
-            border-radius: 10px;
-            padding: 18px;
-            margin-bottom: 20px;
-        }
+.btn-imprimir{
+    background:#0f766e;
+}
 
-        .header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 15px;
-        }
+.btn-imprimir:hover{
+    background:#115e59;
+}
 
-        .titulo {
-            flex: 1;
-            text-align: center;
-        }
+.btn-email{
+    background:#2563eb;
+}
 
-        .titulo h1 {
-            margin: 0;
-            font-size: 24px;
-            color: #0f766e;
-        }
+.btn-email:hover{
+    background:#1d4ed8;
+}
 
-        .titulo p {
-            margin: 6px 0 0;
-            font-size: 14px;
-        }
+.encabezado{
+    border:1px solid #d1d5db;
+    border-radius:20px;
+    padding:24px;
+    margin-bottom:25px;
+    background:linear-gradient(135deg,#ffffff,#f9fafb);
+}
 
-        .logo {
-            width: 110px;
-            min-width: 110px;
-            text-align: right;
-        }
+.header-flex{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    margin-bottom:20px;
+}
 
-        .logo img {
-            width: 100px;
-            height: auto;
-            object-fit: contain;
-        }
+.titulo{
+    flex:1;
+    text-align:center;
+}
 
-        .grid-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-            margin-top: 15px;
-        }
+.titulo h1{
+    margin:0;
+    font-size:32px;
+    color:#0f766e;
+    letter-spacing:1px;
+}
 
-        .info-box {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 10px 12px;
-            background: #f9fafb;
-        }
+.titulo p{
+    margin:6px 0 0;
+    font-size:14px;
+    color:#4b5563;
+}
 
-        .info-box strong {
-            display: block;
-            font-size: 13px;
-            margin-bottom: 4px;
-            color: #374151;
-        }
+.logo{
+    width:120px;
+    min-width:120px;
+    text-align:right;
+}
 
-        .bloque {
-            margin-top: 20px;
-        }
+.logo img{
+    width:105px;
+    object-fit:contain;
+}
 
-        .bloque h3 {
-            margin: 0 0 10px;
-            color: #0f766e;
-        }
+.grid-info{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+}
 
-        .tabla-contenedor {
-            overflow-x: auto;
-        }
+.info-box{
+    border-radius:14px;
+    padding:14px;
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+    transition:.2s;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 700px;
-        }
+.info-box:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 14px rgba(0,0,0,.04);
+}
 
-        th, td {
-            border: 1px solid #e5e7eb;
-            padding: 10px;
-            font-size: 14px;
-            text-align: left;
-        }
+.info-box strong{
+    display:block;
+    font-size:12px;
+    margin-bottom:6px;
+    color:#6b7280;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+}
 
-        th {
-            background: #f3f4f6;
-        }
+.bloque{
+    margin-top:28px;
+}
 
-        .total-fila td {
-            font-weight: bold;
-            background: #f9fafb;
-        }
+.bloque h3{
+    margin:0 0 12px;
+    color:#0f766e;
+    font-size:20px;
+}
 
-        .resumen-final {
-            margin-top: 25px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-        }
+.tabla-contenedor{
+    overflow-x:auto;
+    border-radius:16px;
+    border:1px solid #e5e7eb;
+}
 
-        .resumen-box {
-            border-radius: 10px;
-            padding: 15px;
-            border: 1px solid #d1d5db;
-            background: #f9fafb;
-        }
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:760px;
+    background:white;
+}
 
-        .resumen-box strong {
-            display: block;
-            margin-bottom: 6px;
-        }
+th,td{
+    padding:13px 12px;
+    border-bottom:1px solid #e5e7eb;
+    text-align:left;
+    font-size:14px;
+}
 
-        .neto {
-            background: #dcfce7;
-            border-color: #86efac;
-        }
+th{
+    background:#f9fafb;
+    color:#374151;
+    position:sticky;
+    top:0;
+    z-index:1;
+}
 
-        .sin-datos {
-            text-align: center;
-            color: #6b7280;
-            padding: 15px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background: #fafafa;
-        }
+tr:hover{
+    background:#f8fafc;
+}
 
-        .firmas {
-            margin-top: 60px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            align-items: end;
-        }
+.total-fila td{
+    font-weight:bold;
+    background:#f0fdfa;
+    color:#0f766e;
+}
 
-        .firma-box {
-            text-align: center;
-            min-height: 90px;
-        }
+.sin-datos{
+    text-align:center;
+    color:#6b7280;
+    padding:18px;
+    border:1px dashed #d1d5db;
+    border-radius:12px;
+    background:#fafafa;
+}
 
-        .linea-firma {
-            border-top: 1px solid #374151;
-            width: 85%;
-            margin: 55px auto 8px;
-        }
+.resumen-final{
+    margin-top:30px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:14px;
+}
 
-        .firma-box p {
-            margin: 0;
-            font-size: 13px;
-            color: #374151;
-        }
+.resumen-box{
+    border-radius:16px;
+    padding:18px;
+    border:1px solid #d1d5db;
+    background:#f9fafb;
+    transition:.2s;
+}
 
-        @media (max-width: 768px) {
-            .header-flex {
-                flex-direction: column-reverse;
-                align-items: center;
-            }
+.resumen-box:hover{
+    transform:translateY(-2px);
+}
 
-            .titulo {
-                text-align: center;
-            }
+.resumen-box strong{
+    display:block;
+    margin-bottom:8px;
+    font-size:13px;
+    color:#374151;
+    text-transform:uppercase;
+}
 
-            .logo {
-                text-align: center;
-            }
+.resumen-box{
+    font-size:24px;
+    font-weight:bold;
+}
 
-            .firmas {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-        }
+.neto{
+    background:linear-gradient(135deg,#dcfce7,#f0fdf4);
+    border-color:#86efac;
+    color:#166534;
+}
 
-        @media print {
-            body {
-                background: #fff;
-            }
+.firmas{
+    margin-top:65px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:30px;
+    align-items:end;
+}
 
-            .acciones {
-                display: none;
-            }
+.firma-box{
+    text-align:center;
+    min-height:100px;
+}
 
-            .contenedor {
-                box-shadow: none;
-                margin: 0;
-                max-width: 100%;
-                border-radius: 0;
-                padding: 10px;
-            }
+.linea-firma{
+    border-top:2px solid #374151;
+    width:85%;
+    margin:60px auto 10px;
+}
 
-            .logo img {
-                width: 80px;
-            }
+.firma-box p{
+    margin:0;
+    font-size:13px;
+    color:#374151;
+    font-weight:bold;
+}
 
-            .firmas {
-                margin-top: 45px;
-            }
-        }
-    </style>
+@media (max-width:768px){
+
+    .header-flex{
+        flex-direction:column-reverse;
+        align-items:center;
+    }
+
+    .titulo{
+        text-align:center;
+    }
+
+    .logo{
+        text-align:center;
+    }
+
+    .firmas{
+        grid-template-columns:1fr;
+        gap:25px;
+    }
+
+    .acciones{
+        flex-direction:column;
+    }
+
+    .btn{
+        width:100%;
+    }
+}
+
+@media print{
+
+    body{
+        background:#fff;
+    }
+
+    .acciones{
+        display:none;
+    }
+
+    .contenedor{
+        box-shadow:none;
+        margin:0;
+        max-width:100%;
+        border-radius:0;
+        padding:10px;
+    }
+
+    .encabezado{
+        border:1px solid #999;
+    }
+
+    .logo img{
+        width:80px;
+    }
+
+    .firmas{
+        margin-top:50px;
+    }
+}
+
+</style>
 </head>
 <body>
 

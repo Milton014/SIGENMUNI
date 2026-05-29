@@ -68,114 +68,296 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Registro Inicial - SIGENMUNI</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro Inicial - SIGENMUNI</title>
 
-        .contenedor {
-            width: 400px;
-            text-align: center;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        h1 {
-            font-size: 34px;
-            margin-bottom: 0;
-        }
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #0f766e 0%, #115e59 45%, #e6fffb 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
 
-        .subtitulo {
-            color: #555;
-            margin-bottom: 30px;
-        }
+.contenedor {
+    width: 100%;
+    max-width: 440px;
+}
 
-        .titulo {
-            font-size: 18px;
-            text-align: left;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+.card {
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
+}
 
-        label {
-            text-align: left;
-            display: block;
-            margin: 8px 0 4px 0;
-        }
+.logo {
+    text-align: center;
+    margin-bottom: 24px;
+}
 
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #999;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            background: #f5f5f5;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
+.logo-img {
+    width: 80px;
+    margin-bottom: 10px;
+}
 
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: green;
-            border-radius: 40px;
-            border: none;
-            color: white;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.logo h1 {
+    margin: 0;
+    font-size: 34px;
+    color: #0f766e;
+}
 
-        .btn:hover {
-            background: #0b6b0b;
-        }
+.subtitulo {
+    margin: 8px 0 0;
+    color: #6b7280;
+    font-size: 15px;
+}
 
-        .error {
-            color: red;
-            margin-bottom: 15px;
-        }
-    </style>
+.titulo {
+    font-size: 20px;
+    font-weight: bold;
+    color: #111827;
+    margin-bottom: 16px;
+}
+
+.mensaje-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.grupo {
+    margin-bottom: 14px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #374151;
+}
+
+input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+input:focus {
+    border-color: #14b8a6;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+
+input.input-error {
+    border-color: #dc2626;
+    background: #fff1f2;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.btn {
+    width: 100%;
+    padding: 14px;
+    background: #0f766e;
+    border-radius: 12px;
+    border: none;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.25s ease;
+    margin-top: 8px;
+}
+
+.btn:hover {
+    background: #115e59;
+    transform: translateY(-1px);
+}
+
+.volver {
+    margin-top: 16px;
+    text-align: center;
+}
+
+.volver a {
+    text-decoration: none;
+    color: #0f766e;
+    font-weight: bold;
+}
+
+.volver a:hover {
+    text-decoration: underline;
+}
+
+.pie {
+    text-align: center;
+    margin-top: 15px;
+    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+}
+</style>
 </head>
+
 <body>
 
 <div class="contenedor">
-    <h1>SIGENMUNI</h1>
-    <p class="subtitulo">Registro del primer usuario</p>
 
-    <?php if (!empty($mensaje)) { ?>
-        <p class="error"><?php echo htmlspecialchars($mensaje); ?></p>
-    <?php } ?>
+    <div class="card">
 
-    <div class="titulo">Crear usuario administrador</div>
+        <div class="logo">
+            <img src="img/escudo.jpg" class="logo-img" alt="Escudo">
+            <h1>SIGENMUNI</h1>
+            <p class="subtitulo">Registro del primer usuario</p>
+        </div>
 
-    <form method="POST">
-        <label>Nombre</label>
-        <input type="text" name="nombre" required>
+        <div class="titulo">Crear usuario administrador</div>
 
-        <label>Apellido</label>
-        <input type="text" name="apellido" required>
+        <div id="alertaRegistro" class="mensaje-error" style="display:none;"></div>
 
-        <label>Nombre de usuario</label>
-        <input type="text" name="nombre_usuario" required>
+        <?php if (!empty($mensaje)) { ?>
+            <div class="mensaje-error"><?php echo htmlspecialchars($mensaje); ?></div>
+        <?php } ?>
 
-        <label>Email</label>
-        <input type="email" name="email">
+        <form method="POST" id="formRegistro" novalidate>
 
-        <label>Contraseña</label>
-        <input type="password" name="clave" required>
+            <div class="grupo">
+                <label for="nombre">Nombre</label>
+                <input type="text" name="nombre" id="nombre">
+            </div>
 
-        <label>Confirmar contraseña</label>
-        <input type="password" name="confirmar_clave" required>
+            <div class="grupo">
+                <label for="apellido">Apellido</label>
+                <input type="text" name="apellido" id="apellido">
+            </div>
 
-        <button type="submit" class="btn">REGISTRAR USUARIO</button>
-    </form>
+            <div class="grupo">
+                <label for="nombre_usuario">Nombre de usuario</label>
+                <input type="text" name="nombre_usuario" id="nombre_usuario" autocomplete="username">
+            </div>
+
+            <div class="grupo">
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email">
+            </div>
+
+            <div class="grupo">
+                <label for="clave">Contraseña</label>
+                <input type="password" name="clave" id="clave" autocomplete="new-password">
+            </div>
+
+            <div class="grupo">
+                <label for="confirmar_clave">Confirmar contraseña</label>
+                <input type="password" name="confirmar_clave" id="confirmar_clave" autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="btn">REGISTRAR USUARIO</button>
+
+        </form>
+
+        <div class="volver">
+            <a href="login.php">← Volver al login</a>
+        </div>
+
+    </div>
+
+    <div class="pie">
+        Municipalidad de Fortín Lugones
+    </div>
+
 </div>
+
+<script>
+document.getElementById("formRegistro").addEventListener("submit", function(e) {
+    const nombre = document.getElementById("nombre");
+    const apellido = document.getElementById("apellido");
+    const nombreUsuario = document.getElementById("nombre_usuario");
+    const email = document.getElementById("email");
+    const clave = document.getElementById("clave");
+    const confirmarClave = document.getElementById("confirmar_clave");
+    const alerta = document.getElementById("alertaRegistro");
+
+    const campos = [nombre, apellido, nombreUsuario, email, clave, confirmarClave];
+
+    campos.forEach(function(campo) {
+        campo.classList.remove("input-error");
+    });
+
+    alerta.style.display = "none";
+    alerta.innerHTML = "";
+
+    function mostrarError(mensaje, campo) {
+        e.preventDefault();
+        alerta.innerHTML = mensaje;
+        alerta.style.display = "block";
+        campo.classList.add("input-error");
+        campo.focus();
+    }
+
+    if (nombre.value.trim() === "") {
+        mostrarError("Debe ingresar el nombre.", nombre);
+        return;
+    }
+
+    if (apellido.value.trim() === "") {
+        mostrarError("Debe ingresar el apellido.", apellido);
+        return;
+    }
+
+    if (nombreUsuario.value.trim() === "") {
+        mostrarError("Debe ingresar el nombre de usuario.", nombreUsuario);
+        return;
+    }
+
+    if (email.value.trim() !== "") {
+        const formatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!formatoCorreo.test(email.value.trim())) {
+            mostrarError("Debe ingresar un email válido.", email);
+            return;
+        }
+    }
+
+    if (clave.value.trim() === "") {
+        mostrarError("Debe ingresar una contraseña.", clave);
+        return;
+    }
+
+    if (confirmarClave.value.trim() === "") {
+        mostrarError("Debe confirmar la contraseña.", confirmarClave);
+        return;
+    }
+
+    if (clave.value.trim().length < 6) {
+        mostrarError("La contraseña debe tener al menos 6 caracteres.", clave);
+        return;
+    }
+
+    if (clave.value.trim() !== confirmarClave.value.trim()) {
+        mostrarError("Las contraseñas no coinciden.", confirmarClave);
+        return;
+    }
+});
+</script>
 
 </body>
 </html>

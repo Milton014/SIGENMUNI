@@ -2,6 +2,10 @@
 session_start();
 require_once("conexion.php");
 
+verificarSesion();
+verificarPermisoModulo("concepto_guardar.php");
+
+
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
