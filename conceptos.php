@@ -6,8 +6,6 @@ require_once("seguridad.php");
 verificarSesion();
 verificarPermisoModulo("conceptos.php");
 
-
-
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
@@ -67,189 +65,253 @@ $categorias = [
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Gestión de Conceptos</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+<meta charset="UTF-8">
+<title>Gestión de Conceptos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            margin: 0;
-            background: #f4f6f9;
-        }
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
 
-        .contenedor {
-            width: 95%;
-            max-width: 1300px;
-            margin: 30px auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
+body {
+    margin: 0;
+    background: #f4f6f9;
+}
 
-        h1 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
+.contenedor {
+    width: 95%;
+    max-width: 1300px;
+    margin: 30px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
 
-        .acciones-superiores {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+h1 {
+    margin-top: 0;
+    color: #2c3e50;
+}
 
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            text-decoration: none;
-            border-radius: 6px;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-        }
+.acciones-superiores {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
 
-        .btn-nuevo {
-            background: #28a745;
-        }
+.botones-superiores {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
-        .btn-buscar {
-            background: #007bff;
-        }
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+}
 
-        .btn-editar {
-            background: #f0ad4e;
-            color: #fff;
-            padding: 7px 12px;
-            font-size: 13px;
-        }
+.btn-nuevo {
+    background: #28a745;
+}
 
-        .btn-valores {
-            background: #17a2b8;
-            color: #fff;
-            padding: 7px 12px;
-            font-size: 13px;
-        }
+.btn-buscar {
+    background: #007bff;
+}
 
-        .btn-estado {
-            background: #6c757d;
-            color: #fff;
-            padding: 7px 12px;
-            font-size: 13px;
-        }
+.btn-editar {
+    background: #f0ad4e;
+    color: #fff;
+    padding: 7px 12px;
+    font-size: 13px;
+}
 
-        .btn-volver {
-            background: #343a40;
-        }
+.btn-valores {
+    background: #17a2b8;
+    color: #fff;
+    padding: 7px 12px;
+    font-size: 13px;
+}
 
-        .filtros {
-            display: grid;
-            grid-template-columns: 2fr 1.5fr 1fr auto;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
+.btn-estado {
+    background: #6c757d;
+    color: #fff;
+    padding: 7px 12px;
+    font-size: 13px;
+}
 
-        .filtros input,
-        .filtros select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
+.btn-volver {
+    background: #343a40;
+}
 
-        .tabla-contenedor {
-            overflow-x: auto;
-        }
+.filtros {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr auto;
+    gap: 12px;
+    margin-bottom: 20px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1200px;
-        }
+.filtros input,
+.filtros select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
 
-        th, td {
-            padding: 10px 8px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-            vertical-align: middle;
-            font-size: 14px;
-        }
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+}
 
-        th {
-            background: #f8f9fa;
-            color: #333;
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px;
+}
 
-        .estado-activo {
-            color: #28a745;
-            font-weight: bold;
-        }
+th, td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 14px;
+}
 
-        .estado-inactivo {
-            color: #dc3545;
-            font-weight: bold;
-        }
+th {
+    background: #f8f9fa;
+    color: #333;
+}
 
-        .acciones {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
+.estado-activo {
+    color: #28a745;
+    font-weight: bold;
+}
 
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            color: white;
-            white-space: nowrap;
-        }
+.estado-inactivo {
+    color: #dc3545;
+    font-weight: bold;
+}
 
-        .badge-rem { background: #007bff; }
-        .badge-no-rem { background: #6f42c1; }
-        .badge-asig { background: #20c997; }
-        .badge-desc { background: #dc3545; }
-        .badge-aporte { background: #fd7e14; }
+.acciones {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
 
-        .mensaje {
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 6px;
-            background: #d4edda;
-            color: #155724;
-        }
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: white;
+    white-space: nowrap;
+}
 
-        .sin-resultados {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
+.badge-rem { background: #007bff; }
+.badge-no-rem { background: #6f42c1; }
+.badge-asig { background: #20c997; }
+.badge-desc { background: #dc3545; }
+.badge-aporte { background: #fd7e14; }
 
-        @media (max-width: 900px) {
-            .filtros {
-                grid-template-columns: 1fr;
-            }
+.mensaje {
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    background: #d4edda;
+    color: #155724;
+    word-break: break-word;
+}
 
-            .acciones-superiores {
-                flex-direction: column;
-                align-items: stretch;
-            }
-        }
-    </style>
+.sin-resultados {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+@media (max-width: 900px) {
+    .contenedor {
+        width: 98%;
+        margin: 10px auto;
+        padding: 15px;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 24px;
+    }
+
+    .acciones-superiores {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .botones-superiores {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .botones-superiores .btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .filtros {
+        grid-template-columns: 1fr;
+    }
+
+    .filtros input,
+    .filtros select,
+    .filtros button {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .btn-buscar {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .tabla-contenedor {
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        font-size: 13px;
+    }
+
+    .acciones {
+        flex-direction: column;
+    }
+
+    .acciones .btn {
+        width: 100%;
+        padding: 9px;
+    }
+}
+</style>
 </head>
+
 <body>
 
 <div class="contenedor">
     <div class="acciones-superiores">
         <h1>Gestión de Conceptos</h1>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+
+        <div class="botones-superiores">
             <a href="concepto_nuevo.php" class="btn btn-nuevo">+ Nuevo Concepto</a>
             <a href="index.php" class="btn btn-volver">Volver</a>
         </div>
@@ -277,7 +339,12 @@ $categorias = [
     <?php endif; ?>
 
     <form method="GET" action="conceptos.php" class="filtros">
-        <input type="text" name="buscar" placeholder="Buscar por código o nombre" value="<?php echo htmlspecialchars($buscar); ?>">
+        <input 
+            type="text" 
+            name="buscar" 
+            placeholder="Buscar por código o nombre" 
+            value="<?php echo htmlspecialchars($buscar); ?>"
+        >
 
         <select name="categoria">
             <option value="">-- Todas las categorías --</option>
@@ -318,11 +385,13 @@ $categorias = [
                     <th>Acciones</th>
                 </tr>
             </thead>
+
             <tbody>
                 <?php if ($resultado->num_rows > 0): ?>
                     <?php while ($fila = $resultado->fetch_assoc()): ?>
                         <?php
                         $badgeClass = "";
+
                         switch ($fila['categoria']) {
                             case 'REMUNERATIVO':
                                 $badgeClass = 'badge-rem';
@@ -341,15 +410,18 @@ $categorias = [
                                 break;
                         }
                         ?>
+
                         <tr>
                             <td><?php echo $fila['id']; ?></td>
                             <td><?php echo htmlspecialchars($fila['codigo']); ?></td>
                             <td><?php echo htmlspecialchars($fila['nombre']); ?></td>
+
                             <td>
                                 <span class="badge <?php echo $badgeClass; ?>">
                                     <?php echo htmlspecialchars($fila['categoria']); ?>
                                 </span>
                             </td>
+
                             <td><?php echo htmlspecialchars($fila['forma_calculo']); ?></td>
                             <td><?php echo number_format((float)$fila['porcentaje'], 2, ',', '.'); ?></td>
                             <td>$ <?php echo number_format((float)$fila['monto_fijo'], 2, ',', '.'); ?></td>
@@ -358,6 +430,7 @@ $categorias = [
                             <td><?php echo (int)$fila['orden_calculo']; ?></td>
                             <td><?php echo ((int)$fila['aplica_sac'] === 1) ? 'Sí' : 'No'; ?></td>
                             <td><?php echo ((int)$fila['visible_recibo'] === 1) ? 'Sí' : 'No'; ?></td>
+
                             <td>
                                 <?php if ((int)$fila['activo'] === 1): ?>
                                     <span class="estado-activo">Activo</span>
@@ -365,6 +438,7 @@ $categorias = [
                                     <span class="estado-inactivo">Inactivo</span>
                                 <?php endif; ?>
                             </td>
+
                             <td>
                                 <?php
                                 $desde = !empty($fila['fecha_desde']) ? date("d/m/Y", strtotime($fila['fecha_desde'])) : "-";
@@ -372,9 +446,12 @@ $categorias = [
                                 echo $desde . " / " . $hasta;
                                 ?>
                             </td>
+
                             <td>
                                 <div class="acciones">
-                                    <a class="btn btn-editar" href="concepto_editar.php?id=<?php echo $fila['id']; ?>">Editar</a>
+                                    <a class="btn btn-editar" href="concepto_editar.php?id=<?php echo $fila['id']; ?>">
+                                        Editar
+                                    </a>
 
                                     <a class="btn btn-valores" href="concepto_valores.php?concepto_id=<?php echo $fila['id']; ?>">
                                         Valores

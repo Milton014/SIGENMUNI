@@ -48,12 +48,7 @@ if ($busqueda !== "") {
         )
     ";
     $like = "%{$busqueda}%";
-    $params[] = $like;
-    $params[] = $like;
-    $params[] = $like;
-    $params[] = $like;
-    $params[] = $like;
-    $params[] = $like;
+    $params = [$like, $like, $like, $like, $like, $like];
     $types .= "ssssss";
 }
 
@@ -77,7 +72,6 @@ if (!empty($params)) {
 
 $stmt->execute();
 $resultado = $stmt->get_result();
-
 $totalEmpleados = $resultado->num_rows;
 
 $queryString = http_build_query([
@@ -88,271 +82,343 @@ $queryString = http_build_query([
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Empleados</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte de Empleados</title>
 
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        .contenedor {
-            width: 95%;
-            max-width: 1400px;
-            margin: 30px auto;
-        }
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7fb;
+    color: #1f2937;
+}
 
-        .cabecera {
-            background: linear-gradient(135deg, #0f766e, #14b8a6);
-            color: white;
-            border-radius: 18px;
-            padding: 24px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.10);
-            margin-bottom: 22px;
-        }
+.contenedor {
+    width: 95%;
+    max-width: 1400px;
+    margin: 30px auto;
+}
 
-        .cabecera-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+.cabecera {
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: white;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.10);
+    margin-bottom: 22px;
+}
 
-        .cabecera h1 {
-            margin: 0 0 6px 0;
-            font-size: 30px;
-        }
+.cabecera-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
 
-        .cabecera p {
-            margin: 0;
-            opacity: 0.95;
-        }
+.cabecera h1 {
+    margin: 0 0 6px 0;
+    font-size: 30px;
+}
 
-        .acciones-superiores {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+.cabecera p {
+    margin: 0;
+    opacity: 0.95;
+}
 
-        .btn {
-            display: inline-block;
-            text-decoration: none;
-            border: none;
-            border-radius: 10px;
-            padding: 11px 16px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            transition: 0.2s ease;
-        }
+.acciones-superiores {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
-        .btn:hover {
-            opacity: 0.93;
-            transform: translateY(-1px);
-        }
+.btn {
+    display: inline-block;
+    text-decoration: none;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    transition: 0.2s ease;
+    text-align: center;
+}
 
-        .btn-volver {
-            background: #374151;
-        }
+.btn:hover {
+    opacity: 0.93;
+    transform: translateY(-1px);
+}
 
-        .btn-reportes {
-            background: #ea580c;
-        }
+.btn-volver { background: #374151; }
+.btn-reportes { background: #ea580c; }
+.btn-buscar { background: #0f766e; }
+.btn-limpiar { background: #6b7280; }
+.btn-pdf { background: #dc2626; }
+.btn-excel { background: #16a34a; }
 
-        .btn-buscar {
-            background: #0f766e;
-        }
+.panel {
+    background: white;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+}
 
-        .btn-limpiar {
-            background: #6b7280;
-        }
+.panel h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 20px;
+    color: #0f766e;
+}
 
-        .btn-pdf {
-            background: #dc2626;
-        }
+.filtros {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto auto auto;
+    gap: 12px;
+    align-items: end;
+}
 
-        .btn-excel {
-            background: #16a34a;
-        }
+.campo label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #374151;
+}
 
-        .panel {
-            background: white;
-            border-radius: 18px;
-            padding: 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            border: 1px solid #e5e7eb;
-            margin-bottom: 20px;
-        }
+.campo input,
+.campo select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+}
 
-        .panel h2 {
-            margin-top: 0;
-            margin-bottom: 16px;
-            font-size: 20px;
-            color: #0f766e;
-        }
+.campo input:focus,
+.campo select:focus {
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
 
-        .filtros {
-            display: grid;
-            grid-template-columns: 2fr 1fr auto auto auto;
-            gap: 12px;
-            align-items: end;
-        }
+.resumen {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
 
-        .campo label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #374151;
-        }
+.resumen-box {
+    background: #ecfeff;
+    border: 1px solid #a5f3fc;
+    color: #155e75;
+    padding: 12px 15px;
+    border-radius: 12px;
+    font-weight: bold;
+}
 
-        .campo input,
-        .campo select {
-            width: 100%;
-            padding: 11px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-        }
+.acciones-exportar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
-        .campo input:focus,
-        .campo select:focus {
-            border-color: #14b8a6;
-            box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
-        }
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
 
-        .resumen {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
+table {
+    width: 100%;
+    min-width: 1250px;
+    border-collapse: collapse;
+    background: white;
+}
 
-        .resumen-box {
-            background: #ecfeff;
-            border: 1px solid #a5f3fc;
-            color: #155e75;
-            padding: 12px 15px;
-            border-radius: 12px;
-            font-weight: bold;
-        }
+th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    font-size: 14px;
+    vertical-align: top;
+}
 
-        .acciones-exportar {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+th {
+    background: #0f766e;
+    color: white;
+    position: sticky;
+    top: 0;
+}
 
-        .tabla-contenedor {
-            overflow-x: auto;
-        }
+tr:hover {
+    background: #f8fafc;
+}
 
-        table {
-            width: 100%;
-            min-width: 1250px;
-            border-collapse: collapse;
-            background: white;
-        }
+.estado-activo,
+.estado-inactivo {
+    display: inline-block;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+}
 
-        th, td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-            font-size: 14px;
-            vertical-align: top;
-        }
+.estado-activo {
+    background: #dcfce7;
+    color: #166534;
+}
 
-        th {
-            background: #0f766e;
-            color: white;
-            position: sticky;
-            top: 0;
-        }
+.estado-inactivo {
+    background: #fee2e2;
+    color: #991b1b;
+}
 
-        tr:hover {
-            background: #f8fafc;
-        }
+.acciones-tabla {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
 
-        .estado-activo {
-            display: inline-block;
-            background: #dcfce7;
-            color: #166534;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-        }
+.btn-mini {
+    display: inline-block;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 7px 9px;
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+}
 
-        .estado-inactivo {
-            display: inline-block;
-            background: #fee2e2;
-            color: #991b1b;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-        }
+.btn-ver { background: #2563eb; }
+.btn-editar { background: #f59e0b; }
+.btn-liquidar { background: #16a34a; }
 
-        .acciones-tabla {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
+.sin-registros {
+    text-align: center;
+    padding: 25px;
+    color: #6b7280;
+    background: #fff;
+    border-radius: 12px;
+}
 
-        .btn-mini {
-            display: inline-block;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 7px 9px;
-            border-radius: 8px;
-            color: white;
-        }
+@media (max-width: 1100px) {
+    .filtros {
+        grid-template-columns: 1fr;
+    }
 
-        .btn-ver {
-            background: #2563eb;
-        }
+    .acciones-superiores,
+    .acciones-exportar {
+        width: 100%;
+    }
+}
 
-        .btn-editar {
-            background: #f59e0b;
-        }
+@media (max-width: 768px) {
+    .contenedor {
+        width: 98%;
+        margin: 10px auto;
+    }
 
-        .btn-liquidar {
-            background: #16a34a;
-        }
+    .cabecera {
+        padding: 18px 15px;
+        border-radius: 15px;
+    }
 
-        .sin-registros {
-            text-align: center;
-            padding: 25px;
-            color: #6b7280;
-            background: #fff;
-            border-radius: 12px;
-        }
+    .cabecera-top {
+        flex-direction: column;
+        text-align: center;
+        align-items: stretch;
+    }
 
-        @media (max-width: 1100px) {
-            .filtros {
-                grid-template-columns: 1fr;
-            }
+    .cabecera h1 {
+        font-size: 24px;
+    }
 
-            .acciones-superiores,
-            .acciones-exportar {
-                width: 100%;
-            }
-        }
-    </style>
+    .cabecera p {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .acciones-superiores {
+        flex-direction: column;
+    }
+
+    .acciones-superiores .btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .panel {
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    .panel h2 {
+        text-align: center;
+        font-size: 19px;
+    }
+
+    .campo input,
+    .campo select {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .filtros .btn,
+    .filtros button {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .resumen {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+
+    .resumen-box {
+        width: 100%;
+    }
+
+    .acciones-exportar {
+        flex-direction: column;
+    }
+
+    .acciones-exportar .btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    th, td {
+        font-size: 13px;
+        padding: 9px 7px;
+    }
+
+    .acciones-tabla {
+        flex-direction: column;
+    }
+
+    .acciones-tabla .btn-mini {
+        width: 100%;
+        padding: 9px;
+    }
+}
+</style>
 </head>
+
 <body>
 
 <div class="contenedor">
@@ -433,6 +499,7 @@ $queryString = http_build_query([
                             <th>Acciones</th>
                         </tr>
                     </thead>
+
                     <tbody>
                     <?php while ($fila = $resultado->fetch_assoc()): ?>
                         <tr>

@@ -6,7 +6,6 @@ require_once("seguridad.php");
 verificarSesion();
 verificarPermisoModulo("conceptos.php");
 
-
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
@@ -93,6 +92,7 @@ body{
 }
 
 .contenedor{
+    width:100%;
     max-width:750px;
     margin:auto;
     background:#fff;
@@ -114,6 +114,7 @@ label{
     display:block;
     margin-bottom:6px;
     font-weight:bold;
+    color:#333;
 }
 
 input,
@@ -122,7 +123,6 @@ select{
     padding:10px;
     border:1px solid #ccc;
     border-radius:6px;
-    box-sizing:border-box;
     font-size:14px;
     outline:none;
     transition:.2s;
@@ -135,6 +135,9 @@ select:focus{
 }
 
 .acciones{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
     margin-top:20px;
 }
 
@@ -146,8 +149,8 @@ select:focus{
     color:white;
     border:none;
     cursor:pointer;
-    margin-right:8px;
     font-size:14px;
+    text-align:center;
 }
 
 .btn-guardar{
@@ -179,6 +182,7 @@ select:focus{
     border:1px solid #fecaca;
     font-weight:bold;
     display:none;
+    word-break:break-word;
 }
 
 .input-error{
@@ -186,13 +190,45 @@ select:focus{
     background:#fff1f2 !important;
     box-shadow:0 0 0 3px rgba(220,38,38,.12) !important;
 }
+
+@media (max-width:768px){
+
+    body{
+        padding:10px;
+    }
+
+    .contenedor{
+        padding:15px;
+    }
+
+    h2{
+        text-align:center;
+        font-size:22px;
+        line-height:1.3;
+    }
+
+    input,
+    select{
+        min-height:44px;
+        font-size:16px;
+    }
+
+    .acciones{
+        flex-direction:column;
+    }
+
+    .acciones .btn,
+    .acciones button{
+        width:100%;
+        padding:12px;
+    }
+}
 </style>
 
 <script>
 const formasConcepto = <?php echo json_encode($formasConcepto, JSON_UNESCAPED_UNICODE); ?>;
 
 function bloquearSelect(select, limpiar = true){
-
     select.disabled = true;
     select.classList.add('deshabilitado');
 
@@ -202,13 +238,11 @@ function bloquearSelect(select, limpiar = true){
 }
 
 function habilitarSelect(select){
-
     select.disabled = false;
     select.classList.remove('deshabilitado');
 }
 
 function bloquearInput(input, valor = ''){
-
     input.readOnly = true;
     input.classList.add('deshabilitado');
 
@@ -218,7 +252,6 @@ function bloquearInput(input, valor = ''){
 }
 
 function habilitarInput(input){
-
     input.readOnly = false;
     input.classList.remove('deshabilitado');
 }
@@ -245,58 +278,45 @@ function actualizarFormulario(){
     if(forma === 'TABLA_CATEGORIA'){
 
         habilitarSelect(categoria);
-
         bloquearSelect(escalafon, true);
-
         habilitarInput(monto);
-
         bloquearInput(porcentaje, '0.00');
 
-        ayuda.innerHTML =
-        'Este concepto se carga por categoría.';
+        ayuda.innerHTML = 'Este concepto se carga por categoría. Seleccione la categoría e ingrese el monto correspondiente.';
 
     } else if(forma === 'PORCENTAJE'){
 
         habilitarSelect(categoria);
         habilitarSelect(escalafon);
-
         bloquearInput(monto, '0.00');
-
         habilitarInput(porcentaje);
 
-        ayuda.innerHTML =
-        'Este concepto se carga por porcentaje.';
+        ayuda.innerHTML = 'Este concepto se carga por porcentaje.';
 
     } else if(forma === 'FIJO'){
 
         habilitarSelect(categoria);
         habilitarSelect(escalafon);
-
         habilitarInput(monto);
-
         bloquearInput(porcentaje, '0.00');
 
-        ayuda.innerHTML =
-        'Este concepto usa un valor monetario fijo.';
+        ayuda.innerHTML = 'Este concepto usa un valor monetario fijo.';
 
     } else if(forma === 'MANUAL' || forma === 'FORMULA'){
 
         bloquearSelect(categoria, false);
         bloquearSelect(escalafon, false);
-
         bloquearInput(monto, '0.00');
         bloquearInput(porcentaje, '0.00');
 
-        ayuda.innerHTML =
-        'Este concepto no admite carga directa de valores.';
+        ayuda.innerHTML = 'Este concepto no admite carga directa de valores.';
 
     } else {
 
         bloquearInput(monto, '0.00');
         bloquearInput(porcentaje, '0.00');
 
-        ayuda.innerHTML =
-        'Seleccione un concepto para continuar.';
+        ayuda.innerHTML = 'Seleccione un concepto para continuar.';
     }
 }
 
@@ -313,12 +333,7 @@ window.onload = actualizarFormulario;
 
 <div id="alertaValor" class="mensaje-error"></div>
 
-<form 
-    action="concepto_valor_actualizar.php"
-    method="POST"
-    id="formValor"
-    novalidate
->
+<form action="concepto_valor_actualizar.php" method="POST" id="formValor" novalidate>
 
 <input type="hidden" name="id" value="<?php echo $fila['id']; ?>">
 
@@ -329,153 +344,115 @@ window.onload = actualizarFormulario;
 >
 
 <div class="grupo">
+    <label for="concepto_id">Concepto *</label>
 
-<label for="concepto_id">Concepto *</label>
+    <select name="concepto_id" id="concepto_id" onchange="actualizarFormulario()">
+        <option value="">Seleccione</option>
 
-<select 
-    name="concepto_id"
-    id="concepto_id"
-    onchange="actualizarFormulario()"
->
-
-<option value="">Seleccione</option>
-
-<?php foreach ($opcionesConcepto as $c) { ?>
-
-<option 
-    value="<?php echo $c['id']; ?>"
-    <?php echo ($fila['concepto_id'] == $c['id']) ? 'selected' : ''; ?>
->
-
-<?php echo htmlspecialchars($c['codigo'] . ' - ' . $c['nombre']); ?>
-
-</option>
-
-<?php } ?>
-
-</select>
-
+        <?php foreach ($opcionesConcepto as $c) { ?>
+            <option 
+                value="<?php echo $c['id']; ?>"
+                <?php echo ($fila['concepto_id'] == $c['id']) ? 'selected' : ''; ?>
+            >
+                <?php echo htmlspecialchars($c['codigo'] . ' - ' . $c['nombre']); ?>
+            </option>
+        <?php } ?>
+    </select>
 </div>
 
 <div class="grupo">
+    <label for="categoria_id">Categoría</label>
 
-<label for="categoria_id">Categoría</label>
+    <select name="categoria_id" id="categoria_id">
+        <option value="">Seleccione</option>
 
-<select name="categoria_id" id="categoria_id">
-
-<option value="">Seleccione</option>
-
-<?php while ($cat = $categorias->fetch_assoc()) { ?>
-
-<option 
-    value="<?php echo $cat['id']; ?>"
-    <?php echo ($fila['categoria_id'] == $cat['id']) ? 'selected' : ''; ?>
->
-
-<?php echo htmlspecialchars($cat['nombre']); ?>
-
-</option>
-
-<?php } ?>
-
-</select>
-
+        <?php while ($cat = $categorias->fetch_assoc()) { ?>
+            <option 
+                value="<?php echo $cat['id']; ?>"
+                <?php echo ($fila['categoria_id'] == $cat['id']) ? 'selected' : ''; ?>
+            >
+                <?php echo htmlspecialchars($cat['nombre']); ?>
+            </option>
+        <?php } ?>
+    </select>
 </div>
 
 <div class="grupo">
+    <label for="escalafon_id">Escalafón</label>
 
-<label for="escalafon_id">Escalafón</label>
+    <select name="escalafon_id" id="escalafon_id">
+        <option value="">Seleccione</option>
 
-<select name="escalafon_id" id="escalafon_id">
-
-<option value="">Seleccione</option>
-
-<?php while ($esc = $escalafones->fetch_assoc()) { ?>
-
-<option 
-    value="<?php echo $esc['id']; ?>"
-    <?php echo ($fila['escalafon_id'] == $esc['id']) ? 'selected' : ''; ?>
->
-
-<?php echo htmlspecialchars($esc['nombre']); ?>
-
-</option>
-
-<?php } ?>
-
-</select>
-
+        <?php while ($esc = $escalafones->fetch_assoc()) { ?>
+            <option 
+                value="<?php echo $esc['id']; ?>"
+                <?php echo ($fila['escalafon_id'] == $esc['id']) ? 'selected' : ''; ?>
+            >
+                <?php echo htmlspecialchars($esc['nombre']); ?>
+            </option>
+        <?php } ?>
+    </select>
 </div>
 
 <div class="grupo">
+    <label for="monto">Monto</label>
 
-<label for="monto">Monto</label>
-
-<input 
-    type="number"
-    step="0.01"
-    name="monto"
-    id="monto"
-    value="<?php echo htmlspecialchars($fila['monto']); ?>"
->
-
+    <input 
+        type="number"
+        step="0.01"
+        name="monto"
+        id="monto"
+        value="<?php echo htmlspecialchars($fila['monto']); ?>"
+    >
 </div>
 
 <div class="grupo">
+    <label for="porcentaje">Porcentaje</label>
 
-<label for="porcentaje">Porcentaje</label>
-
-<input 
-    type="number"
-    step="0.01"
-    name="porcentaje"
-    id="porcentaje"
-    value="<?php echo htmlspecialchars($fila['porcentaje']); ?>"
->
-
+    <input 
+        type="number"
+        step="0.01"
+        name="porcentaje"
+        id="porcentaje"
+        value="<?php echo htmlspecialchars($fila['porcentaje']); ?>"
+    >
 </div>
 
 <div id="mensaje_ayuda" class="ayuda"></div>
 
 <div class="grupo">
+    <label for="fecha_desde">Fecha Desde *</label>
 
-<label for="fecha_desde">Fecha Desde *</label>
-
-<input 
-    type="date"
-    name="fecha_desde"
-    id="fecha_desde"
-    value="<?php echo htmlspecialchars($fila['fecha_desde']); ?>"
->
-
+    <input 
+        type="date"
+        name="fecha_desde"
+        id="fecha_desde"
+        value="<?php echo htmlspecialchars($fila['fecha_desde']); ?>"
+    >
 </div>
 
 <div class="grupo">
+    <label for="fecha_hasta">Fecha Hasta</label>
 
-<label for="fecha_hasta">Fecha Hasta</label>
-
-<input 
-    type="date"
-    name="fecha_hasta"
-    id="fecha_hasta"
-    value="<?php echo htmlspecialchars($fila['fecha_hasta']); ?>"
->
-
+    <input 
+        type="date"
+        name="fecha_hasta"
+        id="fecha_hasta"
+        value="<?php echo htmlspecialchars($fila['fecha_hasta']); ?>"
+    >
 </div>
 
 <div class="acciones">
+    <button type="submit" class="btn btn-guardar">
+        Actualizar
+    </button>
 
-<button type="submit" class="btn btn-guardar">
-Actualizar
-</button>
-
-<a 
-href="concepto_valores.php?concepto_id=<?php echo $concepto_id_actual; ?>" 
-class="btn btn-cancelar"
->
-Cancelar
-</a>
-
+    <a 
+        href="concepto_valores.php?concepto_id=<?php echo $concepto_id_actual; ?>" 
+        class="btn btn-cancelar"
+    >
+        Cancelar
+    </a>
 </div>
 
 </form>
@@ -513,7 +490,6 @@ document.getElementById("formValor").addEventListener("submit", function(e){
         alerta.style.display = "block";
 
         campo.classList.add("input-error");
-
         campo.focus();
 
         window.scrollTo({

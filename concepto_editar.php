@@ -6,9 +6,6 @@ require_once("seguridad.php");
 verificarSesion();
 verificarPermisoModulo("conceptos.php");
 
-
-
-
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
@@ -123,6 +120,13 @@ h1{
     padding:10px;
 }
 
+.check-item label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;
+}
+
 .acciones{
     display:flex;
     gap:10px;
@@ -161,6 +165,7 @@ h1{
     margin-bottom:15px;
     font-weight:bold;
     font-size:14px;
+    word-break:break-word;
 }
 
 .error{
@@ -176,9 +181,42 @@ h1{
 }
 
 @media (max-width:768px){
+
+    .contenedor{
+        width:98%;
+        margin:10px auto;
+        padding:15px;
+    }
+
+    h1{
+        text-align:center;
+        font-size:24px;
+    }
+
     .fila,
     .checks{
         grid-template-columns:1fr;
+    }
+
+    .campo input,
+    .campo select,
+    .campo textarea{
+        min-height:44px;
+        font-size:16px;
+    }
+
+    .check-item{
+        padding:14px;
+    }
+
+    .acciones{
+        flex-direction:column;
+    }
+
+    .acciones .btn,
+    .acciones button{
+        width:100%;
+        text-align:center;
     }
 }
 </style>
@@ -523,6 +561,11 @@ document.getElementById("formConcepto").addEventListener("submit", function(e){
 
     if(!/^[0-9]+$/.test(codigo)){
         mostrarError("El código debe contener solo números.","codigo");
+        return;
+    }
+
+    if(parseInt(codigo) <= 0){
+        mostrarError("El código debe ser mayor a cero.","codigo");
         return;
     }
 

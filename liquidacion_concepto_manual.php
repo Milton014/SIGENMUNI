@@ -6,7 +6,6 @@ require_once("seguridad.php");
 verificarSesion();
 verificarPermisoModulo("liquidacion_concepto_manual.php");
 
-
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
@@ -91,11 +90,6 @@ function recalcularResumenEmpleado($conexion, $liquidacionId, $empleadoId) {
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| DATOS DE LIQUIDACIÓN
-|--------------------------------------------------------------------------
-*/
 $stmtLiq = $conexion->prepare("
     SELECT id, tipo_liquidacion, periodo, estado
     FROM liquidacion
@@ -126,11 +120,6 @@ if ($soloLectura) {
     $error = "La liquidación está ANULADA. No se pueden agregar, editar ni eliminar conceptos manuales.";
 }
 
-/*
-|--------------------------------------------------------------------------
-| DATOS PARA EDICIÓN
-|--------------------------------------------------------------------------
-*/
 $registroEditar = [
     'id' => 0,
     'empleado_id' => '',
@@ -157,11 +146,6 @@ if ($detalleEditarId > 0) {
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| ELIMINAR
-|--------------------------------------------------------------------------
-*/
 if (isset($_GET['eliminar_id']) && !$soloLectura) {
     $eliminarId = (int)$_GET['eliminar_id'];
 
@@ -194,11 +178,6 @@ if (isset($_GET['eliminar_id']) && !$soloLectura) {
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| GUARDAR / ACTUALIZAR
-|--------------------------------------------------------------------------
-*/
 if ($_SERVER["REQUEST_METHOD"] === "POST" && !$soloLectura) {
     $detalleId = (int)$_POST['detalle_id'];
     $empleadoId = (int)$_POST['empleado_id'];
@@ -243,6 +222,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !$soloLectura) {
                 if ($empleadoAnteriorId > 0 && $empleadoAnteriorId !== $empleadoId) {
                     recalcularResumenEmpleado($conexion, $liquidacionId, $empleadoAnteriorId);
                 }
+
                 recalcularResumenEmpleado($conexion, $liquidacionId, $empleadoId);
                 header("Location: liquidacion_concepto_manual.php?liquidacion_id=".$liquidacionId."&ok=3");
                 exit();
@@ -268,11 +248,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !$soloLectura) {
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| EMPLEADOS
-|--------------------------------------------------------------------------
-*/
 $resEmpleados = $conexion->query("
     SELECT 
         le.empleado_id,
@@ -285,22 +260,12 @@ $resEmpleados = $conexion->query("
     ORDER BY e.apellido, e.nombre
 ");
 
-/*
-|--------------------------------------------------------------------------
-| CONCEPTOS
-|--------------------------------------------------------------------------
-*/
 $resConceptos = $conexion->query("
     SELECT id, codigo, nombre
     FROM concepto
     ORDER BY CAST(codigo AS UNSIGNED), nombre
 ");
 
-/*
-|--------------------------------------------------------------------------
-| MANUALES CARGADOS
-|--------------------------------------------------------------------------
-*/
 $resManuales = $conexion->query("
     SELECT 
         ld.id,
@@ -324,128 +289,307 @@ $resManuales = $conexion->query("
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Conceptos Manuales</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            margin: 0;
-        }
-        .contenedor {
-            max-width: 1200px;
-            margin: 30px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-        }
-        h2, h3 {
-            color: #0f766e;
-            margin-top: 0;
-        }
-        .acciones {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 14px;
-            border-radius: 8px;
-            text-decoration: none;
-            border: none;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .btn-volver { background: #6b7280; }
-        .btn-guardar { background: #0f766e; }
-        .btn-editar { background: #2563eb; padding: 7px 10px; font-size: 12px; }
-        .btn-eliminar { background: #dc2626; padding: 7px 10px; font-size: 12px; }
-        .btn-cancelar { background: #9ca3af; }
-        .mensaje {
-            background: #dcfce7;
-            color: #166534;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 6px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-        }
-        textarea {
-            resize: vertical;
-        }
-        .bloque {
-            margin-top: 25px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-        }
-        th, td {
-            border-bottom: 1px solid #e5e7eb;
-            padding: 10px;
-            text-align: left;
-            font-size: 14px;
-        }
-        th {
-            background: #f9fafb;
-        }
-        .solo-lectura {
-            background: #fff7ed;
-            color: #9a3412;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #fdba74;
-        }
-        .acciones-tabla {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Conceptos Manuales</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f7fb;
+    margin: 0;
+    color: #1f2937;
+}
+
+.contenedor {
+    width: 95%;
+    max-width: 1200px;
+    margin: 30px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+h2,
+h3 {
+    color: #0f766e;
+    margin-top: 0;
+}
+
+.info-liquidacion {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.acciones {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.acciones-form {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+}
+
+.btn-volver {
+    background: #6b7280;
+}
+
+.btn-guardar {
+    background: #0f766e;
+}
+
+.btn-editar {
+    background: #2563eb;
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+.btn-eliminar {
+    background: #dc2626;
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+.btn-cancelar {
+    background: #9ca3af;
+}
+
+.mensaje {
+    background: #dcfce7;
+    color: #166534;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    word-break: break-word;
+}
+
+.error {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    word-break: break-word;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #374151;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: .2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20,184,166,.15);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.bloque {
+    margin-top: 25px;
+}
+
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 12px;
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 10px;
+    text-align: left;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+th {
+    background: #f9fafb;
+    color: #374151;
+}
+
+tr:hover {
+    background: #f8fafc;
+}
+
+.solo-lectura {
+    background: #fff7ed;
+    color: #9a3412;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #fdba74;
+    word-break: break-word;
+}
+
+.acciones-tabla {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.sin-datos {
+    text-align: center;
+    color: #6b7280;
+    padding: 18px;
+}
+
+.bloqueado {
+    color: #6b7280;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+
+    .contenedor {
+        width: 98%;
+        margin: 10px auto;
+        padding: 15px;
+    }
+
+    h2,
+    h3 {
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    h2 {
+        font-size: 23px;
+    }
+
+    h3 {
+        font-size: 19px;
+    }
+
+    .info-liquidacion {
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .acciones,
+    .acciones-form {
+        flex-direction: column;
+    }
+
+    .acciones .btn,
+    .acciones-form .btn,
+    .acciones-form button {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    input,
+    select,
+    textarea {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .tabla-contenedor {
+        border: 1px solid #e5e7eb;
+    }
+
+    th,
+    td {
+        font-size: 13px;
+        padding: 9px 7px;
+    }
+
+    .acciones-tabla {
+        flex-direction: column;
+    }
+
+    .acciones-tabla .btn {
+        width: 100%;
+        padding: 10px;
+    }
+}
+</style>
 </head>
+
 <body>
 
 <div class="contenedor">
 
     <div class="acciones">
-        <a href="liquidacion_ver.php?id=<?php echo $liquidacionId; ?>" class="btn btn-volver">Volver a Liquidación</a>
+        <a href="liquidacion_ver.php?id=<?php echo $liquidacionId; ?>" class="btn btn-volver">
+            Volver a Liquidación
+        </a>
     </div>
 
     <h2>Conceptos Manuales</h2>
-    <p>
+
+    <div class="info-liquidacion">
         <strong>Liquidación:</strong>
         <?php echo htmlspecialchars($liquidacion['tipo_liquidacion']); ?> |
         <strong>Período:</strong>
         <?php echo htmlspecialchars($liquidacion['periodo']); ?> |
         <strong>Estado:</strong>
         <?php echo htmlspecialchars($liquidacion['estado']); ?>
-    </p>
+    </div>
 
     <?php if ($mensaje) { ?>
         <div class="mensaje"><?php echo htmlspecialchars($mensaje); ?></div>
@@ -515,7 +659,7 @@ $resManuales = $conexion->query("
                     </div>
                 </div>
 
-                <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+                <div class="acciones-form">
                     <button type="submit" class="btn btn-guardar">
                         <?php echo ($registroEditar['id'] > 0) ? 'Actualizar Concepto Manual' : 'Guardar Concepto Manual'; ?>
                     </button>
@@ -533,56 +677,59 @@ $resManuales = $conexion->query("
     <div class="bloque">
         <h3>Conceptos Manuales Cargados</h3>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Empleado</th>
-                    <th>Código</th>
-                    <th>Concepto</th>
-                    <th>Cantidad</th>
-                    <th>%</th>
-                    <th>Monto</th>
-                    <th>Observación</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if ($resManuales && $resManuales->num_rows > 0) { ?>
-                    <?php while ($m = $resManuales->fetch_assoc()) { ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($m['apellido'] . ', ' . $m['nombre']); ?></td>
-                            <td><?php echo htmlspecialchars($m['codigo']); ?></td>
-                            <td><?php echo htmlspecialchars($m['concepto_nombre']); ?></td>
-                            <td><?php echo number_format((float)$m['cantidad'], 2, ',', '.'); ?></td>
-                            <td><?php echo number_format((float)$m['porcentaje_aplicado'], 2, ',', '.'); ?></td>
-                            <td>$<?php echo number_format((float)$m['monto'], 2, ',', '.'); ?></td>
-                            <td><?php echo htmlspecialchars($m['observacion'] ?: '-'); ?></td>
-                            <td>
-                                <?php if (!$soloLectura) { ?>
-                                    <div class="acciones-tabla">
-                                        <a href="liquidacion_concepto_manual.php?liquidacion_id=<?php echo $liquidacionId; ?>&editar_id=<?php echo $m['id']; ?>" class="btn btn-editar">
-                                            Editar
-                                        </a>
+        <div class="tabla-contenedor">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Código</th>
+                        <th>Concepto</th>
+                        <th>Cantidad</th>
+                        <th>%</th>
+                        <th>Monto</th>
+                        <th>Observación</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
 
-                                        <a href="liquidacion_concepto_manual.php?liquidacion_id=<?php echo $liquidacionId; ?>&eliminar_id=<?php echo $m['id']; ?>"
-                                           class="btn btn-eliminar"
-                                           onclick="return confirm('¿Eliminar este concepto manual?');">
-                                            Eliminar
-                                        </a>
-                                    </div>
-                                <?php } else { ?>
-                                    <span style="color:#6b7280;">Bloqueado</span>
-                                <?php } ?>
-                            </td>
+                <tbody>
+                    <?php if ($resManuales && $resManuales->num_rows > 0) { ?>
+                        <?php while ($m = $resManuales->fetch_assoc()) { ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($m['apellido'] . ', ' . $m['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($m['codigo']); ?></td>
+                                <td><?php echo htmlspecialchars($m['concepto_nombre']); ?></td>
+                                <td><?php echo number_format((float)$m['cantidad'], 2, ',', '.'); ?></td>
+                                <td><?php echo number_format((float)$m['porcentaje_aplicado'], 2, ',', '.'); ?></td>
+                                <td>$<?php echo number_format((float)$m['monto'], 2, ',', '.'); ?></td>
+                                <td><?php echo htmlspecialchars($m['observacion'] ?: '-'); ?></td>
+                                <td>
+                                    <?php if (!$soloLectura) { ?>
+                                        <div class="acciones-tabla">
+                                            <a href="liquidacion_concepto_manual.php?liquidacion_id=<?php echo $liquidacionId; ?>&editar_id=<?php echo $m['id']; ?>" class="btn btn-editar">
+                                                Editar
+                                            </a>
+
+                                            <a href="liquidacion_concepto_manual.php?liquidacion_id=<?php echo $liquidacionId; ?>&eliminar_id=<?php echo $m['id']; ?>"
+                                               class="btn btn-eliminar"
+                                               onclick="return confirm('¿Eliminar este concepto manual?');">
+                                                Eliminar
+                                            </a>
+                                        </div>
+                                    <?php } else { ?>
+                                        <span class="bloqueado">Bloqueado</span>
+                                    <?php } ?>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    <?php } else { ?>
+                        <tr>
+                            <td colspan="8" class="sin-datos">No hay conceptos manuales cargados.</td>
                         </tr>
                     <?php } ?>
-                <?php } else { ?>
-                    <tr>
-                        <td colspan="8">No hay conceptos manuales cargados.</td>
-                    </tr>
-                <?php } ?>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>

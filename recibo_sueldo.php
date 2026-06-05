@@ -6,8 +6,6 @@ require_once("seguridad.php");
 verificarSesion();
 verificarPermisoModulo("recibo_sueldo.php");
 
-
-
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
@@ -20,11 +18,6 @@ if ($liquidacionId <= 0 || $empleadoId <= 0) {
     die("Parámetros inválidos.");
 }
 
-/*
-|--------------------------------------------------------------------------
-| 1) DATOS CABECERA LIQUIDACIÓN + EMPLEADO
-|--------------------------------------------------------------------------
-*/
 $stmt = $conexion->prepare("
     SELECT 
         l.id AS liquidacion_id,
@@ -54,11 +47,6 @@ if (!$datos) {
     die("No se encontró el recibo solicitado.");
 }
 
-/*
-|--------------------------------------------------------------------------
-| 2) DETALLE DE CONCEPTOS
-|--------------------------------------------------------------------------
-*/
 $stmtDetalle = $conexion->prepare("
     SELECT 
         ld.cantidad,
@@ -133,11 +121,11 @@ function calcularAntiguedadTexto($fechaAlta) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recibo de Sueldo</title>
-    <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recibo de Sueldo</title>
 
+<style>
 *{
     box-sizing:border-box;
 }
@@ -150,6 +138,7 @@ body{
 }
 
 .contenedor{
+    width:95%;
     max-width:1200px;
     margin:25px auto;
     background:#fff;
@@ -176,6 +165,9 @@ body{
     color:#fff;
     transition:.2s;
     font-size:14px;
+    border:none;
+    cursor:pointer;
+    text-align:center;
 }
 
 .btn:hover{
@@ -248,6 +240,7 @@ body{
 
 .logo img{
     width:105px;
+    max-width:100%;
     object-fit:contain;
 }
 
@@ -263,6 +256,7 @@ body{
     background:#f9fafb;
     border:1px solid #e5e7eb;
     transition:.2s;
+    word-break:break-word;
 }
 
 .info-box:hover{
@@ -290,6 +284,7 @@ body{
 }
 
 .tabla-contenedor{
+    width:100%;
     overflow-x:auto;
     border-radius:16px;
     border:1px solid #e5e7eb;
@@ -307,6 +302,7 @@ th,td{
     border-bottom:1px solid #e5e7eb;
     text-align:left;
     font-size:14px;
+    vertical-align:middle;
 }
 
 th{
@@ -349,6 +345,9 @@ tr:hover{
     border:1px solid #d1d5db;
     background:#f9fafb;
     transition:.2s;
+    font-size:24px;
+    font-weight:bold;
+    word-break:break-word;
 }
 
 .resumen-box:hover{
@@ -361,11 +360,6 @@ tr:hover{
     font-size:13px;
     color:#374151;
     text-transform:uppercase;
-}
-
-.resumen-box{
-    font-size:24px;
-    font-weight:bold;
 }
 
 .neto{
@@ -402,22 +396,11 @@ tr:hover{
 
 @media (max-width:768px){
 
-    .header-flex{
-        flex-direction:column-reverse;
-        align-items:center;
-    }
-
-    .titulo{
-        text-align:center;
-    }
-
-    .logo{
-        text-align:center;
-    }
-
-    .firmas{
-        grid-template-columns:1fr;
-        gap:25px;
+    .contenedor{
+        width:98%;
+        margin:10px auto;
+        padding:15px;
+        border-radius:16px;
     }
 
     .acciones{
@@ -426,10 +409,94 @@ tr:hover{
 
     .btn{
         width:100%;
+        padding:12px;
+    }
+
+    .encabezado{
+        padding:15px;
+        border-radius:16px;
+    }
+
+    .header-flex{
+        flex-direction:column-reverse;
+        align-items:center;
+        gap:12px;
+    }
+
+    .titulo{
+        text-align:center;
+    }
+
+    .titulo h1{
+        font-size:24px;
+        line-height:1.2;
+    }
+
+    .titulo p{
+        font-size:13px;
+        line-height:1.4;
+    }
+
+    .logo{
+        width:100%;
+        min-width:auto;
+        text-align:center;
+    }
+
+    .logo img{
+        width:85px;
+    }
+
+    .grid-info{
+        grid-template-columns:1fr;
+    }
+
+    .info-box{
+        text-align:center;
+        padding:12px;
+    }
+
+    .bloque h3{
+        text-align:center;
+        font-size:18px;
+    }
+
+    .tabla-contenedor{
+        border-radius:10px;
+    }
+
+    th,td{
+        font-size:13px;
+        padding:9px 7px;
+    }
+
+    .resumen-final{
+        grid-template-columns:1fr;
+    }
+
+    .resumen-box{
+        text-align:center;
+        font-size:21px;
+        padding:15px;
+    }
+
+    .firmas{
+        grid-template-columns:1fr;
+        gap:25px;
+        margin-top:45px;
+    }
+
+    .linea-firma{
+        margin-top:45px;
     }
 }
 
 @media print{
+
+    @page{
+        size:A4;
+        margin:10mm;
+    }
 
     body{
         background:#fff;
@@ -442,26 +509,83 @@ tr:hover{
     .contenedor{
         box-shadow:none;
         margin:0;
+        width:100%;
         max-width:100%;
         border-radius:0;
-        padding:10px;
+        padding:8px;
     }
 
     .encabezado{
         border:1px solid #999;
+        padding:12px;
+    }
+
+    .titulo h1{
+        font-size:24px;
     }
 
     .logo img{
-        width:80px;
+        width:75px;
+    }
+
+    .info-box{
+        box-shadow:none;
+        transform:none;
+    }
+
+    .bloque{
+        margin-top:18px;
+    }
+
+    .tabla-contenedor{
+        overflow:visible;
+        border-radius:0;
+    }
+
+    table{
+        min-width:0;
+        width:100%;
+        page-break-inside:auto;
+    }
+
+    th,td{
+        padding:6px;
+        font-size:11px;
+    }
+
+    tr{
+        page-break-inside:avoid;
+        page-break-after:auto;
+    }
+
+    .resumen-final{
+        margin-top:18px;
+        grid-template-columns:repeat(5,1fr);
+        gap:8px;
+    }
+
+    .resumen-box{
+        font-size:14px;
+        padding:8px;
+    }
+
+    .resumen-box strong{
+        font-size:10px;
     }
 
     .firmas{
-        margin-top:50px;
+        margin-top:35px;
+        grid-template-columns:repeat(3,1fr);
+        gap:20px;
+    }
+
+    .linea-firma{
+        margin-top:40px;
     }
 }
-
 </style>
 </head>
+
 <body>
 
 <div class="contenedor">
@@ -472,8 +596,7 @@ tr:hover{
         <a href="#" onclick="window.print();" class="btn btn-imprimir">Imprimir</a>
 
         <a href="enviar_recibo_pdf.php?liquidacion_id=<?php echo $liquidacionId; ?>&empleado_id=<?php echo $empleadoId; ?>"
-           class="btn"
-           style="background:#2563eb;">
+           class="btn btn-email">
             📧 Enviar PDF por Email
         </a>
     </div>
@@ -484,7 +607,10 @@ tr:hover{
             <div class="titulo">
                 <h1>RECIBO DE SUELDO</h1>
                 <p>Municipalidad de Fortín Lugones</p>
-                <p>Liquidación: <?php echo htmlspecialchars($datos['tipo_liquidacion']); ?> | Período: <?php echo htmlspecialchars($datos['periodo']); ?></p>
+                <p>
+                    Liquidación: <?php echo htmlspecialchars($datos['tipo_liquidacion']); ?> |
+                    Período: <?php echo htmlspecialchars($datos['periodo']); ?>
+                </p>
             </div>
 
             <div class="logo">
@@ -527,6 +653,7 @@ tr:hover{
 
     <div class="bloque">
         <h3>Haberes Remunerativos</h3>
+
         <?php if (count($haberesRem) > 0) { ?>
             <div class="tabla-contenedor">
                 <table>
@@ -539,6 +666,7 @@ tr:hover{
                             <th>Monto</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($haberesRem as $item) { ?>
                             <tr>
@@ -549,6 +677,7 @@ tr:hover{
                                 <td>$<?php echo number_format((float)$item['monto'], 2, ',', '.'); ?></td>
                             </tr>
                         <?php } ?>
+
                         <tr class="total-fila">
                             <td colspan="4">Total Haberes Remunerativos</td>
                             <td>$<?php echo number_format($totalHaberesRem, 2, ',', '.'); ?></td>
@@ -563,6 +692,7 @@ tr:hover{
 
     <div class="bloque">
         <h3>Haberes No Remunerativos</h3>
+
         <?php if (count($haberesNoRem) > 0) { ?>
             <div class="tabla-contenedor">
                 <table>
@@ -575,6 +705,7 @@ tr:hover{
                             <th>Monto</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($haberesNoRem as $item) { ?>
                             <tr>
@@ -585,6 +716,7 @@ tr:hover{
                                 <td>$<?php echo number_format((float)$item['monto'], 2, ',', '.'); ?></td>
                             </tr>
                         <?php } ?>
+
                         <tr class="total-fila">
                             <td colspan="4">Total Haberes No Remunerativos</td>
                             <td>$<?php echo number_format($totalHaberesNoRem, 2, ',', '.'); ?></td>
@@ -599,6 +731,7 @@ tr:hover{
 
     <div class="bloque">
         <h3>Asignaciones Familiares</h3>
+
         <?php if (count($asignaciones) > 0) { ?>
             <div class="tabla-contenedor">
                 <table>
@@ -611,6 +744,7 @@ tr:hover{
                             <th>Monto</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($asignaciones as $item) { ?>
                             <tr>
@@ -621,6 +755,7 @@ tr:hover{
                                 <td>$<?php echo number_format((float)$item['monto'], 2, ',', '.'); ?></td>
                             </tr>
                         <?php } ?>
+
                         <tr class="total-fila">
                             <td colspan="4">Total Asignaciones</td>
                             <td>$<?php echo number_format($totalAsignaciones, 2, ',', '.'); ?></td>
@@ -635,6 +770,7 @@ tr:hover{
 
     <div class="bloque">
         <h3>Descuentos</h3>
+
         <?php if (count($descuentos) > 0) { ?>
             <div class="tabla-contenedor">
                 <table>
@@ -647,6 +783,7 @@ tr:hover{
                             <th>Monto</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php foreach ($descuentos as $item) { ?>
                             <tr>
@@ -657,6 +794,7 @@ tr:hover{
                                 <td>$<?php echo number_format((float)$item['monto'], 2, ',', '.'); ?></td>
                             </tr>
                         <?php } ?>
+
                         <tr class="total-fila">
                             <td colspan="4">Total Descuentos</td>
                             <td>$<?php echo number_format($totalDescuentos, 2, ',', '.'); ?></td>

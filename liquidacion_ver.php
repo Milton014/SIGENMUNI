@@ -6,7 +6,6 @@ require_once("seguridad.php");
 verificarSesion();
 verificarPermisoModulo("liquidacion_ver.php");
 
-
 if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
@@ -19,11 +18,6 @@ if ($liquidacionId <= 0) {
     die("ID de liquidación inválido.");
 }
 
-/*
-|--------------------------------------------------------------------------
-| 1) CABECERA DE LA LIQUIDACIÓN
-|--------------------------------------------------------------------------
-*/
 $stmtLiq = $conexion->prepare("
     SELECT 
         id,
@@ -45,11 +39,6 @@ if (!$liquidacion) {
     die("La liquidación no existe.");
 }
 
-/*
-|--------------------------------------------------------------------------
-| 2) RESUMEN POR EMPLEADO
-|--------------------------------------------------------------------------
-*/
 $stmtResumen = $conexion->prepare("
     SELECT 
         le.id,
@@ -71,11 +60,6 @@ $stmtResumen->bind_param("i", $liquidacionId);
 $stmtResumen->execute();
 $resumenEmpleados = $stmtResumen->get_result();
 
-/*
-|--------------------------------------------------------------------------
-| 3) TOTALES GENERALES
-|--------------------------------------------------------------------------
-*/
 $stmtTotales = $conexion->prepare("
     SELECT 
         COUNT(*) AS cantidad_empleados,
@@ -91,11 +75,6 @@ $stmtTotales->bind_param("i", $liquidacionId);
 $stmtTotales->execute();
 $totales = $stmtTotales->get_result()->fetch_assoc();
 
-/*
-|--------------------------------------------------------------------------
-| 4) DETALLE DE CONCEPTOS DE UN EMPLEADO (OPCIONAL)
-|--------------------------------------------------------------------------
-*/
 $detalleConceptos = null;
 $empleadoSeleccionado = null;
 
@@ -134,251 +113,320 @@ if ($empleadoDetalleId > 0) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ver Liquidación</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ver Liquidación</title>
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        .contenedor {
-            max-width: 1250px;
-            margin: 30px auto;
-            background: #ffffff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-        }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f7fb;
+    color: #1f2937;
+}
 
-        h2, h3 {
-            margin-top: 0;
-            color: #0f766e;
-        }
+.contenedor {
+    width: 95%;
+    max-width: 1250px;
+    margin: 30px auto;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
 
-        .cabecera {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-        }
+h2, h3 {
+    margin-top: 0;
+    color: #0f766e;
+}
 
-        .card {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 14px;
-        }
+.cabecera {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
 
-        .card strong {
-            display: block;
-            margin-bottom: 6px;
-            color: #374151;
-        }
+.card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px;
+    word-break: break-word;
+}
 
-        .badge {
-            display: inline-block;
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+.card strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #374151;
+}
 
-        .estado-borrador {
-            background: #fef3c7;
-            color: #92400e;
-        }
+.badge {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: bold;
+}
 
-        .estado-cerrada {
-            background: #d1fae5;
-            color: #065f46;
-        }
+.estado-borrador {
+    background: #fef3c7;
+    color: #92400e;
+}
 
-        .estado-anulada {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+.estado-cerrada {
+    background: #d1fae5;
+    color: #065f46;
+}
 
-        .acciones-superiores {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
+.estado-anulada {
+    background: #fee2e2;
+    color: #991b1b;
+}
 
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            text-decoration: none;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            color: white;
-        }
+.acciones-superiores {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
-        .btn-volver {
-            background: #6b7280;
-        }
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    text-decoration: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+}
 
-        .btn-volver:hover {
-            background: #4b5563;
-        }
+.btn-volver {
+    background: #6b7280;
+}
 
-        .btn-procesar {
-            background: #16a34a;
-        }
+.btn-volver:hover {
+    background: #4b5563;
+}
 
-        .btn-procesar:hover {
-            background: #15803d;
-        }
+.btn-procesar {
+    background: #16a34a;
+}
 
-        .btn-manual {
-            background: #d97706;
-        }
+.btn-procesar:hover {
+    background: #15803d;
+}
 
-        .btn-manual:hover {
-            background: #b45309;
-        }
+.btn-manual {
+    background: #d97706;
+}
 
-        .acciones-botones {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+.btn-manual:hover {
+    background: #b45309;
+}
 
-        .btn-detalle {
-            background: #2563eb;
-            padding: 8px 12px;
-            font-size: 13px;
-        }
+.acciones-botones {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
 
-        .btn-detalle:hover {
-            background: #1d4ed8;
-        }
+.btn-detalle {
+    background: #2563eb;
+    padding: 8px 12px;
+    font-size: 13px;
+}
 
-        .btn-recibo {
-            background: #0f766e;
-            padding: 8px 12px;
-            font-size: 13px;
-        }
+.btn-detalle:hover {
+    background: #1d4ed8;
+}
 
-        .btn-recibo:hover {
-            background: #115e59;
-        }
+.btn-recibo {
+    background: #0f766e;
+    padding: 8px 12px;
+    font-size: 13px;
+}
 
-        .tabla-contenedor {
-            overflow-x: auto;
-            margin-top: 15px;
-        }
+.btn-recibo:hover {
+    background: #115e59;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 950px;
-        }
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 15px;
+    border-radius: 8px;
+}
 
-        th, td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-            font-size: 14px;
-            vertical-align: middle;
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 950px;
+}
 
-        th {
-            background: #f9fafb;
-            color: #374151;
-        }
+th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    font-size: 14px;
+    vertical-align: middle;
+}
 
-        tr:hover {
-            background: #f8fafc;
-        }
+th {
+    background: #f9fafb;
+    color: #374151;
+}
 
-        .sin-datos {
-            text-align: center;
-            padding: 25px;
-            color: #6b7280;
-        }
+tr:hover {
+    background: #f8fafc;
+}
 
-        .totales-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin: 20px 0;
-        }
+.sin-datos {
+    text-align: center;
+    padding: 25px;
+    color: #6b7280;
+}
 
-        .total-box {
-            background: #ecfeff;
-            border: 1px solid #a5f3fc;
-            padding: 14px;
-            border-radius: 10px;
-        }
+.totales-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
 
-        .total-box strong {
-            display: block;
-            margin-bottom: 5px;
-            color: #0f766e;
-        }
+.total-box {
+    background: #ecfeff;
+    border: 1px solid #a5f3fc;
+    padding: 14px;
+    border-radius: 10px;
+    word-break: break-word;
+}
 
-        .detalle-panel {
-            margin-top: 30px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 10px;
-            padding: 20px;
-        }
+.total-box strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #0f766e;
+}
 
-        .subtitulo {
-            margin-bottom: 10px;
-        }
+.detalle-panel {
+    margin-top: 30px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+}
 
-        .manual-si {
-            color: #b45309;
-            font-weight: bold;
-        }
+.subtitulo {
+    margin-bottom: 10px;
+}
 
-        .manual-no {
-            color: #065f46;
-        }
+.fila-manual {
+    background: #fff7ed;
+}
 
-        .fila-manual {
-            background: #fff7ed;
-        }
+.fila-manual:hover {
+    background: #ffedd5 !important;
+}
 
-        .fila-manual:hover {
-            background: #ffedd5 !important;
-        }
+.etiqueta-manual {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #fed7aa;
+    color: #9a3412;
+}
 
-        .etiqueta-manual {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: bold;
-            background: #fed7aa;
-            color: #9a3412;
-        }
+.etiqueta-auto {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: bold;
+    background: #dcfce7;
+    color: #166534;
+}
 
-        .etiqueta-auto {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: bold;
-            background: #dcfce7;
-            color: #166534;
-        }
-    </style>
+@media (max-width: 768px) {
+
+    .contenedor {
+        width: 98%;
+        margin: 10px auto;
+        padding: 15px;
+    }
+
+    h2, h3 {
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    h2 {
+        font-size: 23px;
+    }
+
+    h3 {
+        font-size: 19px;
+    }
+
+    .acciones-superiores {
+        flex-direction: column;
+    }
+
+    .acciones-superiores .btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .cabecera {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 12px;
+        text-align: center;
+    }
+
+    .totales-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .total-box {
+        text-align: center;
+    }
+
+    .tabla-contenedor {
+        border: 1px solid #e5e7eb;
+    }
+
+    th, td {
+        font-size: 13px;
+        padding: 9px 7px;
+    }
+
+    .acciones-botones {
+        flex-direction: column;
+    }
+
+    .acciones-botones .btn {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .detalle-panel {
+        padding: 12px;
+    }
+}
+</style>
 </head>
+
 <body>
 
 <div class="contenedor">
@@ -391,7 +439,9 @@ if ($empleadoDetalleId > 0) {
         </a>
 
         <?php if ($liquidacion['estado'] === 'BORRADOR') { ?>
-            <a href="liquidacion_procesar.php?id=<?php echo $liquidacion['id']; ?>" class="btn btn-procesar">Procesar Liquidación</a>
+            <a href="liquidacion_procesar.php?id=<?php echo $liquidacion['id']; ?>" class="btn btn-procesar">
+                Procesar Liquidación
+            </a>
         <?php } ?>
     </div>
 
@@ -491,6 +541,7 @@ if ($empleadoDetalleId > 0) {
                     <th>Acciones</th>
                 </tr>
             </thead>
+
             <tbody>
                 <?php if ($resumenEmpleados && $resumenEmpleados->num_rows > 0) { ?>
                     <?php while ($fila = $resumenEmpleados->fetch_assoc()) { ?>
@@ -517,7 +568,9 @@ if ($empleadoDetalleId > 0) {
                     <?php } ?>
                 <?php } else { ?>
                     <tr>
-                        <td colspan="8" class="sin-datos">Esta liquidación todavía no tiene empleados procesados.</td>
+                        <td colspan="8" class="sin-datos">
+                            Esta liquidación todavía no tiene empleados procesados.
+                        </td>
                     </tr>
                 <?php } ?>
             </tbody>
@@ -543,6 +596,7 @@ if ($empleadoDetalleId > 0) {
                             <th>Observación</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php if ($detalleConceptos->num_rows > 0) { ?>
                             <?php while ($det = $detalleConceptos->fetch_assoc()) { ?>
@@ -564,7 +618,9 @@ if ($empleadoDetalleId > 0) {
                             <?php } ?>
                         <?php } else { ?>
                             <tr>
-                                <td colspan="7" class="sin-datos">No hay detalle cargado para este empleado.</td>
+                                <td colspan="7" class="sin-datos">
+                                    No hay detalle cargado para este empleado.
+                                </td>
                             </tr>
                         <?php } ?>
                     </tbody>

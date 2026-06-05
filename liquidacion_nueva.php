@@ -7,9 +7,9 @@ if (!isset($_SESSION['usuario'])) {
     header("Location: login.php");
     exit();
 }
+
 verificarSesion();
 verificarPermisoModulo("liquidacion_nueva.php");
-
 
 $mensaje = "";
 $error = "";
@@ -48,15 +48,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
 <meta charset="UTF-8">
 <title>Nueva Liquidación</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
 body {
-    font-family: Arial;
     background: #f4f7fb;
     margin: 0;
+    padding: 20px;
 }
 
 .contenedor {
+    width: 100%;
     max-width: 600px;
     margin: 40px auto;
     background: white;
@@ -67,6 +74,7 @@ body {
 
 h2 {
     color: #0f766e;
+    margin-top: 0;
     margin-bottom: 20px;
 }
 
@@ -74,6 +82,7 @@ label {
     font-weight: bold;
     display: block;
     margin-top: 10px;
+    color: #333;
 }
 
 input, 
@@ -84,9 +93,9 @@ textarea {
     margin-top: 5px;
     border-radius: 6px;
     border: 1px solid #ccc;
-    box-sizing: border-box;
     outline: none;
     transition: .2s;
+    font-size: 14px;
 }
 
 input:focus,
@@ -98,12 +107,14 @@ textarea:focus {
 
 textarea {
     resize: vertical;
+    min-height: 90px;
 }
 
 .botones {
     margin-top: 20px;
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .btn {
@@ -112,6 +123,8 @@ textarea {
     border-radius: 6px;
     cursor: pointer;
     color: white;
+    text-align: center;
+    font-size: 14px;
 }
 
 .btn-guardar {
@@ -126,7 +139,6 @@ textarea {
     background: #6b7280;
     text-decoration: none;
     display: inline-block;
-    text-align: center;
 }
 
 .btn-volver:hover {
@@ -141,12 +153,48 @@ textarea {
     margin-bottom: 15px;
     border: 1px solid #fecaca;
     font-weight: bold;
+    word-break: break-word;
 }
 
 .input-error {
     border-color: #dc2626 !important;
     background: #fff1f2 !important;
     box-shadow: 0 0 0 3px rgba(220,38,38,.12) !important;
+}
+
+@media (max-width: 768px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .contenedor {
+        margin: 10px auto;
+        padding: 15px;
+    }
+
+    h2 {
+        text-align: center;
+        font-size: 22px;
+        line-height: 1.3;
+    }
+
+    input,
+    select,
+    textarea {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .botones {
+        flex-direction: column;
+    }
+
+    .botones .btn,
+    .botones button {
+        width: 100%;
+        padding: 12px;
+    }
 }
 </style>
 

@@ -1,9 +1,10 @@
 <?php
 session_start();
 require_once("conexion.php");
+require_once("seguridad.php");
 
 verificarSesion();
-verificarPermisoModulo("concepto_guardar.php");
+verificarPermisoModulo("conceptos.php");
 
 
 if (!isset($_SESSION['usuario'])) {
