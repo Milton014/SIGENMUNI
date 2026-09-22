@@ -1,0 +1,26 @@
+# ==========================================================
+# SIGENMUNI4 - ARCHIVOS NO VERSIONADOS
+# ==========================================================
+
+# Configuración sensible
+/config/conexion.php
+/config/config_correo.php
+
+# Archivos temporales
+/storage/temp_recibos/*
+!/storage/temp_recibos/.gitkeep
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuración del editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
