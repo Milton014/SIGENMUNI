@@ -1,10 +1,10 @@
-# SIGENMUNI4
+# SIGENMUNI
 
 ## Sistema de Gestión Municipal y Liquidación de Sueldos
 
-**SIGENMUNI4** es un sistema web desarrollado en **PHP + MySQL** para la gestión administrativa y la liquidación de sueldos de una municipalidad.
+**SIGENMUNI** es un sistema web desarrollado en **PHP + MySQL** para la gestión administrativa y la liquidación de sueldos de una municipalidad.
 
-El proyecto fue desarrollado para la **Municipalidad de Fortín Lugones** y se encuentra organizado con una arquitectura basada en:
+El proyecto fue desarrollado para la **Municipalidad de Fortín Lugones** y actualmente se encuentra organizado con una arquitectura basada en:
 
 - Front Controller.
 - Router propio.
@@ -16,6 +16,9 @@ El proyecto fue desarrollado para la **Municipalidad de Fortín Lugones** y se e
 - Generación de PDF.
 - Exportación de reportes.
 - Envío de correos electrónicos.
+- Composer para gestión de dependencias.
+- Variables de entorno mediante `vlucas/phpdotenv`.
+- Separación de configuraciones sensibles del código fuente.
 
 ---
 
@@ -38,7 +41,7 @@ SIGENMUNI tiene como objetivo centralizar en una única aplicación la gestión 
 - recuperación de acceso;
 - ayuda del sistema.
 
-La aplicación permite administrar la información necesaria para calcular y consultar liquidaciones municipales, manteniendo además controles de seguridad y trazabilidad.
+La aplicación permite administrar la información necesaria para calcular y consultar liquidaciones municipales, manteniendo además controles de seguridad, trazabilidad y separación de responsabilidades.
 
 ---
 
@@ -46,21 +49,28 @@ La aplicación permite administrar la información necesaria para calcular y con
 
 El proyecto utiliza principalmente:
 
-- PHP.
-- MySQL.
+- PHP 8.x.
+- MySQL / MariaDB.
 - HTML5.
 - CSS3.
 - JavaScript.
-- mysqli.
+- `mysqli`.
 - FPDF.
 - PHPMailer.
+- Composer.
+- `vlucas/phpdotenv` v5.7.0.
 
-Entorno de desarrollo:
+Entorno de desarrollo utilizado:
 
 - XAMPP.
 - Apache.
+- PHP 8.2.
 - MySQL / MariaDB.
 - Visual Studio Code.
+- Windows PowerShell.
+- Git y GitHub.
+
+Composer se utiliza para administrar dependencias instalables del proyecto. Actualmente se incorporó `vlucas/phpdotenv` para gestionar variables de entorno.
 
 ---
 
@@ -87,6 +97,12 @@ Navegador
    ↓
 public/index.php
    ↓
+core/bootstrap.php
+   ↓
+Composer / vendor/autoload.php
+   ↓
+vlucas/phpdotenv / .env
+   ↓
 Router
    ↓
 rutas.php del módulo
@@ -98,10 +114,10 @@ Modelo / Servicio
 Vista
 ```
 
-El archivo `index.php` ubicado en la raíz del proyecto funciona solamente como punto de entrada amigable y redirige al Login administrado por el Router:
+El archivo `index.php` ubicado en la raíz del proyecto funciona como punto de entrada amigable y redirige al Login administrado por el Router:
 
 ```text
-SIGENMUNI4/
+SIGENMUNI/
    ↓
 index.php
    ↓
@@ -112,8 +128,10 @@ public/index.php?r=login
 
 # 4. Estructura de carpetas
 
+La estructura principal actual es:
+
 ```text
-SIGENMUNI4/
+SIGENMUNI/
 │
 ├── componentes/
 │   └── header_sigenmuni.php
@@ -121,9 +139,9 @@ SIGENMUNI4/
 ├── config/
 │   ├── app.php
 │   ├── conexion.php
-│   ├── conexion.example.php
+│   ├── conexion_example.php
 │   ├── config_correo.php
-│   ├── config_correo.example.php
+│   ├── config_correo_example.php
 │   └── modulos.php
 │
 ├── core/
@@ -133,6 +151,9 @@ SIGENMUNI4/
 │   ├── Router.php
 │   ├── seguridad.php
 │   └── Url.php
+│
+├── database/
+│   └── sigenmuni.sql
 │
 ├── lib/
 │   ├── fpdf/
@@ -159,9 +180,20 @@ SIGENMUNI4/
 │   └── temp_recibos/
 │       └── .gitkeep
 │
+├── vendor/                 # generado por Composer, no versionado
+├── .env                    # configuración real, no versionada
+├── .env.example            # plantilla de variables de entorno
 ├── .gitignore
+├── composer.json
+├── composer.lock
+├── README.md
 └── index.php
 ```
+
+> `vendor/` se genera ejecutando `composer install` y no se almacena en GitHub.  
+> `.env` contiene la configuración real y tampoco se versiona.
+
+Los archivos `conexion_example.php` y `config_correo_example.php`, si se mantienen en el proyecto, quedan como referencia heredada. El mecanismo principal de configuración sensible es actualmente `.env` + `.env.example`.
 
 ---
 
@@ -196,7 +228,8 @@ Ventajas:
 - menor dependencia entre módulos;
 - mantenimiento más sencillo;
 - rutas claramente definidas;
-- mayor facilidad para incorporar nuevas funcionalidades.
+- mayor facilidad para incorporar nuevas funcionalidades;
+- separación entre presentación, acceso a datos y lógica de aplicación.
 
 ---
 
@@ -210,8 +243,6 @@ Registra rutas explícitas y las despacha según:
 - nombre de ruta;
 - tipo de acceso;
 - permiso requerido.
-
-Tipos de rutas:
 
 ### Ruta con permiso
 
@@ -227,7 +258,7 @@ $router->get(
 
 ### Ruta con sesión
 
-Requiere solamente un usuario autenticado.
+Requiere un usuario autenticado.
 
 Ejemplo:
 
@@ -250,15 +281,53 @@ actualizar-acceso
 
 ## bootstrap.php
 
-Inicializa la aplicación:
+`core/bootstrap.php` centraliza el arranque general de SIGENMUNI.
 
-- carga utilidades de URL;
-- carga seguridad;
-- inicia sesión;
-- carga la conexión;
-- crea el Router;
-- carga módulos registrados;
-- registra rutas.
+Actualmente realiza, en orden:
+
+1. obtiene la raíz del proyecto;
+2. carga `vendor/autoload.php`;
+3. inicializa `vlucas/phpdotenv`;
+4. carga las variables desde `.env`;
+5. valida variables obligatorias;
+6. valida tipos de datos de variables importantes;
+7. configura la zona horaria;
+8. carga utilidades de URL y seguridad;
+9. inicia la sesión;
+10. resuelve la URL base;
+11. carga la conexión MySQL;
+12. crea el Router;
+13. carga los módulos habilitados;
+14. registra las rutas de cada módulo;
+15. devuelve la instancia del Router.
+
+Las variables obligatorias principales validadas son:
+
+```text
+APP_NAME
+APP_ENV
+APP_DEBUG
+APP_TIMEZONE
+
+DB_HOST
+DB_PORT
+DB_DATABASE
+DB_USERNAME
+
+MAIL_HOST
+MAIL_PORT
+MAIL_USERNAME
+MAIL_PASSWORD
+```
+
+Además:
+
+- `DB_PORT` y `MAIL_PORT` deben ser enteros;
+- `APP_DEBUG` debe ser booleano;
+- `APP_ENV` solo admite `development`, `testing` o `production`;
+- `APP_TIMEZONE` debe corresponder a una zona horaria válida.
+
+`DB_PASSWORD` puede existir con valor vacío para permitir determinados entornos locales de MySQL.
 
 ## seguridad.php
 
@@ -330,10 +399,10 @@ Funciones:
 - recuperación de acceso;
 - envío de código;
 - verificación del código;
-- cambio de usuario;
+- actualización de acceso;
 - cambio de contraseña.
 
-Las contraseñas se guardan mediante `password_hash()` y se verifican con `password_verify()`.
+Las contraseñas se almacenan mediante `password_hash()` y se verifican con `password_verify()`.
 
 ---
 
@@ -369,7 +438,7 @@ El administrador tiene acceso completo. Los demás roles acceden solamente a los
 
 ---
 
-# 10. Módulo Inicio
+# 10. Módulo Inicio y localStorage
 
 Ubicación:
 
@@ -385,6 +454,34 @@ Ruta:
 public/index.php?r=inicio
 ```
 
+En la vista de Inicio se utiliza `localStorage` como **caché visual de sesión**.
+
+La clave utilizada es:
+
+```text
+sigenmuni_sesion
+```
+
+La caché puede contener datos no sensibles como:
+
+- identificador del usuario;
+- nombre de usuario;
+- nombre completo;
+- rol;
+- fecha y hora de actualización.
+
+`localStorage` **no reemplaza la sesión PHP**. La autenticación, los roles y los permisos continúan siendo controlados desde el servidor.
+
+Cuando se vuelve al Login sin una sesión válida, la caché `sigenmuni_sesion` se elimina para evitar mostrar información visual perteneciente a una sesión anterior.
+
+Nunca se almacenan en `localStorage`:
+
+- contraseñas;
+- hashes;
+- credenciales de base de datos;
+- credenciales SMTP;
+- permisos sensibles.
+
 ---
 
 # 11. Gestión de Empleados
@@ -398,7 +495,7 @@ modulos/empleados/
 Permite:
 
 - listar empleados;
-- buscar;
+- buscar por apellido;
 - registrar;
 - editar;
 - consultar;
@@ -418,6 +515,14 @@ Datos principales:
 - categoría;
 - situación;
 - unidad de organización.
+
+Se validan, entre otros aspectos:
+
+- email obligatorio;
+- DNI único;
+- legajo único;
+- estado activo/inactivo;
+- fecha de baja cuando corresponde.
 
 ---
 
@@ -452,6 +557,8 @@ Entre sus datos se encuentran:
 - base de cálculo;
 - estado;
 - valores por categoría.
+
+También se administran valores asociados a conceptos y conceptos particulares asignados a empleados.
 
 ---
 
@@ -500,6 +607,14 @@ storage/temp_recibos/
 ```
 
 y se eliminan luego de su utilización.
+
+Estados principales de una liquidación:
+
+```text
+BORRADOR
+CERRADA
+ANULADA
+```
 
 ---
 
@@ -589,16 +704,18 @@ Incluye:
 - estadísticas;
 - auditoría.
 
-Puede incluir:
+Según el reporte puede incluir:
 
 - filtros;
 - impresión;
 - exportación PDF;
 - exportación Excel.
 
+La Auditoría actualmente permite exportación PDF. Los reportes que disponen de Excel utilizan su mecanismo específico de exportación.
+
 ---
 
-# 17. Librerías externas
+# 17. Librerías y dependencias externas
 
 ## FPDF
 
@@ -629,44 +746,181 @@ Usos principales:
 - envío de códigos;
 - envío de recibos por correo.
 
+## Composer
+
+Composer se utiliza como gestor de dependencias PHP.
+
+Archivos versionados:
+
+```text
+composer.json
+composer.lock
+```
+
+Dependencias instaladas:
+
+```text
+vendor/
+```
+
+La carpeta `vendor/` no se versiona. Para reconstruirla se ejecuta:
+
+```powershell
+composer install
+```
+
+## vlucas/phpdotenv
+
+`vlucas/phpdotenv` permite cargar variables de entorno desde el archivo `.env`.
+
+Fue incorporado mediante Composer:
+
+```powershell
+composer require vlucas/phpdotenv
+```
+
+La aplicación lo carga desde:
+
+```text
+vendor/autoload.php
+```
+
+y su inicialización se realiza en:
+
+```text
+core/bootstrap.php
+```
+
 ---
 
-# 18. Configuración
+# 18. Configuración y variables de entorno
+
+La configuración sensible ya no se escribe directamente en los archivos PHP.
+
+SIGENMUNI utiliza:
+
+```text
+.env
+.env.example
+```
+
+## `.env`
+
+Contiene la configuración real de cada instalación.
+
+Ejemplo de estructura:
+
+```env
+APP_NAME=SIGENMUNI
+APP_ENV=development
+APP_DEBUG=true
+APP_TIMEZONE=America/Argentina/Buenos_Aires
+
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=sigenmuni4
+DB_USERNAME=root
+DB_PASSWORD=
+
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=
+MAIL_FROM_NAME="Municipalidad de Fortín Lugones"
+```
+
+El archivo `.env` **no debe subirse a GitHub**.
+
+## `.env.example`
+
+Es la plantilla que se incluye en el repositorio.
+
+Contiene los nombres de las variables necesarias pero no debe contener contraseñas ni credenciales reales.
+
+Para una instalación nueva se puede crear `.env` a partir de esta plantilla.
+
+En PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+## Variables generales
+
+```text
+APP_NAME
+APP_ENV
+APP_DEBUG
+APP_TIMEZONE
+```
+
+## Variables de base de datos
+
+```text
+DB_HOST
+DB_PORT
+DB_DATABASE
+DB_USERNAME
+DB_PASSWORD
+```
+
+## Variables de correo
+
+```text
+MAIL_HOST
+MAIL_PORT
+MAIL_USERNAME
+MAIL_PASSWORD
+MAIL_FROM_ADDRESS
+MAIL_FROM_NAME
+```
 
 ## Base de datos
 
-Archivo real:
+Archivo:
 
 ```text
 config/conexion.php
 ```
 
-Archivo de ejemplo:
+`config/conexion.php` ya no contiene las credenciales reales. Obtiene los valores mediante:
 
-```text
-config/conexion.example.php
+```php
+$_ENV['DB_HOST']
+$_ENV['DB_PORT']
+$_ENV['DB_DATABASE']
+$_ENV['DB_USERNAME']
+$_ENV['DB_PASSWORD']
 ```
 
-Para instalar el sistema:
+El flujo es:
 
-1. copiar `conexion.example.php` como `conexion.php`;
-2. completar host, usuario, contraseña y nombre de base.
+```text
+.env
+   ↓
+vlucas/phpdotenv
+   ↓
+core/bootstrap.php
+   ↓
+$_ENV
+   ↓
+config/conexion.php
+   ↓
+MySQL
+```
 
-## Correo
+## Correo SMTP
 
-Archivo real:
+Archivo:
 
 ```text
 config/config_correo.php
 ```
 
-Archivo de ejemplo:
+La configuración real también se obtiene desde `.env`.
 
-```text
-config/config_correo.example.php
-```
-
-Configura:
+Para mantener compatibilidad con las partes existentes de SIGENMUNI, `config_correo.php` crea las constantes:
 
 ```text
 SMTP_HOST
@@ -677,22 +931,71 @@ SMTP_FROM
 SMTP_FROM_NAME
 ```
 
+a partir de las variables `MAIL_*`.
+
+Flujo:
+
+```text
+.env
+   ↓
+vlucas/phpdotenv
+   ↓
+core/bootstrap.php
+   ↓
+config/config_correo.php
+   ↓
+SMTP_*
+   ↓
+PHPMailer
+   ↓
+Servidor SMTP
+```
+
+El funcionamiento SMTP fue comprobado mediante un envío real de recibo de sueldo.
+
 ---
 
 # 19. Git y archivos sensibles
 
-El archivo `.gitignore` evita subir información sensible o temporal.
+El archivo `.gitignore` evita subir información sensible, dependencias generadas y archivos temporales.
 
-Entre otros, se ignoran:
+Configuración principal:
 
-```text
-/config/conexion.php
-/config/config_correo.php
+```gitignore
 /storage/temp_recibos/*
+!/storage/temp_recibos/.gitkeep
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+
 *.log
 *.tmp
 *.temp
+
+/vendor/
+
+.env
+.env.*
+!.env.example
 ```
+
+Por lo tanto:
+
+```text
+.env                       → NO se versiona
+vendor/                    → NO se versiona
+
+.env.example               → SÍ se versiona
+composer.json              → SÍ se versiona
+composer.lock              → SÍ se versiona
+config/conexion.php        → SÍ se versiona
+config/config_correo.php   → SÍ se versiona
+```
+
+`config/conexion.php` y `config/config_correo.php` pueden versionarse porque ya no almacenan las credenciales directamente.
 
 El archivo:
 
@@ -700,7 +1003,7 @@ El archivo:
 storage/temp_recibos/.gitkeep
 ```
 
-permite conservar la carpeta aunque esté vacía.
+permite conservar la carpeta temporal aunque esté vacía.
 
 ---
 
@@ -711,60 +1014,116 @@ permite conservar la carpeta aunque esté vacía.
 - Apache.
 - PHP 8.x.
 - MySQL o MariaDB.
-- extensión mysqli.
+- extensión `mysqli`.
+- extensión `zip` habilitada para Composer o una herramienta compatible como 7-Zip/unzip.
+- Composer 2.x.
 - XAMPP o entorno equivalente.
 
-## Paso 1. Copiar el proyecto
-
-Ejemplo:
+En XAMPP sobre Windows se recomienda que:
 
 ```text
-C:\xampp\htdocs\PROGRAMACIONIII\SIGENMUNI4
+C:\xampp\php
 ```
 
-## Paso 2. Crear la base de datos
+esté agregado al `PATH`.
 
-Crear:
+Comprobaciones:
+
+```powershell
+php -v
+composer --version
+```
+
+## Paso 1. Copiar o clonar el proyecto
+
+Ubicación utilizada en desarrollo:
+
+```text
+C:\xampp\htdocs\PROGRAMACIONIII\SIGENMUNI
+```
+
+## Paso 2. Instalar dependencias Composer
+
+Desde la raíz del proyecto:
+
+```powershell
+composer install
+```
+
+Esto reconstruye la carpeta:
+
+```text
+vendor/
+```
+
+a partir de `composer.json` y `composer.lock`.
+
+## Paso 3. Crear la base de datos
+
+La base de datos actualmente utilizada es:
 
 ```text
 sigenmuni4
 ```
 
-e importar la estructura y los datos correspondientes.
+El proyecto incluye:
 
-## Paso 3. Configurar conexión
+```text
+database/sigenmuni.sql
+```
+
+para disponer de la estructura SQL correspondiente.
+
+## Paso 4. Crear el archivo `.env`
 
 Copiar:
 
 ```text
-config/conexion.example.php
+.env.example
 ```
 
 como:
 
 ```text
-config/conexion.php
+.env
 ```
 
-y completar los datos reales.
+En PowerShell:
 
-## Paso 4. Configurar correo
-
-Copiar:
-
-```text
-config/config_correo.example.php
+```powershell
+Copy-Item .env.example .env
 ```
 
-como:
+## Paso 5. Configurar la base de datos
 
-```text
-config/config_correo.php
+Dentro de `.env` completar:
+
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=sigenmuni4
+DB_USERNAME=root
+DB_PASSWORD=
 ```
 
-y completar la configuración SMTP.
+Los valores deben adaptarse a la instalación local.
 
-## Paso 5. Iniciar servicios
+## Paso 6. Configurar el correo
+
+Dentro de `.env` completar:
+
+```env
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=correo@ejemplo.com
+MAIL_PASSWORD="CONTRASEÑA_DE_APLICACION"
+MAIL_FROM_ADDRESS=correo@ejemplo.com
+MAIL_FROM_NAME="Municipalidad de Fortín Lugones"
+```
+
+Para Gmail se recomienda utilizar una **contraseña de aplicación**, no la contraseña normal de la cuenta.
+
+## Paso 7. Iniciar servicios
 
 Desde XAMPP iniciar:
 
@@ -773,10 +1132,10 @@ Apache
 MySQL
 ```
 
-## Paso 6. Abrir el sistema
+## Paso 8. Abrir el sistema
 
 ```text
-http://localhost/PROGRAMACIONIII/SIGENMUNI4/
+http://localhost/PROGRAMACIONIII/SIGENMUNI/
 ```
 
 El sistema redirige al Login administrado por el Router.
@@ -791,6 +1150,8 @@ Ejemplo para Empleados:
 Usuario
    ↓
 public/index.php?r=empleados
+   ↓
+core/bootstrap.php
    ↓
 Router.php
    ↓
@@ -828,8 +1189,15 @@ El sistema implementa:
 - `htmlspecialchars()`;
 - validación de parámetros;
 - separación de archivos sensibles;
+- variables de entorno;
+- `.env` excluido del repositorio;
 - `.gitignore`;
-- limpieza de archivos temporales.
+- validación de configuración al iniciar;
+- mensajes de conexión que evitan exponer detalles sensibles;
+- limpieza de archivos temporales;
+- caché visual en `localStorage` sin almacenar secretos.
+
+Las credenciales reales de MySQL y SMTP se almacenan en `.env` y no en el código fuente.
 
 ---
 
@@ -842,6 +1210,18 @@ core/Auditoria.php
 ```
 
 Permite registrar acciones relevantes y consultarlas posteriormente desde los reportes.
+
+Flujo conceptual:
+
+```text
+Modelo guarda una operación
+   ↓
+Controlador obtiene la información necesaria
+   ↓
+Auditoria::registrar(...)
+   ↓
+Registro en la base de datos
+```
 
 ---
 
@@ -889,6 +1269,41 @@ temp_recibos/
 → storage/temp_recibos/
 ```
 
+El nombre actual de la carpeta del proyecto es:
+
+```text
+SIGENMUNI
+```
+
+La base de datos conserva actualmente el nombre:
+
+```text
+sigenmuni4
+```
+
+También se incorporó:
+
+```text
+Composer
+vlucas/phpdotenv
+.env
+.env.example
+composer.json
+composer.lock
+```
+
+Con este cambio:
+
+```text
+credenciales en PHP
+        ↓
+variables de entorno
+        ↓
+.env
+```
+
+`config/conexion.php` y `config/config_correo.php` dejaron de contener credenciales reales y pueden mantenerse versionados.
+
 ---
 
 # 25. Ventajas de la estructura actual
@@ -901,10 +1316,14 @@ La arquitectura actual permite:
 - organizar funcionalidades por módulo;
 - reducir código duplicado;
 - proteger configuraciones sensibles;
+- separar credenciales del código;
+- gestionar dependencias con Composer;
+- validar la configuración al iniciar la aplicación;
 - separar librerías externas;
 - separar almacenamiento temporal;
 - facilitar mantenimiento;
-- facilitar futuras ampliaciones.
+- facilitar futuras ampliaciones;
+- facilitar el despliegue en distintos entornos.
 
 ---
 
@@ -921,7 +1340,11 @@ Al agregar una funcionalidad se recomienda:
 7. usar POST para modificaciones;
 8. usar CSRF en operaciones sensibles;
 9. utilizar consultas preparadas;
-10. generar URLs mediante `core/Url.php`.
+10. generar URLs mediante `core/Url.php`;
+11. no colocar credenciales directamente en el código;
+12. agregar nuevas configuraciones sensibles a `.env`;
+13. documentar las nuevas variables en `.env.example`;
+14. instalar nuevas dependencias mediante Composer cuando corresponda.
 
 ---
 
@@ -929,7 +1352,11 @@ Al agregar una funcionalidad se recomienda:
 
 Una explicación breve del proyecto puede ser:
 
-> SIGENMUNI utiliza una arquitectura MVC organizada mediante Vertical Slice. Todas las solicitudes de los módulos ingresan por un Front Controller ubicado en `public/index.php`. El Router determina qué módulo y controlador debe ejecutarse y, antes de permitir el acceso, verifica la sesión, el rol y los permisos del usuario. Cada módulo contiene sus propias rutas, controlador, modelo y vistas. La configuración se encuentra en `config`, la infraestructura compartida en `core`, las librerías externas en `lib`, los recursos públicos en `public` y los archivos temporales en `storage`. De esta manera el sistema queda modular, mantenible y con una separación clara de responsabilidades.
+> SIGENMUNI utiliza una arquitectura MVC organizada mediante Vertical Slice. Todas las solicitudes de los módulos ingresan por un Front Controller ubicado en `public/index.php`. Antes de registrar y ejecutar las rutas, `core/bootstrap.php` carga las dependencias mediante Composer, inicializa `vlucas/phpdotenv`, lee y valida las variables de entorno, carga la conexión y crea el Router. El Router determina qué módulo y controlador debe ejecutarse y, antes de permitir el acceso, verifica la sesión, el rol y los permisos del usuario. Cada módulo contiene sus propias rutas, controlador, modelo y vistas. La configuración se encuentra en `config`, la infraestructura compartida en `core`, las librerías externas en `lib`, los recursos públicos en `public` y los archivos temporales en `storage`. Las credenciales reales de la base de datos y del correo SMTP se encuentran en `.env`, archivo excluido de Git mediante `.gitignore`.
+
+Para explicar específicamente las variables de entorno:
+
+> SIGENMUNI utiliza Composer y la librería `vlucas/phpdotenv` para separar las credenciales y configuraciones sensibles del código fuente. `core/bootstrap.php` carga `vendor/autoload.php`, lee el archivo `.env` y valida las variables obligatorias. `config/conexion.php` obtiene desde allí los datos de MySQL y `config/config_correo.php` obtiene la configuración SMTP utilizada por PHPMailer. El archivo `.env` no se sube al repositorio, mientras que `.env.example` documenta las variables necesarias para instalar el sistema.
 
 ---
 
@@ -943,18 +1370,121 @@ Sistema de Gestión Municipal
 Municipalidad de Fortín Lugones
 ```
 
+La implementación busca aplicar de manera práctica conceptos de:
+
+- arquitectura de software;
+- MVC;
+- Front Controller;
+- Router;
+- Vertical Slice;
+- seguridad web;
+- sesiones;
+- control de acceso;
+- auditoría;
+- versionado con Git;
+- administración de dependencias;
+- variables de entorno;
+- configuración segura.
+
 ---
 
 # 29. Recomendaciones para producción
 
 Antes de utilizar el sistema en producción se recomienda:
 
-- HTTPS;
-- manejo seguro de secretos;
-- auditoría de seguridad;
-- copias de seguridad;
-- pruebas integrales;
-- configuración segura de PHP;
-- permisos adecuados del sistema operativo;
-- revisión de logs;
-- actualización periódica de dependencias.
+- utilizar HTTPS;
+- configurar `APP_ENV=production`;
+- configurar `APP_DEBUG=false`;
+- definir las variables sensibles directamente en el entorno del servidor cuando sea posible;
+- nunca publicar `.env`;
+- utilizar credenciales independientes para producción;
+- utilizar contraseñas robustas;
+- limitar permisos del usuario de base de datos;
+- realizar auditoría de seguridad;
+- realizar copias de seguridad;
+- probar restauración de backups;
+- realizar pruebas integrales;
+- configurar PHP de forma segura;
+- utilizar permisos adecuados del sistema operativo;
+- revisar logs;
+- actualizar periódicamente dependencias;
+- ejecutar `composer install` con la configuración apropiada para producción;
+- proteger el acceso al servidor y a la base de datos.
+
+---
+
+# 30. Comandos útiles
+
+## Composer
+
+Verificar instalación:
+
+```powershell
+composer --version
+```
+
+Instalar dependencias:
+
+```powershell
+composer install
+```
+
+Consultar `phpdotenv`:
+
+```powershell
+composer show vlucas/phpdotenv
+```
+
+## PHP
+
+Verificar PHP:
+
+```powershell
+php -v
+```
+
+Validar sintaxis del bootstrap:
+
+```powershell
+php -l .\core\bootstrap.php
+```
+
+## Variables de entorno
+
+Comprobar que `.env` está ignorado:
+
+```powershell
+git check-ignore -v .env
+```
+
+Comprobar que `.env.example` queda disponible para versionar:
+
+```powershell
+git check-ignore -v .env.example
+```
+
+## Git
+
+Consultar cambios:
+
+```powershell
+git status --short
+```
+
+Preparar cambios:
+
+```powershell
+git add -A
+```
+
+Crear commit:
+
+```powershell
+git commit -m "Descripción del cambio"
+```
+
+Subir cambios:
+
+```powershell
+git push origin main
+```
