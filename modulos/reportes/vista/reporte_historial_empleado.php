@@ -93,514 +93,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
 <title>Historial por Empleado - SIGENMUNI</title>
 
-<style>
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:#f4f7fb;
-    color:#1f2937;
-}
-
-.contenedor{
-    width:95%;
-    max-width:1450px;
-    margin:30px auto;
-}
-
-.cabecera{
-    background:linear-gradient(135deg,#0f766e,#14b8a6);
-    color:white;
-    border-radius:18px;
-    padding:24px;
-    box-shadow:0 8px 20px rgba(0,0,0,.10);
-    margin-bottom:22px;
-}
-
-.cabecera-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    flex-wrap:wrap;
-}
-
-.cabecera h1{
-    margin:0 0 6px 0;
-    font-size:30px;
-}
-
-.cabecera p{
-    margin:0;
-    opacity:.95;
-}
-
-.acciones-superiores{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-}
-
-.btn{
-    display:inline-block;
-    text-decoration:none;
-    border:none;
-    border-radius:10px;
-    padding:11px 16px;
-    font-size:14px;
-    font-weight:bold;
-    cursor:pointer;
-    color:white;
-    transition:.2s ease;
-    text-align:center;
-}
-
-.btn:hover{
-    opacity:.93;
-    transform:translateY(-1px);
-}
-
-.btn-volver{
-    background:#374151;
-}
-
-.btn-reportes{
-    background:#ea580c;
-}
-
-.btn-buscar{
-    background:#0f766e;
-}
-
-.btn-limpiar{
-    background:#6b7280;
-}
-
-.btn-pdf{
-    background:#dc2626;
-}
-
-.btn-excel{
-    background:#15803d;
-}
-
-.btn-ver{
-    background:#2563eb;
-}
-
-.btn-recibo{
-    background:#0f766e;
-}
-
-.panel{
-    background:white;
-    border-radius:18px;
-    padding:20px;
-    box-shadow:0 8px 20px rgba(0,0,0,.08);
-    border:1px solid #e5e7eb;
-    margin-bottom:20px;
-}
-
-.panel h2{
-    margin-top:0;
-    margin-bottom:16px;
-    font-size:20px;
-    color:#0f766e;
-}
-
-.error{
-    background:#fee2e2;
-    color:#991b1b;
-    border:1px solid #fecaca;
-    padding:14px;
-    border-radius:12px;
-    margin-bottom:20px;
-    font-weight:bold;
-}
-
-.busqueda-form{
-    display:grid;
-    grid-template-columns:1fr 2fr 1fr auto auto;
-    gap:12px;
-    align-items:start;
-}
-
-.busqueda-form > .btn{
-    margin-top:25px;
-}
-
-.campo{
-    display:flex;
-    flex-direction:column;
-    min-width:0;
-}
-
-.campo label{
-    display:block;
-    margin-bottom:6px;
-    font-size:14px;
-    font-weight:bold;
-    color:#374151;
-}
-
-.campo input,
-.campo select{
-    width:100%;
-    padding:11px 12px;
-    border:1px solid #cbd5e1;
-    border-radius:10px;
-    font-size:14px;
-    outline:none;
-}
-
-.campo input:focus,
-.campo select:focus{
-    border-color:#14b8a6;
-    box-shadow:0 0 0 3px rgba(20,184,166,.15);
-}
-
-.ayuda{
-    margin-top:6px;
-    font-size:12px;
-    color:#6b7280;
-    line-height:1.4;
-}
-
-.datos-empleado{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:12px;
-}
-
-.info-box{
-    border:1px solid #e5e7eb;
-    background:#f9fafb;
-    border-radius:10px;
-    padding:12px;
-}
-
-.info-box strong{
-    display:block;
-    margin-bottom:5px;
-    color:#374151;
-    font-size:13px;
-}
-
-.acciones-exportar{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-    margin-bottom:18px;
-}
-
-.tabla-contenedor{
-    width:100%;
-    overflow:visible;
-}
-
-table{
-    width:100%;
-    min-width:0;
-    table-layout:fixed;
-    border-collapse:collapse;
-    background:white;
-}
-
-th,
-td{
-    padding:9px 6px;
-    border-bottom:1px solid #e5e7eb;
-    text-align:left;
-    font-size:12px;
-    line-height:1.35;
-    vertical-align:middle;
-    white-space:normal;
-    overflow-wrap:anywhere;
-    word-break:normal;
-}
-
-th{
-    background:#0f766e;
-    color:white;
-    white-space:normal;
-}
-
-tr:hover{
-    background:#f8fafc;
-}
-
-
-/* ANCHOS DE COLUMNAS - HISTORIAL */
-
-th:nth-child(1),
-td:nth-child(1){ width:5%; }
-
-th:nth-child(2),
-td:nth-child(2){ width:9%; }
-
-th:nth-child(3),
-td:nth-child(3){ width:8%; }
-
-th:nth-child(4),
-td:nth-child(4){ width:9%; }
-
-th:nth-child(5),
-td:nth-child(5){
-    width:8%;
-    text-align:center;
-}
-
-th:nth-child(6),
-td:nth-child(6){ width:10%; }
-
-th:nth-child(7),
-td:nth-child(7){ width:10%; }
-
-th:nth-child(8),
-td:nth-child(8){ width:10%; }
-
-th:nth-child(9),
-td:nth-child(9){ width:9%; }
-
-th:nth-child(10),
-td:nth-child(10){ width:10%; }
-
-th:nth-child(11),
-td:nth-child(11){
-    width:12%;
-    text-align:center;
-}
-
-.estado-badge{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:5px 10px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:bold;
-    white-space:nowrap;
-    word-break:normal;
-    overflow-wrap:normal;
-}
-
-.estado-borrador{
-    background:#fef3c7;
-    color:#92400e;
-}
-
-.estado-cerrada{
-    background:#dcfce7;
-    color:#166534;
-}
-
-.estado-anulada{
-    background:#fee2e2;
-    color:#991b1b;
-}
-
-.btn-mini{
-    display:inline-block;
-    text-decoration:none;
-    font-size:12px;
-    font-weight:bold;
-    padding:7px 9px;
-    border-radius:8px;
-    color:white;
-}
-
-.sin-registros{
-    text-align:center;
-    padding:25px;
-    color:#6b7280;
-    background:#fff;
-    border-radius:12px;
-}
-
-.no-disponible{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    padding:6px 9px;
-    border-radius:8px;
-    background:#e5e7eb;
-    color:#6b7280;
-    font-size:12px;
-    font-weight:bold;
-    white-space:nowrap;
-    word-break:normal;
-    overflow-wrap:normal;
-}
-
-.lista-empleados table{
-    min-width:750px;
-}
-
-@media(max-width:1100px){
-    .busqueda-form{
-        grid-template-columns:1fr 1fr;
-    }
-
-    .busqueda-form .btn{
-        width:100%;
-        margin-top:0;
-    }
-}
-
-@media(max-width:768px){
-    .contenedor{
-        width:98%;
-        margin:10px auto;
-    }
-
-    .cabecera{
-        padding:18px 15px;
-        border-radius:15px;
-    }
-
-    .cabecera-top{
-        flex-direction:column;
-        align-items:stretch;
-        text-align:center;
-    }
-
-    .cabecera h1{
-        font-size:24px;
-    }
-
-    .acciones-superiores{
-        flex-direction:column;
-    }
-
-    .acciones-superiores .btn{
-        width:100%;
-    }
-
-    .panel{
-        padding:15px;
-        border-radius:15px;
-    }
-
-    .panel h2{
-        text-align:center;
-        font-size:19px;
-    }
-
-    .busqueda-form{
-        grid-template-columns:1fr;
-    }
-
-    .busqueda-form > .btn{
-        margin-top:0;
-    }
-
-    .campo input,
-    .campo select{
-        min-height:44px;
-        font-size:16px;
-    }
-
-    .acciones-exportar{
-        flex-direction:column;
-    }
-
-    .acciones-exportar .btn{
-        width:100%;
-    }
-
-    /*
-    =========================================
-    TABLAS COMO TARJETAS - SIN SCROLL
-    =========================================
-    */
-
-    .tabla-contenedor{
-        overflow:visible;
-    }
-
-    table,
-    thead,
-    tbody,
-    tr,
-    th,
-    td{
-        display:block;
-        width:100%;
-    }
-
-    table{
-        table-layout:auto;
-        min-width:0;
-    }
-
-    thead{
-        display:none;
-    }
-
-    tbody{
-        display:grid;
-        gap:14px;
-    }
-
-    tbody tr{
-        border:1px solid #e5e7eb;
-        border-radius:14px;
-        padding:12px;
-        background:white;
-        box-shadow:0 4px 12px rgba(0,0,0,.05);
-    }
-
-    tbody tr:hover{
-        background:white;
-    }
-
-    td{
-        display:grid;
-        grid-template-columns:135px minmax(0,1fr);
-        gap:10px;
-        width:100% !important;
-        padding:8px 0;
-        border-bottom:1px solid #f1f5f9;
-        font-size:13px;
-        text-align:left !important;
-        overflow-wrap:anywhere;
-    }
-
-    td:last-child{
-        border-bottom:none;
-    }
-
-    td::before{
-        font-weight:bold;
-        color:#475569;
-    }
-
-    .lista-empleados td:nth-child(1)::before{ content:"Legajo"; }
-    .lista-empleados td:nth-child(2)::before{ content:"Apellido y Nombre"; }
-    .lista-empleados td:nth-child(3)::before{ content:"DNI"; }
-    .lista-empleados td:nth-child(4)::before{ content:"CUIL"; }
-    .lista-empleados td:nth-child(5)::before{ content:"Categoría"; }
-    .lista-empleados td:nth-child(6)::before{ content:"Estado"; }
-    .lista-empleados td:nth-child(7)::before{ content:"Acción"; }
-
-    .panel:not(.lista-empleados) td:nth-child(1)::before{ content:"ID"; }
-    .panel:not(.lista-empleados) td:nth-child(2)::before{ content:"Tipo"; }
-    .panel:not(.lista-empleados) td:nth-child(3)::before{ content:"Período"; }
-    .panel:not(.lista-empleados) td:nth-child(4)::before{ content:"Fecha Liquidación"; }
-    .panel:not(.lista-empleados) td:nth-child(5)::before{ content:"Estado"; }
-    .panel:not(.lista-empleados) td:nth-child(6)::before{ content:"Total Remunerativo"; }
-    .panel:not(.lista-empleados) td:nth-child(7)::before{ content:"Total Descuentos"; }
-    .panel:not(.lista-empleados) td:nth-child(8)::before{ content:"No Remunerativo"; }
-    .panel:not(.lista-empleados) td:nth-child(9)::before{ content:"Asignaciones"; }
-    .panel:not(.lista-empleados) td:nth-child(10)::before{ content:"Neto"; }
-    .panel:not(.lista-empleados) td:nth-child(11)::before{ content:"Recibo"; }
-}
-
-</style>
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/reporte_historial_empleado.css'), ENT_QUOTES, 'UTF-8') ?>">
 
 </head>
 
@@ -720,7 +213,7 @@ td:nth-child(11){
                                 'UTF-8'
                             );
                         ?>"
-                        oninput="this.value=this.value.replace(/[^0-9]/g,'');"
+                        data-event-input="reporte_historial_empleado-1"
                     >
 
                     <div class="ayuda">
@@ -1060,11 +553,7 @@ td:nth-child(11){
                         <?php if (!empty($empleado['oficina_cuit'])): ?>
 
                             <div
-                                style="
-                                    margin-top:4px;
-                                    font-size:12px;
-                                    color:#64748b;
-                                "
+                                data-estilo="reporte_historial_empleado-1"
                             >
                                 CUIT:
                                 <?php
@@ -1145,6 +634,43 @@ td:nth-child(11){
 
             <div class="panel">
 
+                <h2>Historia laboral del empleado</h2>
+                <p>Altas, bajas y reincorporaciones según los períodos laborales registrados.</p>
+                <?php if (!empty($historialLaboral)): ?>
+                    <ol class="historial-laboral-linea">
+                        <?php foreach ($historialLaboral as $indicePeriodo => $periodoLaboral): ?>
+                            <li class="historial-laboral-evento">
+                                <strong><?= $indicePeriodo === 0 ? 'Alta registrada' : 'Reincorporación registrada' ?></strong>
+                                <span class="historial-laboral-fecha">
+                                    <?= !empty($periodoLaboral['fecha_desde']) ? htmlspecialchars(date('d/m/Y', strtotime($periodoLaboral['fecha_desde'])), ENT_QUOTES, 'UTF-8') : 'Fecha no disponible' ?>
+                                </span>
+                                <?php if (!empty($periodoLaboral['motivo_inicio'])): ?>
+                                    <p>Motivo: <?= htmlspecialchars($periodoLaboral['motivo_inicio'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($periodoLaboral['observacion'])): ?>
+                                    <p><?= htmlspecialchars($periodoLaboral['observacion'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
+                                <?php endif; ?>
+                                <?php if (empty($periodoLaboral['fecha_hasta'])): ?>
+                                    <p class="historial-laboral-abierto">Período abierto · Sin fecha de baja registrada</p>
+                                <?php endif; ?>
+                            </li>
+                            <?php if (!empty($periodoLaboral['fecha_hasta'])): ?>
+                                <li class="historial-laboral-evento historial-laboral-baja">
+                                    <strong>Baja o inactivación registrada</strong>
+                                    <span class="historial-laboral-fecha"><?= htmlspecialchars(date('d/m/Y', strtotime($periodoLaboral['fecha_hasta'])), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <?php if (!empty($periodoLaboral['motivo_fin'])): ?>
+                                        <p>Motivo: <?= htmlspecialchars($periodoLaboral['motivo_fin'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
+                                    <?php endif; ?>
+                                </li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </ol>
+                <?php else: ?>
+                    <p class="sin-datos">No hay períodos laborales registrados para este empleado.</p>
+                <?php endif; ?>
+            </div>
+
+            <div class="panel">
                 <h2>
                     Historial de Liquidaciones
                 </h2>
@@ -1454,6 +980,7 @@ td:nth-child(11){
 
 </div>
 
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/reportes/reporte_historial_empleado.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

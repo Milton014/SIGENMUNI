@@ -1,0 +1,789 @@
+
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f7fb;
+    color:#1f2937;
+}
+
+
+/* =========================================
+   CONTENEDOR
+========================================= */
+
+.contenedor{
+    width:95%;
+    max-width:1400px;
+    margin:30px auto;
+}
+
+
+/* =========================================
+   CABECERA
+========================================= */
+
+.cabecera{
+    background:linear-gradient(
+        135deg,
+        #0f766e,
+        #14b8a6
+    );
+
+    color:white;
+
+    border-radius:18px;
+
+    padding:24px;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.10);
+
+    margin-bottom:22px;
+}
+
+
+.cabecera-top{
+    display:flex;
+
+    justify-content:
+        space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+}
+
+
+.cabecera h1{
+    margin:0 0 6px 0;
+    font-size:30px;
+}
+
+
+.cabecera p{
+    margin:0;
+    opacity:.95;
+}
+
+
+/* =========================================
+   ACCIONES SUPERIORES
+========================================= */
+
+.acciones-superiores{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.btn{
+    display:inline-block;
+
+    text-decoration:none;
+
+    border:none;
+
+    border-radius:10px;
+
+    padding:11px 16px;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    color:white;
+
+    transition:.2s ease;
+
+    text-align:center;
+}
+
+
+.btn:hover{
+    opacity:.93;
+
+    transform:
+        translateY(-1px);
+}
+
+
+.btn-volver{
+    background:#374151;
+}
+
+
+.btn-reportes{
+    background:#ea580c;
+}
+
+
+.btn-buscar{
+    background:#0f766e;
+}
+
+
+.btn-limpiar{
+    background:#6b7280;
+}
+
+
+.btn-pdf{
+    background:#dc2626;
+}
+
+
+.btn-excel{
+    background:#16a34a;
+}
+
+
+/* =========================================
+   PANEL
+========================================= */
+
+.panel{
+    background:white;
+
+    border-radius:18px;
+
+    padding:20px;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.08);
+
+    border:
+        1px solid #e5e7eb;
+
+    margin-bottom:20px;
+}
+
+
+.panel h2{
+    margin-top:0;
+
+    margin-bottom:16px;
+
+    font-size:20px;
+
+    color:#0f766e;
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.error{
+    background:#fee2e2;
+
+    color:#991b1b;
+
+    border:
+        1px solid #fecaca;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    margin-bottom:20px;
+
+    font-weight:bold;
+}
+
+
+/* =========================================
+   FILTROS
+========================================= */
+
+.filtros{
+    display:grid;
+
+    grid-template-columns:
+        minmax(150px,1fr)
+        minmax(260px,2fr)
+        minmax(180px,1fr)
+        auto
+        auto;
+
+    gap:12px;
+
+    align-items:start;
+}
+
+
+.campo{
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+}
+
+
+.filtros > .btn{
+    margin-top:24px;
+    min-height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+
+.campo label{
+    display:block;
+
+    margin-bottom:6px;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    color:#374151;
+}
+
+
+.campo input,
+.campo select{
+    width:100%;
+
+    padding:
+        11px 12px;
+
+    border:
+        1px solid #cbd5e1;
+
+    border-radius:10px;
+
+    font-size:14px;
+
+    outline:none;
+}
+
+
+.campo input:focus,
+.campo select:focus{
+    border-color:#14b8a6;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(20,184,166,.15);
+}
+
+
+/* =========================================
+   AYUDA DE FILTROS
+========================================= */
+
+.ayuda{
+    margin-top:6px;
+
+    font-size:12px;
+
+    color:#6b7280;
+
+    line-height:1.4;
+}
+
+
+/* =========================================
+   RESUMEN
+========================================= */
+
+.resumen{
+    display:flex;
+
+    justify-content:
+        space-between;
+
+    align-items:center;
+
+    gap:12px;
+
+    flex-wrap:wrap;
+
+    margin-bottom:15px;
+}
+
+
+.resumen-box{
+    background:#ecfeff;
+
+    border:
+        1px solid #a5f3fc;
+
+    color:#155e75;
+
+    padding:
+        12px 15px;
+
+    border-radius:12px;
+
+    font-weight:bold;
+}
+
+
+/* =========================================
+   EXPORTACIONES
+========================================= */
+
+.acciones-exportar{
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+}
+
+
+.unidad-organizacion{
+    min-width:0;
+    line-height:1.35;
+}
+
+.unidad-organizacion .nombre-unidad{
+    font-weight:bold;
+}
+
+.unidad-organizacion .cuit-unidad{
+    margin-top:4px;
+    color:#64748b;
+    font-size:11px;
+    white-space:normal;
+    overflow-wrap:anywhere;
+}
+
+
+/* =========================================
+   TABLA
+========================================= */
+
+.tabla-contenedor{
+    width:100%;
+
+    overflow:visible;
+
+    border-radius:12px;
+
+    border:
+        1px solid #e5e7eb;
+}
+
+
+table{
+    width:100%;
+
+    min-width:0;
+
+    table-layout:fixed;
+
+    border-collapse:collapse;
+
+    background:white;
+}
+
+
+th,
+td{
+    padding:
+        9px 6px;
+
+    border-bottom:
+        1px solid #e5e7eb;
+
+    text-align:left;
+
+    font-size:12px;
+
+    line-height:1.35;
+
+    vertical-align:top;
+
+    white-space:normal;
+
+    overflow-wrap:anywhere;
+
+    word-break:normal;
+}
+
+
+th{
+    background:#0f766e;
+
+    color:white;
+
+    position:sticky;
+
+    top:0;
+
+    white-space:normal;
+}
+
+
+tr:hover{
+    background:#f8fafc;
+}
+
+
+/* ANCHOS DE COLUMNAS */
+
+th:nth-child(1),
+td:nth-child(1){ width:6%; }
+
+th:nth-child(2),
+td:nth-child(2){ width:12%; }
+
+th:nth-child(3),
+td:nth-child(3){ width:7%; }
+
+th:nth-child(4),
+td:nth-child(4){ width:9%; }
+
+th:nth-child(5),
+td:nth-child(5){ width:7%; }
+
+th:nth-child(6),
+td:nth-child(6){ width:13%; }
+
+th:nth-child(7),
+td:nth-child(7){ width:7%; }
+
+th:nth-child(8),
+td:nth-child(8){ width:7%; }
+
+th:nth-child(9),
+td:nth-child(9){ width:8%; }
+
+th:nth-child(10),
+td:nth-child(10){ width:10%; }
+
+th:nth-child(11),
+td:nth-child(11){ width:8%; }
+
+th:nth-child(12),
+td:nth-child(12){
+    width:6%;
+    text-align:center;
+}
+
+
+/* =========================================
+   ESTADO
+========================================= */
+
+.estado-activo,
+.estado-inactivo{
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-weight:bold;
+
+    padding:
+        5px 10px;
+
+    border-radius:999px;
+
+    font-size:12px;
+
+    white-space:nowrap;
+
+    word-break:normal;
+
+    overflow-wrap:normal;
+}
+
+
+.estado-activo{
+    background:#dcfce7;
+    color:#166534;
+}
+
+
+.estado-inactivo{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+
+/* =========================================
+   SIN REGISTROS
+========================================= */
+
+.sin-registros{
+    text-align:center;
+
+    padding:25px;
+
+    color:#6b7280;
+
+    background:#fff;
+
+    border-radius:12px;
+
+    font-weight:bold;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media(max-width:1100px){
+
+    .filtros{
+        grid-template-columns:
+            1fr
+            1fr;
+    }
+
+
+    .filtros > .btn{
+        width:100%;
+        margin-top:0;
+    }
+
+
+    .acciones-superiores,
+    .acciones-exportar{
+        width:100%;
+    }
+
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media(max-width:768px){
+
+    .contenedor{
+        width:98%;
+
+        margin:
+            10px auto;
+    }
+
+
+    .cabecera{
+        padding:
+            18px 15px;
+
+        border-radius:15px;
+    }
+
+
+    .cabecera-top{
+        flex-direction:column;
+
+        text-align:center;
+
+        align-items:stretch;
+    }
+
+
+    .cabecera h1{
+        font-size:24px;
+    }
+
+
+    .cabecera p{
+        font-size:14px;
+
+        line-height:1.4;
+    }
+
+
+    .acciones-superiores{
+        flex-direction:column;
+    }
+
+
+    .acciones-superiores .btn{
+        width:100%;
+
+        padding:12px;
+    }
+
+
+    .panel{
+        padding:15px;
+
+        border-radius:15px;
+    }
+
+
+    .panel h2{
+        text-align:center;
+
+        font-size:19px;
+    }
+
+
+    .filtros{
+        grid-template-columns:1fr;
+    }
+
+
+    .campo input,
+    .campo select{
+        min-height:44px;
+
+        font-size:16px;
+    }
+
+
+    .filtros > .btn,
+    .filtros button{
+        width:100%;
+
+        margin-top:0;
+
+        padding:12px;
+    }
+
+
+    .resumen{
+        flex-direction:column;
+
+        align-items:stretch;
+
+        text-align:center;
+    }
+
+
+    .resumen-box{
+        width:100%;
+    }
+
+
+    .acciones-exportar{
+        flex-direction:column;
+    }
+
+
+    .acciones-exportar .btn{
+        width:100%;
+
+        padding:12px;
+    }
+
+
+    /*
+    =========================================
+    TABLA COMO TARJETAS - SIN SCROLL
+    =========================================
+    */
+
+    .tabla-contenedor{
+        border:none;
+        overflow:visible;
+        border-radius:0;
+    }
+
+
+    table,
+    thead,
+    tbody,
+    tr,
+    th,
+    td{
+        display:block;
+        width:100%;
+    }
+
+
+    table{
+        table-layout:auto;
+        min-width:0;
+    }
+
+
+    thead{
+        display:none;
+    }
+
+
+    tbody{
+        display:grid;
+        gap:14px;
+    }
+
+
+    tbody tr{
+        border:1px solid #e5e7eb;
+        border-radius:14px;
+        padding:12px;
+        background:white;
+        box-shadow:0 4px 12px rgba(0,0,0,.05);
+    }
+
+
+    tbody tr:hover{
+        background:white;
+    }
+
+
+    td{
+        display:grid;
+
+        grid-template-columns:
+            125px
+            minmax(0,1fr);
+
+        gap:10px;
+
+        width:100% !important;
+
+        padding:8px 0;
+
+        border-bottom:1px solid #f1f5f9;
+
+        font-size:13px;
+
+        text-align:left;
+
+        overflow-wrap:anywhere;
+    }
+
+
+    td:last-child{
+        border-bottom:none;
+    }
+
+
+    td::before{
+        font-weight:bold;
+        color:#475569;
+    }
+
+
+    td:nth-child(1)::before{ content:"Legajo"; }
+    td:nth-child(2)::before{ content:"Apellido y Nombre"; }
+    td:nth-child(3)::before{ content:"DNI"; }
+    td:nth-child(4)::before{ content:"CUIL"; }
+    td:nth-child(5)::before{ content:"Teléfono"; }
+    td:nth-child(6)::before{ content:"Email"; }
+    td:nth-child(7)::before{ content:"Fecha Alta"; }
+    td:nth-child(8)::before{ content:"Fecha Baja"; }
+    td:nth-child(9)::before{ content:"Categoría"; }
+    td:nth-child(10)::before{ content:"Unidad de Organización"; }
+    td:nth-child(11)::before{ content:"Situación"; }
+    td:nth-child(12)::before{ content:"Estado"; }
+
+}
+

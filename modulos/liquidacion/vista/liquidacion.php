@@ -67,483 +67,7 @@ $liquidacionCsrf =
 
 <title>Liquidaciones - SIGENMUNI</title>
 
-<style>
-
-/* =========================================
-   GENERAL
-========================================= */
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    font-family:Arial,sans-serif;
-    background:#f4f7fb;
-    margin:0;
-    color:#1f2937;
-}
-
-
-
-
-/* =========================================
-   CONTENEDOR
-========================================= */
-
-.contenedor{
-    width:96%;
-    max-width:1300px;
-    margin:30px auto;
-}
-
-.panel{
-    background:white;
-    padding:24px;
-    border-radius:18px;
-    box-shadow:0 8px 20px rgba(0,0,0,.08);
-}
-
-
-/* =========================================
-   TOPBAR
-========================================= */
-
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    flex-wrap:wrap;
-    margin-bottom:20px;
-}
-
-.titulo-seccion h2{
-    margin:0;
-    color:#0f766e;
-    font-size:28px;
-}
-
-.titulo-seccion p{
-    margin:6px 0 0;
-    color:#64748b;
-    font-size:14px;
-}
-
-.acciones-superiores{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-}
-
-
-/* =========================================
-   BOTONES
-========================================= */
-
-.btn{
-    display:inline-block;
-    padding:10px 14px;
-    text-decoration:none;
-    border-radius:9px;
-    color:white;
-    font-size:13px;
-    border:none;
-    cursor:pointer;
-    font-weight:bold;
-    transition:.2s;
-    text-align:center;
-}
-
-.btn:hover{
-    opacity:.90;
-    transform:translateY(-1px);
-}
-
-.btn-nuevo{
-    background:#0f766e;
-}
-
-.btn-volver{
-    background:#1f2937;
-}
-
-.btn-filtrar{
-    background:#2563eb;
-}
-
-.btn-limpiar{
-    background:#64748b;
-}
-
-.btn-ver{
-    background:#2563eb;
-}
-
-.btn-procesar{
-    background:#16a34a;
-}
-
-.btn-protocolar{
-    background:#7c3aed;
-}
-
-.btn-novedades{
-    background:#0891b2;
-}
-
-.btn-novedades-sac{
-    background:#7c3aed;
-}
-
-.btn-complementaria{
-    background:#7c3aed;
-}
-
-.btn-complementaria-sac{
-    background:#9333ea;
-}
-
-.btn-anular{
-    background:#dc2626;
-}
-
-.btn-deshacer{
-    background:#d97706;
-}
-
-.btn-disabled{
-    background:#9ca3af;
-    cursor:not-allowed;
-    pointer-events:none;
-}
-
-
-/* =========================================
-   MENSAJES
-========================================= */
-
-.mensaje{
-    padding:14px 16px;
-    border-radius:10px;
-    margin-bottom:20px;
-    font-size:14px;
-    font-weight:bold;
-}
-
-.mensaje-ok{
-    background:#dcfce7;
-    color:#166534;
-    border:1px solid #86efac;
-}
-
-.mensaje-error{
-    background:#fee2e2;
-    color:#991b1b;
-    border:1px solid #fecaca;
-}
-
-
-/* =========================================
-   FILTROS
-========================================= */
-
-.filtros{
-    background:#f8fafc;
-    padding:16px;
-    border-radius:14px;
-    border:1px solid #e5e7eb;
-    margin-bottom:24px;
-}
-
-.form-filtros{
-    display:grid;
-    grid-template-columns:
-        1fr
-        1fr
-        1fr
-        auto
-        auto;
-
-    gap:10px;
-}
-
-.form-filtros input,
-.form-filtros select{
-    width:100%;
-    padding:11px 12px;
-    border:1px solid #cbd5e1;
-    border-radius:9px;
-    font-size:13px;
-    outline:none;
-    background:white;
-}
-
-.form-filtros input:focus,
-.form-filtros select:focus{
-    border-color:#14b8a6;
-    box-shadow:0 0 0 3px rgba(20,184,166,.15);
-}
-
-
-/* =========================================
-   TABLA
-========================================= */
-
-.tabla-contenedor{
-    width:100%;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th,
-td{
-    padding:11px 8px;
-    border-bottom:1px solid #e5e7eb;
-    font-size:13px;
-    vertical-align:middle;
-}
-
-th{
-    background:#0f766e;
-    color:white;
-    text-align:center;
-    white-space:nowrap;
-}
-
-td{
-    text-align:center;
-}
-
-thead th:first-child{
-    border-radius:10px 0 0 0;
-}
-
-thead th:last-child{
-    border-radius:0 10px 0 0;
-}
-
-tbody tr{
-    transition:background .15s;
-}
-
-tbody tr:hover{
-    background:#f8fafc;
-}
-
-
-/* =========================================
-   BADGES
-========================================= */
-
-.badge{
-    display:inline-block;
-    padding:6px 10px;
-    border-radius:999px;
-    font-size:11px;
-    font-weight:bold;
-    white-space:nowrap;
-}
-
-.estado-borrador{
-    background:#fef3c7;
-    color:#92400e;
-}
-
-.estado-cerrada{
-    background:#d1fae5;
-    color:#166534;
-}
-
-.estado-anulada{
-    background:#fee2e2;
-    color:#991b1b;
-}
-
-
-/* =========================================
-   ACCIONES TABLA
-========================================= */
-
-.acciones-tabla{
-    display:flex;
-    gap:6px;
-    justify-content:center;
-    flex-wrap:wrap;
-}
-
-
-.form-accion-inline{
-    margin:0;
-    padding:0;
-}
-
-
-/* =========================================
-   SIN RESULTADOS
-========================================= */
-
-.sin-resultados{
-    text-align:center;
-    padding:25px;
-    color:#64748b;
-    font-weight:bold;
-}
-
-
-/* =========================================
-   TABLET
-========================================= */
-
-@media (max-width:1000px){
-
-    .form-filtros{
-        grid-template-columns:1fr 1fr;
-    }
-
-    th,
-    td{
-        font-size:12px;
-        padding:9px 6px;
-    }
-}
-
-
-/* =========================================
-   CELULAR
-========================================= */
-
-@media (max-width:768px){
-
-    .contenedor{
-        width:94%;
-        margin:20px auto;
-    }
-
-    .panel{
-        padding:18px;
-        border-radius:16px;
-    }
-
-    .topbar{
-        flex-direction:column;
-        align-items:stretch;
-    }
-
-    .titulo-seccion h2{
-        text-align:center;
-        font-size:24px;
-    }
-
-    .titulo-seccion p{
-        text-align:center;
-    }
-
-    .acciones-superiores{
-        flex-direction:column;
-    }
-
-    .acciones-superiores .btn{
-        width:100%;
-    }
-
-    .form-filtros{
-        grid-template-columns:1fr;
-    }
-
-    .form-filtros .btn{
-        width:100%;
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | TABLA COMO TARJETAS
-    |--------------------------------------------------------------------------
-    */
-
-    table,
-    thead,
-    tbody,
-    tr,
-    th,
-    td{
-        display:block;
-        width:100%;
-    }
-
-    thead{
-        display:none;
-    }
-
-    tbody{
-        display:grid;
-        gap:16px;
-    }
-
-    tbody tr{
-        background:white;
-        border:1px solid #e5e7eb;
-        border-radius:14px;
-        padding:14px;
-        box-shadow:0 4px 12px rgba(0,0,0,.05);
-    }
-
-    tbody tr:hover{
-        background:white;
-    }
-
-    td{
-        display:grid;
-        grid-template-columns:120px 1fr;
-        gap:10px;
-        padding:8px 0;
-        border-bottom:1px solid #f1f5f9;
-        text-align:left;
-        font-size:13px;
-    }
-
-    td:last-child{
-        border-bottom:none;
-    }
-
-    td::before{
-        content:attr(data-label);
-        font-weight:bold;
-        color:#475569;
-    }
-
-    .acciones-tabla{
-        flex-direction:column;
-        width:100%;
-    }
-
-    .acciones-tabla .btn{
-        width:100%;
-    }
-}
-
-
-/* =========================================
-   CELULAR PEQUEÑO
-========================================= */
-
-@media (max-width:480px){
-
-    .titulo-seccion h2{
-        font-size:22px;
-    }
-
-    td{
-        grid-template-columns:105px 1fr;
-        font-size:12px;
-    }
-}
-
-</style>
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/liquidacion/liquidacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 
 </head>
 
@@ -1177,15 +701,13 @@ require __DIR__
                                                     ?>"
                                                     method="POST"
                                                     class="form-accion-inline"
-                                                    onsubmit="return confirmarProcesamiento(
-                                                        '<?php
+                                                    data-event-submit="liquidacion-1" data-event-value="<?php
                                                             echo htmlspecialchars(
                                                                 $tipoFila,
                                                                 ENT_QUOTES,
                                                                 'UTF-8'
                                                             );
-                                                        ?>'
-                                                    );"
+                                                        ?>"
                                                 >
 
                                                     <input
@@ -1336,15 +858,13 @@ require __DIR__
                                                 ?>"
                                                 method="POST"
                                                 class="form-accion-inline"
-                                                onsubmit="return confirmarProcesamiento(
-                                                    '<?php
+                                                data-event-submit="liquidacion-2" data-event-value="<?php
                                                         echo htmlspecialchars(
                                                             $tipoFila,
                                                             ENT_QUOTES,
                                                             'UTF-8'
                                                         );
-                                                    ?>'
-                                                );"
+                                                    ?>"
                                             >
 
                                                 <input
@@ -1391,9 +911,7 @@ require __DIR__
                                             ?>"
                                             method="POST"
                                             class="form-accion-inline"
-                                            onsubmit="return confirm(
-                                                '¿Seguro que desea anular esta liquidación? La liquidación quedará registrada como ANULADA.'
-                                            );"
+                                            data-event-submit="liquidacion-3"
                                         >
 
                                             <input
@@ -1460,9 +978,7 @@ require __DIR__
                                                 ?>"
                                                 method="POST"
                                                 class="form-accion-inline"
-                                                onsubmit="return confirm(
-                                                    '¿Seguro que desea DESHACER el procesamiento de esta liquidación? Se eliminarán los detalles y resúmenes generados, y la liquidación volverá a estado BORRADOR. Esta acción no elimina la cabecera de la liquidación.'
-                                                );"
+                                                data-event-submit="liquidacion-4"
                                             >
 
                                                 <input
@@ -1517,9 +1033,7 @@ require __DIR__
                                             ?>"
                                             method="POST"
                                             class="form-accion-inline"
-                                            onsubmit="return confirm(
-                                                '¿Seguro que desea anular esta liquidación cerrada? Los datos quedarán conservados como historial.'
-                                            );"
+                                            data-event-submit="liquidacion-5"
                                         >
 
                                             <input
@@ -1620,65 +1134,7 @@ require __DIR__
 
 
 
-<script>
-
-function confirmarProcesamiento(tipoLiquidacion){
-
-    tipoLiquidacion =
-        String(
-            tipoLiquidacion || ''
-        ).toUpperCase();
-
-
-    if(tipoLiquidacion === 'AGUINALDO'){
-
-        return confirm(
-            '¿Seguro que desea procesar esta liquidación de AGUINALDO? '
-            + 'Verifique antes las Novedades SAC, los días devengados, ya pagados y pendientes de cada empleado. '
-            + 'Al finalizar quedará CERRADA. Solo un administrador podrá deshacer el procesamiento si fuera necesario.'
-        );
-    }
-
-
-    if(tipoLiquidacion === 'COMPLEMENTARIA_SAC'){
-
-        return confirm(
-            '¿Seguro que desea procesar esta COMPLEMENTARIA DE SAC? '
-            + 'Verifique antes el personal seleccionado y los días SAC pendientes que se liquidarán ahora. '
-            + 'Solo se procesarán los empleados seleccionados. '
-            + 'Al finalizar quedará CERRADA. Solo un administrador podrá deshacer el procesamiento si fuera necesario.'
-        );
-    }
-
-
-    if(tipoLiquidacion === 'COMPLEMENTARIA'){
-
-        return confirm(
-            '¿Seguro que desea procesar esta liquidación COMPLEMENTARIA? '
-            + 'Verifique antes el personal seleccionado, los días liquidados y el presentismo. '
-            + 'Solo se procesarán los empleados seleccionados. '
-            + 'Al finalizar quedará CERRADA. Solo un administrador podrá deshacer el procesamiento si fuera necesario.'
-        );
-    }
-
-
-    if(tipoLiquidacion === 'MENSUAL'){
-
-        return confirm(
-            '¿Seguro que desea procesar esta liquidación? '
-            + 'Verifique antes las novedades de días liquidados y presentismo. '
-            + 'Al finalizar quedará CERRADA. Solo un administrador podrá deshacer el procesamiento si fuera necesario.'
-        );
-    }
-
-
-    return confirm(
-        '¿Seguro que desea procesar esta liquidación? '
-        + 'Al finalizar quedará CERRADA. Solo un administrador podrá deshacer el procesamiento si fuera necesario.'
-    );
-}
-
-</script>
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/liquidacion/liquidacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
 </body>
 

@@ -1,0 +1,439 @@
+
+
+/* =========================================
+   GENERAL
+========================================= */
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f7fb;
+    margin:0;
+    color:#1f2937;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header{
+    background:linear-gradient(
+        135deg,
+        #0f766e,
+        #14b8a6
+    );
+
+    color:white;
+    padding:22px 30px;
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,.12);
+}
+
+.header h1{
+    margin:0 0 5px 0;
+    font-size:30px;
+}
+
+.header p{
+    margin:0;
+    font-size:15px;
+    opacity:.95;
+}
+
+
+/* =========================================
+   CONTENEDOR
+========================================= */
+
+.contenedor{
+    width:96%;
+    max-width:1200px;
+    margin:30px auto;
+}
+
+
+/* =========================================
+   PANEL
+========================================= */
+
+.panel{
+    background:white;
+    border-radius:18px;
+    padding:24px;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.10);
+}
+
+
+/* =========================================
+   CABECERA DEL PANEL
+========================================= */
+
+.panel-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+.panel-header h2{
+    margin:0 0 6px 0;
+    color:#0f172a;
+}
+
+.panel-header p{
+    margin:0;
+    color:#6b7280;
+    font-size:14px;
+}
+
+
+/* =========================================
+   ACCIONES
+========================================= */
+
+.acciones{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.btn{
+    text-decoration:none;
+    padding:10px 14px;
+    border-radius:10px;
+    font-weight:bold;
+    color:white;
+    transition:.2s;
+    display:inline-block;
+    border:none;
+    cursor:pointer;
+    font-size:14px;
+    text-align:center;
+}
+
+.btn:hover{
+    opacity:.92;
+    transform:translateY(-1px);
+}
+
+.btn-nuevo{
+    background:#0f766e;
+}
+
+.btn-volver{
+    background:#1f2937;
+}
+
+.btn-editar{
+    background:#2563eb;
+}
+
+.btn-permisos{
+    background:#7c3aed;
+}
+
+.btn-estado{
+    background:#ea580c;
+}
+
+.btn-protegido{
+    background:#6b7280;
+    cursor:not-allowed;
+}
+
+.btn-protegido:hover{
+    opacity:1;
+    transform:none;
+}
+
+
+.usuarios-activos-info{
+    display:inline-block;
+    padding:8px 10px;
+    border-radius:10px;
+    background:#fff7ed;
+    color:#9a3412;
+    border:1px solid #fed7aa;
+    font-size:12px;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+
+/* =========================================
+   ALERTAS
+========================================= */
+
+.alerta{
+    background:#dcfce7;
+    border:1px solid #86efac;
+    color:#166534;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.alerta-error{
+    background:#fee2e2;
+    border:1px solid #fecaca;
+    color:#991b1b;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+
+/* =========================================
+   TABLA
+========================================= */
+
+.tabla-responsive{
+    overflow-x:auto;
+    border-radius:14px;
+    border:1px solid #e5e7eb;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:850px;
+}
+
+th{
+    background:#0f766e;
+    color:white;
+    font-size:14px;
+}
+
+th,
+td{
+    padding:12px;
+    border-bottom:1px solid #e5e7eb;
+    text-align:left;
+    vertical-align:middle;
+}
+
+tr:hover td{
+    background:#f9fafb;
+}
+
+
+/* =========================================
+   ESTADOS
+========================================= */
+
+.estado-activo{
+    background:#dcfce7;
+    color:#166534;
+    font-weight:bold;
+    padding:6px 10px;
+    border-radius:999px;
+    display:inline-block;
+    font-size:13px;
+}
+
+.estado-inactivo{
+    background:#fee2e2;
+    color:#991b1b;
+    font-weight:bold;
+    padding:6px 10px;
+    border-radius:999px;
+    display:inline-block;
+    font-size:13px;
+}
+
+
+/* =========================================
+   TIPO DE ROL
+========================================= */
+
+.admin{
+    background:#fef3c7;
+    color:#92400e;
+    font-weight:bold;
+    padding:6px 10px;
+    border-radius:999px;
+    display:inline-block;
+    font-size:13px;
+}
+
+.normal{
+    background:#e5e7eb;
+    color:#374151;
+    font-weight:bold;
+    padding:6px 10px;
+    border-radius:999px;
+    display:inline-block;
+    font-size:13px;
+}
+
+
+/* =========================================
+   ACCIONES DE TABLA
+========================================= */
+
+.acciones-tabla{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+
+.form-estado-rol{
+    margin:0;
+    display:inline-block;
+}
+
+.form-estado-rol .btn{
+    font-family:inherit;
+}
+
+
+/* =========================================
+   TARJETAS PARA CELULAR
+========================================= */
+
+.roles-cards{
+    display:none;
+}
+
+.rol-card{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:16px;
+
+    box-shadow:
+        0 6px 14px rgba(0,0,0,.08);
+
+    margin-bottom:15px;
+}
+
+.rol-card h3{
+    margin:0 0 8px 0;
+    color:#0f172a;
+}
+
+.rol-card p{
+    margin:6px 0;
+    font-size:14px;
+    color:#374151;
+    line-height:1.4;
+}
+
+.rol-card .descripcion{
+    color:#6b7280;
+    margin:10px 0;
+}
+
+.rol-card .badges{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:12px 0;
+}
+
+.rol-card .acciones-tabla{
+    flex-direction:column;
+    margin-top:12px;
+}
+
+.rol-card .btn{
+    width:100%;
+    padding:12px;
+}
+
+
+.rol-card .form-estado-rol{
+    width:100%;
+}
+
+.rol-card .form-estado-rol .btn{
+    width:100%;
+}
+
+
+/* =========================================
+   SIN DATOS
+========================================= */
+
+.sin-datos{
+    padding:24px;
+    text-align:center;
+    color:#64748b;
+    font-weight:bold;
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media(max-width:768px){
+
+    .header{
+        padding:18px 16px;
+        text-align:center;
+    }
+
+    .header h1{
+        font-size:25px;
+    }
+
+    .contenedor{
+        width:94%;
+        margin:20px auto;
+    }
+
+    .panel{
+        padding:18px;
+        border-radius:16px;
+    }
+
+    .panel-header{
+        flex-direction:column;
+        text-align:center;
+        align-items:stretch;
+    }
+
+    .acciones{
+        flex-direction:column;
+        width:100%;
+    }
+
+    .btn{
+        width:100%;
+        padding:13px;
+    }
+
+    .tabla-responsive{
+        display:none;
+    }
+
+    .roles-cards{
+        display:block;
+    }
+
+    .alerta,
+    .alerta-error{
+        font-size:14px;
+        text-align:center;
+    }
+}
+

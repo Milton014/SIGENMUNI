@@ -183,46 +183,7 @@ echo "\xEF\xBB\xBF";
     Reporte de Conceptos
 </title>
 
-<style>
-
-table{
-    border-collapse:collapse;
-    width:100%;
-}
-
-
-th,
-td{
-    border:1px solid #000;
-    padding:6px;
-    font-size:12px;
-    vertical-align:top;
-}
-
-
-th{
-    background:#dbeafe;
-    font-weight:bold;
-}
-
-
-.titulo{
-    font-size:16px;
-    font-weight:bold;
-}
-
-
-.subtitulo{
-    font-size:12px;
-}
-
-
-.total{
-    background:#ecfeff;
-    font-weight:bold;
-}
-
-</style>
+<style><?php readfile(__DIR__ . '/../../../public/assets/css/reportes/reporte_conceptos_excel.css'); ?></style>
 
 </head>
 

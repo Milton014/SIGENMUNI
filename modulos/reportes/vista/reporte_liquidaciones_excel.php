@@ -75,46 +75,7 @@ echo "\xEF\xBB\xBF";
     Reporte de Liquidaciones
 </title>
 
-<style>
-
-table{
-    border-collapse:collapse;
-    width:100%;
-}
-
-
-th,
-td{
-    border:1px solid #000;
-    padding:6px;
-    font-size:12px;
-    vertical-align:top;
-}
-
-
-th{
-    background:#dcfce7;
-    font-weight:bold;
-}
-
-
-.titulo{
-    font-size:16px;
-    font-weight:bold;
-}
-
-
-.subtitulo{
-    font-size:12px;
-}
-
-
-.total{
-    background:#f0fdf4;
-    font-weight:bold;
-}
-
-</style>
+<style><?php readfile(__DIR__ . '/../../../public/assets/css/reportes/reporte_liquidaciones_excel.css'); ?></style>
 
 </head>
 

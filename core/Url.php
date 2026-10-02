@@ -1,5 +1,32 @@
 <?php
 
+/** Ruta de un recurso propio, relativa a public/assets, con versión de caché. */
+function sigenmuniUrlAsset(string $archivo): string
+{
+    if (!preg_match('/\A(?:css|js|img)\/[a-zA-Z0-9_-]+(?:\/[a-zA-Z0-9_-]+)*\.[a-zA-Z0-9]+\z/', $archivo)) {
+        throw new InvalidArgumentException('Ruta de recurso no válida.');
+    }
+
+    $ruta = dirname(__DIR__) . '/public/assets/' . $archivo;
+    if (!is_file($ruta)) {
+        throw new RuntimeException('No se encontró el recurso: ' . $archivo);
+    }
+
+    static $versiones = [];
+    $versiones[$archivo] ??= substr(hash_file('sha256', $ruta), 0, 12);
+    return sigenmuniBaseUrl() . '/public/assets/' . $archivo . '?v=' . $versiones[$archivo];
+}
+
+/** JSON inerte y seguro para bloques script de tipo application/json. */
+function sigenmuniJsonVista($datos): string
+{
+    return json_encode(
+        $datos,
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR
+    );
+}
+
 /*
 |--------------------------------------------------------------------------
 | UTILIDADES DE URL

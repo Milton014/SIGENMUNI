@@ -1,0 +1,467 @@
+
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f7fb;
+    color:#1f2937;
+}
+
+.contenedor{
+    width:95%;
+    max-width:1450px;
+    margin:30px auto;
+}
+
+
+/* =========================================
+   CABECERA
+========================================= */
+
+.cabecera{
+    background:linear-gradient(135deg,#ea580c,#fb923c);
+    color:white;
+    border-radius:18px;
+    padding:24px;
+    box-shadow:0 8px 20px rgba(0,0,0,.10);
+    margin-bottom:22px;
+}
+
+.cabecera-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.cabecera h1{
+    margin:0 0 6px 0;
+    font-size:30px;
+}
+
+.cabecera p{
+    margin:0;
+    opacity:.95;
+}
+
+.acciones-superiores{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.btn{
+    display:inline-block;
+    text-decoration:none;
+    border:none;
+    border-radius:10px;
+    padding:11px 16px;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    color:white;
+    transition:.2s ease;
+    text-align:center;
+}
+
+.btn:hover{
+    opacity:.93;
+    transform:translateY(-1px);
+}
+
+.btn-volver{
+    background:#374151;
+}
+
+.btn-reportes{
+    background:#7c3aed;
+}
+
+.btn-aplicar{
+    background:#ea580c;
+}
+
+.btn-limpiar{
+    background:#6b7280;
+}
+
+.btn-pdf{
+    background:#dc2626;
+}
+
+.btn-excel{
+    background:#15803d;
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.error{
+    background:#fee2e2;
+    color:#991b1b;
+    border:1px solid #fecaca;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+
+/* =========================================
+   PANEL
+========================================= */
+
+.panel{
+    background:white;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+    border:1px solid #e5e7eb;
+    margin-bottom:20px;
+}
+
+.panel h2{
+    margin-top:0;
+    margin-bottom:16px;
+    font-size:20px;
+    color:#ea580c;
+}
+
+
+/* =========================================
+   FILTROS
+========================================= */
+
+.filtros{
+    display:grid;
+    grid-template-columns:1fr 1fr 1.25fr auto auto;
+    gap:12px;
+    align-items:end;
+}
+
+.campo label{
+    display:block;
+    margin-bottom:6px;
+    font-size:14px;
+    font-weight:bold;
+    color:#374151;
+}
+
+.campo input,
+.campo select{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    font-size:14px;
+    outline:none;
+    background:white;
+}
+
+.campo input:focus,
+.campo select:focus{
+    border-color:#fb923c;
+    box-shadow:0 0 0 3px rgba(251,146,60,.18);
+}
+
+.ayuda{
+    margin-top:6px;
+    font-size:12px;
+    color:#6b7280;
+    line-height:1.4;
+}
+
+.alcance{
+    margin-top:16px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+.alcance-item{
+    display:inline-flex;
+    align-items:center;
+    min-height:30px;
+    padding:6px 10px;
+    border-radius:999px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    font-size:12px;
+    font-weight:bold;
+}
+
+
+/* =========================================
+   TARJETAS
+========================================= */
+
+.tarjetas{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 6px 16px rgba(0,0,0,.06);
+}
+
+.card h3{
+    margin:0 0 8px 0;
+    font-size:13px;
+    color:#6b7280;
+    line-height:1.35;
+}
+
+.card .num{
+    font-size:23px;
+    font-weight:bold;
+    color:#ea580c;
+    overflow-wrap:anywhere;
+}
+
+.card .detalle{
+    margin-top:8px;
+    font-size:11px;
+    color:#94a3b8;
+    line-height:1.4;
+}
+
+
+/* =========================================
+   EXPORTAR
+========================================= */
+
+.acciones-estadisticas{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+
+/* =========================================
+   GRÁFICOS
+========================================= */
+
+.graficos{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:20px;
+}
+
+.grafico{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 8px 20px rgba(0,0,0,.06);
+    min-width:0;
+}
+
+.grafico h3{
+    margin:0 0 6px 0;
+    font-size:18px;
+    color:#111827;
+}
+
+.grafico p{
+    margin:0 0 15px 0;
+    font-size:13px;
+    color:#6b7280;
+    line-height:1.45;
+}
+
+.canvas-wrap{
+    position:relative;
+    width:100%;
+    min-height:320px;
+}
+
+canvas{
+    max-width:100%;
+}
+
+
+/* =========================================
+   TABLAS DE CONTROL
+========================================= */
+
+.datos-grafico{
+    margin-top:18px;
+    padding-top:15px;
+    border-top:1px solid #e5e7eb;
+}
+
+.datos-grafico h4{
+    margin:0 0 10px 0;
+    font-size:13px;
+    color:#475569;
+}
+
+.tabla-datos{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+
+.tabla-datos th,
+.tabla-datos td{
+    padding:8px 9px;
+    border-bottom:1px solid #f1f5f9;
+    font-size:12px;
+    text-align:left;
+    overflow-wrap:anywhere;
+}
+
+.tabla-datos th{
+    background:#fff7ed;
+    color:#9a3412;
+}
+
+.tabla-datos .numero{
+    text-align:right;
+    white-space:nowrap;
+}
+
+.tabla-datos .total-fila{
+    font-weight:bold;
+    background:#fafafa;
+}
+
+
+/* =========================================
+   SIN DATOS
+========================================= */
+
+.sin-datos{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:260px;
+    text-align:center;
+    color:#6b7280;
+    font-size:14px;
+    background:#f9fafb;
+    border:1px dashed #d1d5db;
+    border-radius:12px;
+    padding:20px;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media(max-width:1100px){
+
+    .filtros{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .filtros .btn{
+        width:100%;
+    }
+
+    .graficos{
+        grid-template-columns:1fr;
+    }
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media(max-width:768px){
+
+    .contenedor{
+        width:98%;
+        margin:10px auto;
+    }
+
+    .cabecera{
+        padding:18px 15px;
+        border-radius:15px;
+    }
+
+    .cabecera-top{
+        flex-direction:column;
+        align-items:stretch;
+        text-align:center;
+    }
+
+    .cabecera h1{
+        font-size:24px;
+    }
+
+    .acciones-superiores{
+        flex-direction:column;
+    }
+
+    .acciones-superiores .btn{
+        width:100%;
+    }
+
+    .panel{
+        padding:15px;
+        border-radius:15px;
+    }
+
+    .filtros{
+        grid-template-columns:1fr;
+    }
+
+    .campo input,
+    .campo select{
+        min-height:44px;
+        font-size:16px;
+    }
+
+    .acciones-estadisticas{
+        flex-direction:column;
+    }
+
+    .acciones-estadisticas .btn{
+        width:100%;
+    }
+
+    .tarjetas{
+        grid-template-columns:1fr;
+    }
+
+    .grafico{
+        padding:15px;
+        border-radius:15px;
+    }
+
+    .canvas-wrap{
+        min-height:280px;
+    }
+
+    .tabla-datos th,
+    .tabla-datos td{
+        font-size:11px;
+        padding:7px 6px;
+    }
+}
+

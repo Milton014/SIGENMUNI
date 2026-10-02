@@ -1,0 +1,671 @@
+
+
+/* =========================================
+   GENERAL
+========================================= */
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f7fb;
+    margin:0;
+    color:#1f2937;
+}
+
+
+
+
+/* =========================================
+   CONTENEDOR
+========================================= */
+
+.contenedor{
+    width:97%;
+    max-width:1500px;
+    margin:30px auto;
+}
+
+.panel{
+    background:white;
+
+    padding:24px;
+
+    border-radius:18px;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.08);
+}
+
+
+/* =========================================
+   TOPBAR
+========================================= */
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+    margin-bottom:25px;
+}
+
+.topbar h2{
+    margin:0;
+
+    color:#0f766e;
+
+    font-size:30px;
+}
+
+.acciones-superiores{
+    display:flex;
+
+    gap:8px;
+
+    flex-wrap:wrap;
+}
+
+
+/* =========================================
+   BOTONES GENERALES
+========================================= */
+
+.btn{
+    display:inline-block;
+
+    padding:11px 14px;
+
+    border:none;
+
+    border-radius:10px;
+
+    text-decoration:none;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    transition:0.2s;
+
+    text-align:center;
+}
+
+.btn:hover{
+    opacity:0.90;
+
+    transform:translateY(-1px);
+}
+
+.btn-nuevo{
+    background:#0f766e;
+}
+
+.btn-valores{
+    background:#0891b2;
+}
+
+.btn-volver{
+    background:#1f2937;
+}
+
+.btn-buscar{
+    background:#2563eb;
+}
+
+.btn-limpiar{
+    background:#475569;
+}
+
+
+/* =========================================
+   MENSAJES
+========================================= */
+
+.mensaje{
+    padding:14px 16px;
+
+    border-radius:10px;
+
+    margin-bottom:20px;
+
+    font-weight:bold;
+
+    font-size:14px;
+}
+
+.mensaje-ok{
+    background:#dcfce7;
+
+    color:#166534;
+
+    border:1px solid #86efac;
+}
+
+.mensaje-error{
+    background:#fee2e2;
+
+    color:#991b1b;
+
+    border:1px solid #fecaca;
+}
+
+
+/* =========================================
+   FILTROS
+========================================= */
+
+.filtros{
+    background:#f8fafc;
+
+    padding:18px;
+
+    border-radius:14px;
+
+    border:1px solid #e5e7eb;
+
+    display:grid;
+
+    grid-template-columns:
+        minmax(230px, 2fr)
+        minmax(190px, 1.3fr)
+        minmax(160px, 1fr)
+        auto
+        auto;
+
+    gap:12px;
+
+    margin-bottom:24px;
+}
+
+.filtros input,
+.filtros select{
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #cbd5e1;
+
+    border-radius:10px;
+
+    font-size:14px;
+
+    outline:none;
+
+    background:white;
+}
+
+.filtros input:focus,
+.filtros select:focus{
+    border-color:#14b8a6;
+
+    box-shadow:
+        0 0 0 3px rgba(20,184,166,0.15);
+}
+
+
+/* =========================================
+   TABLA
+========================================= */
+
+.tabla-contenedor{
+    width:100%;
+    overflow:visible;
+}
+
+table{
+    width:100%;
+
+    border-collapse:collapse;
+
+    table-layout:auto;
+
+    background:white;
+}
+
+th,
+td{
+    padding:9px 6px;
+
+    border-bottom:1px solid #e5e7eb;
+
+    text-align:left;
+
+    vertical-align:middle;
+
+    font-size:11px;
+}
+
+th{
+    background:#0f766e;
+
+    color:white;
+
+    font-size:11px;
+
+    white-space:nowrap;
+}
+
+thead th:first-child{
+    border-radius:10px 0 0 0;
+}
+
+thead th:last-child{
+    border-radius:0 10px 0 0;
+}
+
+tbody tr{
+    transition:background 0.15s;
+}
+
+tbody tr:hover{
+    background:#f8fafc;
+}
+
+
+/* =========================================
+   COLUMNAS
+========================================= */
+
+.col-id,
+.col-codigo,
+.col-sac,
+.col-visible,
+.col-estado,
+.col-vigencia,
+.col-acciones{
+    white-space:nowrap;
+}
+
+.col-nombre{
+    min-width:120px;
+}
+
+.col-base{
+    max-width:170px;
+
+    word-break:break-word;
+}
+
+.col-acciones{
+    width:1%;
+}
+
+
+/* =========================================
+   BADGES DE TIPO DE CONCEPTO
+========================================= */
+
+.badge{
+    display:inline-block;
+
+    padding:5px 8px;
+
+    border-radius:20px;
+
+    font-size:10px;
+
+    font-weight:bold;
+
+    color:white;
+
+    white-space:nowrap;
+}
+
+.badge-rem{
+    background:#2563eb;
+}
+
+.badge-no-rem{
+    background:#7c3aed;
+}
+
+.badge-asig{
+    background:#059669;
+}
+
+.badge-desc{
+    background:#dc2626;
+}
+
+.badge-aporte{
+    background:#ea580c;
+}
+
+
+/* =========================================
+   ESTADOS
+========================================= */
+
+.estado-activo{
+    color:#166534;
+
+    font-weight:bold;
+}
+
+.estado-inactivo{
+    color:#991b1b;
+
+    font-weight:bold;
+}
+
+
+/* =========================================
+   ACCIONES
+========================================= */
+
+.acciones{
+    display:flex;
+
+    gap:5px;
+
+    flex-wrap:wrap;
+
+    align-items:center;
+}
+
+.form-accion{
+    margin:0;
+    padding:0;
+}
+
+.acciones .btn-accion{
+    text-decoration:none;
+
+    color:white;
+
+    border:none;
+
+    cursor:pointer;
+
+    font-family:inherit;
+
+    font-size:10px;
+
+    font-weight:bold;
+
+    border-radius:7px;
+
+    padding:7px 8px;
+
+    transition:0.2s;
+
+    white-space:nowrap;
+}
+
+.acciones .btn-accion:hover{
+    opacity:0.86;
+
+    transform:translateY(-1px);
+}
+
+.btn-editar{
+    background:#d97706;
+}
+
+.btn-inactivar{
+    background:#dc2626;
+}
+
+.btn-activar{
+    background:#16a34a;
+}
+
+
+/* =========================================
+   SIN RESULTADOS
+========================================= */
+
+.sin-resultados{
+    text-align:center;
+
+    padding:25px;
+
+    color:#64748b;
+
+    font-weight:bold;
+}
+
+
+/* =========================================
+   PANTALLAS MEDIANAS
+========================================= */
+
+@media (max-width:1200px){
+
+    .contenedor{
+        width:98%;
+    }
+
+    .panel{
+        padding:18px;
+    }
+
+    th,
+    td{
+        padding:7px 4px;
+
+        font-size:10px;
+    }
+
+    th{
+        font-size:10px;
+    }
+
+    .badge{
+        font-size:9px;
+        padding:4px 6px;
+    }
+
+    .acciones .btn-accion{
+        font-size:9px;
+        padding:6px;
+    }
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width:992px){
+
+    .filtros{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .filtros .btn{
+        width:100%;
+    }
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width:768px){
+
+    .contenedor{
+        width:94%;
+
+        margin:20px auto;
+    }
+
+    .panel{
+        padding:18px;
+
+        border-radius:16px;
+    }
+
+    .topbar{
+        flex-direction:column;
+
+        align-items:stretch;
+    }
+
+    .topbar h2{
+        text-align:center;
+
+        font-size:24px;
+    }
+
+    .acciones-superiores{
+        flex-direction:column;
+    }
+
+    .acciones-superiores .btn{
+        width:100%;
+    }
+
+    .filtros{
+        grid-template-columns:1fr;
+
+        padding:16px;
+    }
+
+    .filtros input,
+    .filtros select,
+    .filtros .btn{
+        width:100%;
+
+        min-height:44px;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TABLA COMO TARJETAS
+    |--------------------------------------------------------------------------
+    */
+
+    table,
+    thead,
+    tbody,
+    tr,
+    th,
+    td{
+        display:block;
+
+        width:100%;
+    }
+
+    thead{
+        display:none;
+    }
+
+    tbody{
+        display:grid;
+
+        gap:16px;
+    }
+
+    tbody tr{
+        background:white;
+
+        border:1px solid #e5e7eb;
+
+        border-radius:14px;
+
+        padding:14px;
+
+        box-shadow:
+            0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    tbody tr:hover{
+        background:white;
+    }
+
+    td{
+        display:grid;
+
+        grid-template-columns:145px 1fr;
+
+        gap:10px;
+
+        padding:8px 0;
+
+        border-bottom:1px solid #f1f5f9;
+
+        font-size:13px;
+
+        white-space:normal;
+    }
+
+    td:last-child{
+        border-bottom:none;
+    }
+
+    td::before{
+        content:attr(data-label);
+
+        font-weight:bold;
+
+        color:#475569;
+    }
+
+    .col-codigo,
+    .col-nombre,
+    .col-base,
+    .col-sac,
+    .col-visible,
+    .col-estado,
+    .col-vigencia,
+    .col-acciones{
+        white-space:normal;
+
+        max-width:none;
+
+        width:auto;
+    }
+
+    .acciones{
+        display:flex;
+
+        flex-direction:column;
+
+        gap:7px;
+
+        width:100%;
+    }
+
+    .acciones .btn-accion{
+        width:100%;
+
+        text-align:center;
+
+        font-size:12px;
+
+        padding:9px;
+    }
+}
+
+
+/* =========================================
+   CELULARES PEQUEÑOS
+========================================= */
+
+@media (max-width:480px){
+
+    .topbar h2{
+        font-size:22px;
+    }
+
+    td{
+        grid-template-columns:115px 1fr;
+
+        font-size:12px;
+    }
+}
+

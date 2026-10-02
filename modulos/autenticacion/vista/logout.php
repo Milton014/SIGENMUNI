@@ -40,50 +40,7 @@
     ?>"
 >
 
-<style>
-
-body{
-    margin:0;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family:Arial,sans-serif;
-    background:#f4f7fb;
-    color:#1f2937;
-}
-
-.card{
-    width:90%;
-    max-width:420px;
-    background:white;
-    padding:30px;
-    border-radius:16px;
-    box-shadow:0 8px 20px rgba(0,0,0,.10);
-    text-align:center;
-}
-
-h1{
-    margin-top:0;
-    color:#0f766e;
-    font-size:24px;
-}
-
-p{
-    line-height:1.5;
-}
-
-a{
-    color:#0f766e;
-    font-weight:bold;
-    text-decoration:none;
-}
-
-a:hover{
-    text-decoration:underline;
-}
-
-</style>
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/autenticacion/logout.css'), ENT_QUOTES, 'UTF-8') ?>">
 
 </head>
 
@@ -120,47 +77,10 @@ a:hover{
 </div>
 
 
-<script>
-
-/*
-|--------------------------------------------------------------------------
-| ELIMINAR CACHÉ LOCAL DE LA SESIÓN
-|--------------------------------------------------------------------------
-*/
-
-try {
-
-    localStorage.removeItem(
-        "sigenmuni_sesion"
-    );
-
-} catch (error) {
-
-    console.warn(
-        "No fue posible limpiar localStorage.",
-        error
-    );
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| REDIRIGIR AL LOGIN DEL ROUTER
-|--------------------------------------------------------------------------
-*/
-
-window.location.replace(
-    <?php
-    echo json_encode(
-        $autenticacionUrlLogin,
-        JSON_UNESCAPED_SLASHES
-        |
-        JSON_UNESCAPED_UNICODE
-    );
-    ?>
-);
-
-</script>
+<script type="application/json" id="datos-logout"><?= sigenmuniJsonVista([
+    'autenticacionUrlLogin' => $autenticacionUrlLogin
+]) ?></script>
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/autenticacion/logout.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
 </body>
 

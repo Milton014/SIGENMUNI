@@ -96,67 +96,7 @@ echo "\xEF\xBB\xBF";
     Reporte de Categorías
 </title>
 
-<style>
-
-table{
-    border-collapse:collapse;
-    width:100%;
-}
-
-
-th,
-td{
-    border:1px solid #000;
-    padding:6px;
-    font-size:12px;
-    vertical-align:top;
-}
-
-
-th{
-    background:#ede9fe;
-    font-weight:bold;
-}
-
-
-.titulo{
-    font-size:16px;
-    font-weight:bold;
-}
-
-
-.subtitulo{
-    font-size:12px;
-}
-
-
-.total{
-    background:#f5f3ff;
-    font-weight:bold;
-}
-
-
-.sin-valor{
-    background:#f1f5f9;
-    color:#64748b;
-    font-weight:bold;
-}
-
-
-.configuracion-completa{
-    background:#dcfce7;
-    color:#166534;
-    font-weight:bold;
-}
-
-
-.configuracion-incompleta{
-    background:#fef3c7;
-    color:#92400e;
-    font-weight:bold;
-}
-
-</style>
+<style><?php readfile(__DIR__ . '/../../../public/assets/css/reportes/reporte_categorias_excel.css'); ?></style>
 
 </head>
 

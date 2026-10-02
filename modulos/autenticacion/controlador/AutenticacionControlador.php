@@ -68,6 +68,9 @@ class AutenticacionControlador
 
 
         switch ($error) {
+            case 'acceso_actualizado':
+                $mensaje = 'Los datos de acceso fueron actualizados. Iniciá sesión nuevamente con tus credenciales actuales.';
+                break;
 
             case 'sin_permiso':
                 $mensaje =
@@ -113,7 +116,10 @@ class AutenticacionControlador
             'POST'
         ) {
 
-            if (
+            if (!sigenmuniCsrfValido($_POST['_csrf'] ?? '')) {
+                http_response_code(403);
+                $mensaje = 'La sesión del formulario no es válida o expiró. Recargue la página e inténtelo nuevamente.';
+            } elseif (
                 isset($_POST['usuario'])
                 &&
                 !is_string($_POST['usuario'])
@@ -153,26 +159,15 @@ class AutenticacionControlador
                 } else {
 
                     try {
-                        $fila =
-                            $this->modelo
-                                ->buscarUsuarioPorNombre(
-                                    $usuarioIngresado
-                                );
-
-                    } catch (Exception $e) {
-                        die(
-                            htmlspecialchars(
-                                $e->getMessage(),
-                                ENT_QUOTES | ENT_SUBSTITUTE,
-                                'UTF-8'
-                            )
-                        );
+                        $resultadoAcceso = $this->modelo->autenticarUsuario($usuarioIngresado, $pass);
+                        $fila = $resultadoAcceso['usuario'];
+                    } catch (Throwable $e) {
+                        error_log('[SIGENMUNI - login] No se pudo comprobar el acceso.');
+                        $fila = null;
+                        $resultadoAcceso = ['mensaje' => 'No se pudo comprobar el acceso. Intentá nuevamente más tarde.'];
                     }
-
-
                     if (!$fila) {
-                        $mensaje =
-                            'Usuario o contraseña incorrectos.';
+                        $mensaje = $resultadoAcceso['mensaje'];
 
                     } elseif (
                         (int)$fila['activo']
@@ -181,15 +176,6 @@ class AutenticacionControlador
                     ) {
                         $mensaje =
                             'El usuario está inactivo. Comuníquese con el administrador.';
-
-                    } elseif (
-                        !password_verify(
-                            $pass,
-                            $fila['clave']
-                        )
-                    ) {
-                        $mensaje =
-                            'Usuario o contraseña incorrectos.';
 
                     } elseif (
                         empty($fila['rol_id'])
@@ -243,6 +229,8 @@ class AutenticacionControlador
 
                         $_SESSION['es_admin'] =
                             (int)$fila['es_admin'];
+
+                        $_SESSION['version_acceso'] = (int)$fila['version_acceso'];
 
                         $_SESSION['sincronizar_local_storage'] =
                             true;
@@ -544,12 +532,9 @@ class AutenticacionControlador
                                 );
 
 
-                            $this->modelo
-                                ->guardarCodigoRecuperacion(
-                                    (int)$usuario['id'],
-                                    $codigo,
-                                    $expira
-                                );
+                            if (!$this->modelo->guardarCodigoRecuperacion((int)$usuario['id'], $codigo, $expira)) {
+                                throw new RuntimeException('Ya se solicitó un código. Revisá tu correo o esperá a que termine el plazo de diez minutos para solicitar otro.');
+                            }
 
 
                             try {
@@ -562,9 +547,7 @@ class AutenticacionControlador
 
                                 try {
                                     $this->modelo
-                                        ->limpiarCodigoRecuperacion(
-                                            (int)$usuario['id']
-                                        );
+                                        ->limpiarCodigoRecuperacion((int)$usuario['id'], $codigo);
                                 } catch (Exception $ignorado) {
                                     error_log(
                                         '[SIGENMUNI - recuperación] No se pudo invalidar el código luego de fallar el envío: '
@@ -904,137 +887,19 @@ class AutenticacionControlador
         }
 
 
+        $claveHash = password_hash($nuevaContra, PASSWORD_DEFAULT);
+        if ($claveHash === false) {
+            $this->mostrarError('No se pudo generar la nueva contraseña.');
+        }
         try {
-            $usuario =
-                $this->modelo
-                    ->buscarAdministradorPorCorreo(
-                        $correo
-                    );
-
-        } catch (Exception $e) {
-            $this->mostrarError(
-                'No se pudo validar el usuario administrador.'
-            );
+            $errorRecuperacion = $this->modelo->recuperarAcceso($correo, $codigo, $nuevoUsuario, $claveHash);
+        } catch (Throwable $e) {
+            error_log('[SIGENMUNI - recuperación] No se pudo completar la operación.');
+            $this->mostrarError('No se pudo actualizar el acceso. Intentá nuevamente más tarde.');
         }
-
-
-        if (!$usuario) {
-            $this->mostrarError(
-                'No se encontró un administrador activo para actualizar el acceso.'
-            );
+        if ($errorRecuperacion !== null) {
+            $this->mostrarError($errorRecuperacion, $correo);
         }
-
-
-        $usuarioId =
-            (int)$usuario['id'];
-
-
-        if (
-            empty($usuario['codigo_recuperacion'])
-            ||
-            empty($usuario['codigo_expira'])
-        ) {
-            $this->mostrarError(
-                'No hay un código de recuperación activo. Solicitá uno nuevo.'
-            );
-        }
-
-
-        if (
-            !hash_equals(
-                (string)$usuario['codigo_recuperacion'],
-                (string)$codigo
-            )
-        ) {
-            $this->mostrarError(
-                'Código incorrecto.'
-            );
-        }
-
-
-        $ahora =
-            date(
-                'Y-m-d H:i:s'
-            );
-
-
-        if (
-            $usuario['codigo_expira']
-            <
-            $ahora
-        ) {
-
-            try {
-                $this->modelo
-                    ->limpiarCodigoRecuperacion(
-                        $usuarioId
-                    );
-            } catch (Exception $ignorado) {
-                error_log(
-                    '[SIGENMUNI - recuperación] No se pudo limpiar un código vencido: '
-                    . $ignorado->getMessage()
-                );
-            }
-
-
-            $this->mostrarError(
-                'El código venció. Solicitá uno nuevo.'
-            );
-        }
-
-
-        try {
-            if (
-                $this->modelo
-                    ->existeNombreUsuarioEnOtroUsuario(
-                        $nuevoUsuario,
-                        $usuarioId
-                    )
-            ) {
-                $this->mostrarError(
-                    'El nombre de usuario ya está registrado.'
-                );
-            }
-
-        } catch (Exception $e) {
-            $this->mostrarError(
-                'No se pudo validar el nombre de usuario.'
-            );
-        }
-
-
-        $claveHash =
-            password_hash(
-                $nuevaContra,
-                PASSWORD_DEFAULT
-            );
-
-
-        if (
-            $claveHash
-            ===
-            false
-        ) {
-            $this->mostrarError(
-                'No se pudo generar la nueva contraseña.'
-            );
-        }
-
-
-        try {
-            $this->modelo
-                ->actualizarAcceso(
-                    $usuarioId,
-                    $nuevoUsuario,
-                    $claveHash
-                );
-
-        } catch (Exception $e) {
-            $this->mostrarError(
-                'Error al actualizar los datos de acceso.'
-            );
-        }
-
 
         $autenticacionUrlLogin =
             sigenmuniUrlRuta(
@@ -1398,7 +1263,7 @@ class AutenticacionControlador
     |--------------------------------------------------------------------------
     */
 
-    private function mostrarError($mensaje)
+    private function mostrarError($mensaje, $correo = '')
     {
         $autenticacionUrlVolver =
             sigenmuniUrlRuta(
@@ -1411,6 +1276,9 @@ class AutenticacionControlador
             );
 
 
+        if ($correo !== '' && filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+            $autenticacionUrlVolver = sigenmuniUrlRuta('verificar-codigo', ['correo' => $correo]);
+        }
         require __DIR__
             . '/../vista/error.php';
 

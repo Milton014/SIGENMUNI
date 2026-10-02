@@ -1641,6 +1641,10 @@ class UsuarioModelo
                 nombre_usuario = ?,
                 email = ?,
                 clave = ?,
+                version_acceso = version_acceso + 1,
+                codigo_recuperacion = NULL,
+                codigo_expira = NULL,
+                recuperacion_intentos = 0,
                 rol = ?,
                 rol_id = ?
             WHERE id = ?

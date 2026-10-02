@@ -463,10 +463,18 @@ class LiquidacionControlador
             |--------------------------------------------------------------------------
             */
 
-            $liquidacion =
-                $this->modelo->obtenerPorId(
-                    $liquidacionId
-                );
+            // Guardar y procesar comparten el bloqueo de la misma cabecera.
+            if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+                if (!sigenmuniCsrfValido($_POST['_csrf'] ?? '')) {
+                    throw new RuntimeException('La sesión del formulario no es válida o expiró. Recargue la página.');
+                }
+                $this->modelo->iniciarTransaccion();
+                $transaccionIniciada = true;
+            }
+            $liquidacion = $this->modelo->obtenerPorId($liquidacionId, $transaccionIniciada);
+            if ($transaccionIniciada && (!$liquidacion || $liquidacion['estado'] !== 'BORRADOR')) {
+                throw new RuntimeException('No se guardaron los cambios: la liquidación ya no está en BORRADOR o no existe. Recargue la página.');
+            }
 
 
             if (!$liquidacion) {
@@ -663,11 +671,7 @@ class LiquidacionControlador
                 |--------------------------------------------------------------------------
                 */
 
-                $this->modelo
-                    ->iniciarTransaccion();
-
-                $transaccionIniciada =
-                    true;
+                // La transacción y el bloqueo se adquieren antes de leer las novedades.
 
 
                 foreach (
@@ -1098,10 +1102,18 @@ class LiquidacionControlador
 
         try {
 
-            $liquidacion =
-                $this->modelo->obtenerPorId(
-                    $liquidacionId
-                );
+            // Guardar y procesar comparten el bloqueo de la misma cabecera.
+            if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+                if (!sigenmuniCsrfValido($_POST['_csrf'] ?? '')) {
+                    throw new RuntimeException('La sesión del formulario no es válida o expiró. Recargue la página.');
+                }
+                $this->modelo->iniciarTransaccion();
+                $transaccionIniciada = true;
+            }
+            $liquidacion = $this->modelo->obtenerPorId($liquidacionId, $transaccionIniciada);
+            if ($transaccionIniciada && (!$liquidacion || $liquidacion['estado'] !== 'BORRADOR')) {
+                throw new RuntimeException('No se guardaron los cambios: la liquidación ya no está en BORRADOR o no existe. Recargue la página.');
+            }
 
 
             if (!$liquidacion) {
@@ -1241,10 +1253,7 @@ class LiquidacionControlador
                 }
 
 
-                $this->modelo
-                    ->iniciarTransaccion();
-
-                $transaccionIniciada = true;
+                // La transacción y el bloqueo se adquieren antes de leer las novedades.
 
 
                 foreach (
@@ -1662,10 +1671,18 @@ class LiquidacionControlador
 
         try {
 
-            $liquidacion =
-                $this->modelo->obtenerPorId(
-                    $liquidacionId
-                );
+            // Guardar y procesar comparten el bloqueo de la misma cabecera.
+            if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+                if (!sigenmuniCsrfValido($_POST['_csrf'] ?? '')) {
+                    throw new RuntimeException('La sesión del formulario no es válida o expiró. Recargue la página.');
+                }
+                $this->modelo->iniciarTransaccion();
+                $transaccionIniciada = true;
+            }
+            $liquidacion = $this->modelo->obtenerPorId($liquidacionId, $transaccionIniciada);
+            if ($transaccionIniciada && (!$liquidacion || $liquidacion['estado'] !== 'BORRADOR')) {
+                throw new RuntimeException('No se guardaron los cambios: la liquidación ya no está en BORRADOR o no existe. Recargue la página.');
+            }
 
 
             if (!$liquidacion) {
@@ -1804,10 +1821,7 @@ class LiquidacionControlador
                 }
 
 
-                $this->modelo
-                    ->iniciarTransaccion();
-
-                $transaccionIniciada = true;
+                // La transacción y el bloqueo se adquieren antes de leer las novedades.
 
 
                 foreach (
@@ -2162,10 +2176,18 @@ class LiquidacionControlador
 
         try {
 
-            $liquidacion =
-                $this->modelo->obtenerPorId(
-                    $liquidacionId
-                );
+            // Guardar y procesar comparten el bloqueo de la misma cabecera.
+            if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+                if (!sigenmuniCsrfValido($_POST['_csrf'] ?? '')) {
+                    throw new RuntimeException('La sesión del formulario no es válida o expiró. Recargue la página.');
+                }
+                $this->modelo->iniciarTransaccion();
+                $transaccionIniciada = true;
+            }
+            $liquidacion = $this->modelo->obtenerPorId($liquidacionId, $transaccionIniciada);
+            if ($transaccionIniciada && (!$liquidacion || $liquidacion['estado'] !== 'BORRADOR')) {
+                throw new RuntimeException('No se guardaron los cambios: la liquidación ya no está en BORRADOR o no existe. Recargue la página.');
+            }
 
 
             if (!$liquidacion) {
@@ -2304,10 +2326,7 @@ class LiquidacionControlador
                 }
 
 
-                $this->modelo
-                    ->iniciarTransaccion();
-
-                $transaccionIniciada = true;
+                // La transacción y el bloqueo se adquieren antes de leer las novedades.
 
 
                 foreach (
@@ -2672,10 +2691,18 @@ class LiquidacionControlador
 
         try {
 
-            $liquidacion =
-                $this->modelo->obtenerPorId(
-                    $liquidacionId
-                );
+            // Guardar y procesar comparten el bloqueo de la misma cabecera.
+            if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+                if (!sigenmuniCsrfValido($_POST['_csrf'] ?? '')) {
+                    throw new RuntimeException('La sesión del formulario no es válida o expiró. Recargue la página.');
+                }
+                $this->modelo->iniciarTransaccion();
+                $transaccionIniciada = true;
+            }
+            $liquidacion = $this->modelo->obtenerPorId($liquidacionId, $transaccionIniciada);
+            if ($transaccionIniciada && (!$liquidacion || $liquidacion['estado'] !== 'BORRADOR')) {
+                throw new RuntimeException('No se guardaron los cambios: la liquidación ya no está en BORRADOR o no existe. Recargue la página.');
+            }
 
 
             if (!$liquidacion) {
@@ -2814,11 +2841,7 @@ class LiquidacionControlador
                 |--------------------------------------------------------------------------
                 */
 
-                $this->modelo
-                    ->iniciarTransaccion();
-
-                $transaccionIniciada =
-                    true;
+                // La transacción y el bloqueo se adquieren antes de leer las novedades.
 
 
                 foreach (
@@ -3156,10 +3179,11 @@ class LiquidacionControlador
             }
 
 
-            $liquidacion =
-                $this->modelo->obtenerPorId(
-                    $liquidacionId
-                );
+            // Bloquear antes de leer el estado y los datos del cálculo.
+            // Otra solicitud esperará y comprobará el estado ya confirmado.
+            $this->modelo->iniciarTransaccion();
+            $transaccionIniciada = true;
+            $liquidacion = $this->modelo->obtenerPorId($liquidacionId, true);
 
             if (!$liquidacion) {
                 throw new Exception("La liquidación seleccionada no existe.");
@@ -3643,9 +3667,6 @@ class LiquidacionControlador
             }
 
             $calculadora = new CalculadoraLiquidacion($this->modelo);
-
-            $this->modelo->iniciarTransaccion();
-            $transaccionIniciada = true;
 
             $this->modelo->limpiarProcesamiento($liquidacionId);
 
@@ -4322,8 +4343,13 @@ class LiquidacionControlador
                         ->iniciarTransaccion();
 
 
-                    $transaccionIniciada =
-                        true;
+                    $transaccionIniciada = true;
+
+                    // Revalidar después de esperar el bloqueo de la cabecera.
+                    $actual = $this->modelo->obtenerPorId($liquidacionId, true);
+                    if (!$actual || $actual['estado'] !== 'CERRADA') {
+                        throw new RuntimeException('La liquidación ya no está cerrada. Recargue la página.');
+                    }
 
 
                     /*
@@ -4531,6 +4557,53 @@ class LiquidacionControlador
         }
     }
 
+    /** Descarga de lectura: mismo permiso que la consulta del recibo. */
+    public function descargarRecibo()
+    {
+        header('Cache-Control: private, no-store');
+        header('X-Content-Type-Options: nosniff');
+        $modo = $_GET['modo'] ?? 'descargar';
+        if (!is_string($modo) || !in_array($modo, ['descargar', 'imprimir'], true)) {
+            http_response_code(400);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'El modo de salida del recibo no es válido.';
+            return;
+        }
+        $liquidacionId = filter_var($_GET['liquidacion_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $empleadoId = filter_var($_GET['empleado_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($liquidacionId === false || $empleadoId === false) {
+            http_response_code(400);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Los identificadores del recibo no son válidos.';
+            return;
+        }
+        try {
+            $recibo = $this->prepararRecibo($liquidacionId, $empleadoId);
+            $pdf = GeneradorReciboPDF::generarEnMemoria($recibo);
+        } catch (OutOfBoundsException $e) {
+            http_response_code(404);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'No se encontró el recibo solicitado.';
+            return;
+        } catch (DomainException $e) {
+            http_response_code(409);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Solo se pueden descargar recibos de liquidaciones CERRADAS.';
+            return;
+        } catch (Throwable $e) {
+            error_log('[SIGENMUNI - descargar recibo] ' . $e->getMessage());
+            http_response_code(500);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'No se pudo generar el PDF del recibo.';
+            return;
+        }
+        header('Content-Type: application/pdf');
+        $disposicion = $modo === 'imprimir' ? 'inline' : 'attachment';
+        header('Content-Disposition: ' . $disposicion . '; filename="' . $pdf['nombre'] . '"');
+        header('Content-Length: ' . strlen($pdf['contenido']));
+        echo $pdf['contenido'];
+    }
+
     public function recibosLiquidacion()
     {
         $liquidacionId = isset($_GET['liquidacion_id'])
@@ -4603,6 +4676,17 @@ class LiquidacionControlador
 
             $esCerrada = $estadoLiquidacion === 'CERRADA';
             $esAnulada = $estadoLiquidacion === 'ANULADA';
+
+            if ($esCerrada) {
+                $pdf = GeneradorReciboPDF::generarLoteEnMemoria($recibos);
+                header('Content-Type: application/pdf');
+                header('Content-Disposition: inline; filename="' . $pdf['nombre'] . '"');
+                header('Cache-Control: private, no-store');
+                header('X-Content-Type-Options: nosniff');
+                header('Content-Length: ' . strlen($pdf['contenido']));
+                echo $pdf['contenido'];
+                return;
+            }
 
             require __DIR__
                 . '/../vista/recibos_liquidacion_pdf.php';
@@ -5172,7 +5256,7 @@ class LiquidacionControlador
         );
 
         if (!$datos) {
-            throw new Exception(
+            throw new OutOfBoundsException(
                 "No se encontró el recibo solicitado."
             );
         }

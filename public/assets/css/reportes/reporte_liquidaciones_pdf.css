@@ -1,0 +1,334 @@
+
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f7fb;
+    color:#1f2937;
+}
+
+.contenedor{
+    width:95%;
+    max-width:1450px;
+    margin:20px auto;
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.08);
+}
+
+
+/* =========================================
+   ACCIONES
+========================================= */
+
+.acciones{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.btn{
+    display:inline-block;
+    text-decoration:none;
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    color:white;
+}
+
+.btn-volver{
+    background:#6b7280;
+}
+
+.btn-imprimir{
+    background:#dc2626;
+}
+
+
+/* =========================================
+   ENCABEZADO
+========================================= */
+
+.encabezado{
+    border:2px solid #d1d5db;
+    border-radius:10px;
+    padding:18px;
+    margin-bottom:18px;
+}
+
+.encabezado h1{
+    margin:0 0 6px 0;
+    font-size:26px;
+    color:#16a34a;
+}
+
+.encabezado p{
+    margin:4px 0;
+    font-size:14px;
+}
+
+.resumen{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:10px;
+    margin-top:15px;
+}
+
+.info-box{
+    border:1px solid #e5e7eb;
+    background:#f9fafb;
+    border-radius:8px;
+    padding:10px 12px;
+}
+
+.info-box strong{
+    display:block;
+    margin-bottom:5px;
+    font-size:13px;
+    color:#374151;
+}
+
+
+/* =========================================
+   TABLA
+========================================= */
+
+.tabla-contenedor{
+    width:100%;
+    overflow:visible;
+}
+
+table{
+    width:100%;
+    min-width:0;
+    table-layout:fixed;
+    border-collapse:collapse;
+}
+
+th,
+td{
+    border:1px solid #d1d5db;
+    padding:6px 5px;
+    font-size:10px;
+    text-align:left;
+    vertical-align:middle;
+    overflow-wrap:anywhere;
+}
+
+th{
+    background:#16a34a;
+    color:white;
+    white-space:normal;
+    line-height:1.15;
+}
+
+
+/* =========================================
+   ANCHOS
+========================================= */
+
+.col-id{
+    width:4%;
+}
+
+.col-tipo{
+    width:8%;
+}
+
+.col-periodo{
+    width:7%;
+}
+
+.col-fecha{
+    width:8%;
+}
+
+.col-descripcion{
+    width:12%;
+}
+
+.col-estado{
+    width:8%;
+    text-align:center;
+}
+
+.col-empleados{
+    width:6%;
+    text-align:center;
+}
+
+.col-rem{
+    width:9%;
+}
+
+.col-desc{
+    width:9%;
+}
+
+.col-no-rem{
+    width:9%;
+}
+
+.col-asig{
+    width:8%;
+}
+
+.col-neto{
+    width:9%;
+}
+
+.col-creada{
+    width:10%;
+}
+
+
+/* =========================================
+   ESTADOS
+========================================= */
+
+.estado-badge{
+    display:inline-block;
+    padding:4px 7px;
+    border-radius:999px;
+    font-size:9px;
+    font-weight:bold;
+}
+
+.estado-borrador{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+ .estado-cerrada{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.estado-anulada{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.neto{
+    font-weight:bold;
+}
+
+.sin-registros{
+    text-align:center;
+    padding:20px;
+    color:#6b7280;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    background:#fafafa;
+}
+
+
+/* =========================================
+   IMPRESIÓN A4 HORIZONTAL
+========================================= */
+
+@media print{
+
+    @page{
+        size:A4 landscape;
+        margin:7mm;
+    }
+
+    body{
+        background:#fff;
+    }
+
+    .acciones{
+        display:none;
+    }
+
+    .contenedor{
+        width:100%;
+        max-width:100%;
+        margin:0;
+        padding:0;
+        border-radius:0;
+        box-shadow:none;
+    }
+
+    .encabezado{
+        padding:9px;
+        margin-bottom:8px;
+        page-break-inside:avoid;
+    }
+
+    .encabezado h1{
+        font-size:18px;
+    }
+
+    .encabezado p{
+        font-size:9px;
+    }
+
+    .resumen{
+        gap:4px;
+        margin-top:7px;
+    }
+
+    .info-box{
+        padding:5px;
+        font-size:8px;
+    }
+
+    .info-box strong{
+        font-size:8px;
+    }
+
+    table{
+        width:100%;
+        min-width:0;
+        table-layout:fixed;
+    }
+
+    th,
+    td{
+        padding:3px 2px;
+        font-size:7px;
+    }
+
+    .estado-badge{
+        font-size:6px;
+        padding:2px 4px;
+    }
+
+    tr{
+        page-break-inside:avoid;
+    }
+}
+
+@media(max-width:768px){
+
+    .contenedor{
+        width:98%;
+        margin:10px auto;
+        padding:14px;
+    }
+
+    .acciones{
+        flex-direction:column;
+    }
+
+    .btn{
+        width:100%;
+        text-align:center;
+    }
+
+    .encabezado h1{
+        font-size:22px;
+    }
+}
+

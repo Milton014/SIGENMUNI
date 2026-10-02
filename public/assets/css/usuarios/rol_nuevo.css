@@ -1,0 +1,313 @@
+
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f7fb;
+    margin:0;
+    color:#1f2937;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header{
+    background:linear-gradient(
+        135deg,
+        #0f766e,
+        #14b8a6
+    );
+
+    color:white;
+    padding:22px 30px;
+
+    box-shadow:
+        0 4px 14px rgba(0,0,0,.10);
+}
+
+.header h1{
+    margin:0;
+    font-size:28px;
+}
+
+.header p{
+    margin:6px 0 0;
+}
+
+
+/* =========================================
+   CONTENEDOR
+========================================= */
+
+.contenedor{
+    width:95%;
+    max-width:900px;
+    margin:30px auto;
+}
+
+
+/* =========================================
+   PANEL
+========================================= */
+
+.panel{
+    background:white;
+    border-radius:18px;
+    padding:25px;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.10);
+}
+
+h2{
+    margin-top:0;
+    color:#0f172a;
+}
+
+
+/* =========================================
+   INFORMACIÓN
+========================================= */
+
+.info{
+    background:#eff6ff;
+    color:#1e40af;
+
+    border:
+        1px solid #bfdbfe;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    margin-bottom:20px;
+
+    line-height:1.5;
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.error{
+    background:#fee2e2;
+    color:#991b1b;
+
+    border:
+        1px solid #fecaca;
+
+    padding:12px 15px;
+
+    border-radius:10px;
+
+    margin-bottom:15px;
+
+    font-weight:bold;
+}
+
+
+/* =========================================
+   FORMULARIO
+========================================= */
+
+.grupo{
+    margin-bottom:18px;
+}
+
+label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:bold;
+}
+
+input[type=text],
+textarea{
+    width:100%;
+
+    padding:12px;
+
+    border:
+        1px solid #d1d5db;
+
+    border-radius:10px;
+
+    font-size:14px;
+
+    outline:none;
+
+    transition:.2s;
+}
+
+input[type=text]:focus,
+textarea:focus{
+    border-color:#0f766e;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(15,118,110,.15);
+}
+
+.campo-error{
+    border-color:#dc2626 !important;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(220,38,38,.15)
+        !important;
+
+    background:#fff1f2;
+}
+
+textarea{
+    resize:vertical;
+    min-height:100px;
+}
+
+
+/* =========================================
+   CHECKBOX
+========================================= */
+
+.check{
+    margin-top:12px;
+}
+
+.check label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:normal;
+    cursor:pointer;
+}
+
+.check input{
+    width:18px;
+    height:18px;
+}
+
+
+/* =========================================
+   AVISO ADMIN
+========================================= */
+
+.aviso-admin{
+    margin-top:12px;
+
+    padding:12px 14px;
+
+    background:#fef3c7;
+    color:#92400e;
+
+    border:
+        1px solid #fde68a;
+
+    border-radius:10px;
+
+    font-size:13px;
+    line-height:1.5;
+}
+
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.btn{
+    border:none;
+
+    padding:12px 16px;
+
+    border-radius:10px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    text-decoration:none;
+
+    display:inline-block;
+
+    font-size:14px;
+
+    transition:.2s;
+}
+
+.btn:hover{
+    opacity:.92;
+    transform:translateY(-1px);
+}
+
+.btn-guardar{
+    background:#0f766e;
+    color:white;
+}
+
+.btn-volver{
+    background:#1f2937;
+    color:white;
+}
+
+.acciones{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:22px;
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media(max-width:768px){
+
+    .header{
+        padding:18px;
+        text-align:center;
+    }
+
+    .header h1{
+        font-size:24px;
+    }
+
+    .contenedor{
+        width:94%;
+        margin:20px auto;
+    }
+
+    .panel{
+        padding:18px;
+        border-radius:14px;
+    }
+
+    h2{
+        text-align:center;
+    }
+
+    .acciones{
+        flex-direction:column;
+    }
+
+    .btn{
+        width:100%;
+        text-align:center;
+    }
+
+    input[type=text],
+    textarea{
+        font-size:16px;
+    }
+}
+
+
+[data-estilo="rol_nuevo-1"][data-estilo="rol_nuevo-1"][data-estilo="rol_nuevo-1"] { display:none; }
+
+[data-estilo="rol_nuevo-2"][data-visible="no"] { display: none; }
+
+[data-estilo="rol_nuevo-3"][data-estilo="rol_nuevo-3"][data-estilo="rol_nuevo-3"] { margin-top:12px; margin-bottom:0; }

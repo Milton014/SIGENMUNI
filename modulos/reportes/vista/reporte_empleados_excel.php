@@ -128,63 +128,7 @@ echo "\xEF\xBB\xBF";
     Reporte de Empleados
 </title>
 
-<style>
-
-table{
-    border-collapse:collapse;
-    width:100%;
-}
-
-
-th,
-td{
-    border:1px solid #000;
-    padding:6px;
-    font-size:12px;
-    vertical-align:top;
-}
-
-
-th{
-    background:#d9ead3;
-    font-weight:bold;
-}
-
-
-.titulo{
-    font-size:16px;
-    font-weight:bold;
-}
-
-
-.subtitulo{
-    font-size:12px;
-}
-
-
-.total{
-    font-weight:bold;
-    background:#ecfeff;
-}
-
-
-.unidad-organizacion{
-    min-width:190px;
-}
-
-
-.nombre-unidad{
-    font-weight:bold;
-}
-
-
-.cuit-unidad{
-    margin-top:3px;
-    color:#475569;
-    font-size:11px;
-}
-
-</style>
+<style><?php readfile(__DIR__ . '/../../../public/assets/css/reportes/reporte_empleados_excel.css'); ?></style>
 
 </head>
 

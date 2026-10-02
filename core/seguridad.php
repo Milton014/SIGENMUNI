@@ -1,630 +1,168 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| SEGURIDAD GENERAL - SIGENMUNI (CORE)
-|--------------------------------------------------------------------------
-|
-| Funciones:
-|
-| - iniciarSesionSiHaceFalta()
-| - verificarSesion()
-| - obtenerConexionSeguridad()
-| - obtenerRolActual()
-| - soloAdmin()
-| - verificarPermisoModulo()
-|
-|--------------------------------------------------------------------------
-*/
-
-
-/*
-|--------------------------------------------------------------------------
-| URL COMPARTIDAS
-|--------------------------------------------------------------------------
-|
-| El Login y el Menú Principal funcionan mediante las rutas "login" e
-| "inicio" del Router.
-|
-| Las consultas y las reglas de autorización de este archivo no cambian.
-|--------------------------------------------------------------------------
-*/
-
 require_once __DIR__ . '/Url.php';
-
-
-/*
-|--------------------------------------------------------------------------
-| INICIAR SESIÓN SI HACE FALTA
-|--------------------------------------------------------------------------
-*/
 
 function iniciarSesionSiHaceFalta()
 {
     if (session_status() === PHP_SESSION_NONE) {
-
         session_start();
     }
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| VERIFICAR SESIÓN
-|--------------------------------------------------------------------------
-*/
-
-function verificarSesion()
-{
-    iniciarSesionSiHaceFalta();
-
-
-    if (!isset($_SESSION['usuario'])) {
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'login'
-            )
-        );
-
-        exit();
-    }
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| OBTENER CONEXIÓN
-|--------------------------------------------------------------------------
-|
-| Centraliza la inclusión de config/conexion.php y devuelve
-| la conexión activa del sistema.
-|
-|--------------------------------------------------------------------------
-*/
-
 function obtenerConexionSeguridad()
 {
     global $conexion;
-
-
-    require_once __DIR__ . '/../config/conexion.php';
-
-
-    if (
-        !isset($conexion)
-        ||
-        !$conexion
-    ) {
-
-        die(
-            "No se pudo establecer la conexión con la base de datos."
-        );
+    if (!isset($conexion)) {
+        require_once __DIR__ . '/../config/conexion.php';
     }
-
-
+    if (!$conexion) {
+        throw new RuntimeException('No se pudo comprobar el acceso.');
+    }
     return $conexion;
 }
 
+/** Cierra también sesiones antiguas para evitar un ciclo entre login e inicio. */
+function sigenmuniCerrarSesionInvalida(string $error = ''): void
+{
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $cookie = session_get_cookie_params();
+        setcookie(session_name(), '', [
+            'expires' => time() - 42000,
+            'path' => $cookie['path'],
+            'domain' => $cookie['domain'],
+            'secure' => $cookie['secure'],
+            'httponly' => $cookie['httponly'],
+            'samesite' => $cookie['samesite'],
+        ]);
+    }
+    session_destroy();
+    header('Cache-Control: no-store');
+    header('Location: ' . sigenmuniUrlRuta('login', $error === '' ? [] : ['error' => $error]));
+    exit;
+}
 
-/*
-|--------------------------------------------------------------------------
-| OBTENER DATOS DEL ROL ACTUAL
-|--------------------------------------------------------------------------
-|
-| Devuelve:
-|
-| - id
-| - nombre
-| - activo
-| - es_admin
-|
-|--------------------------------------------------------------------------
-*/
-
+/** La base de datos, y no el rol guardado al ingresar, autoriza cada solicitud. */
 function obtenerRolActual()
 {
     iniciarSesionSiHaceFalta();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDAR DATOS DE SESIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        !isset($_SESSION['rol_id'])
-        ||
-        !isset($_SESSION['rol'])
-    ) {
-
-        return null;
+    $id = $_SESSION['id_usuario'] ?? null;
+    if ((!is_int($id) && !is_string($id))
+        || filter_var($id, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) === false) {
+        sigenmuniCerrarSesionInvalida();
     }
-
-
-    $rolId =
-        (int)$_SESSION['rol_id'];
-
-
-    if ($rolId <= 0) {
-
-        return null;
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CONEXIÓN
-    |--------------------------------------------------------------------------
-    */
-
-    $conexion =
-        obtenerConexionSeguridad();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CONSULTAR ROL
-    |--------------------------------------------------------------------------
-    */
-
-    $stmt =
-        $conexion->prepare(
-            "
-            SELECT
-                id,
-                nombre,
-                activo,
-                es_admin
-            FROM rol
-            WHERE id = ?
-            LIMIT 1
-            "
-        );
-
-
-    if (!$stmt) {
-
-        die(
-            "Error al preparar la consulta de seguridad: "
-            .
-            $conexion->error
-        );
-    }
-
-
-    $stmt->bind_param(
-        "i",
-        $rolId
+    $id = (int)$id;
+    $stmt = obtenerConexionSeguridad()->prepare(
+        'SELECT u.id, u.nombre_usuario, u.nombre, u.apellido, u.activo, u.version_acceso,
+                r.id AS rol_id, r.nombre AS rol_nombre, r.activo AS rol_activo, r.es_admin
+         FROM usuario u LEFT JOIN rol r ON r.id = u.rol_id
+         WHERE u.id = ? LIMIT 1'
     );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | EJECUTAR
-    |--------------------------------------------------------------------------
-    */
-
-    if (!$stmt->execute()) {
-
-        $error =
-            $stmt->error;
-
-
+    if (!$stmt) {
+        throw new RuntimeException('No se pudo comprobar el acceso.');
+    }
+    try {
+        if (!$stmt->bind_param('i', $id) || !$stmt->execute()) {
+            throw new RuntimeException('No se pudo comprobar el acceso.');
+        }
+        $resultado = $stmt->get_result();
+        if (!$resultado) {
+            throw new RuntimeException('No se pudo comprobar el acceso.');
+        }
+        $usuario = $resultado->fetch_assoc();
+    } finally {
         $stmt->close();
-
-
-        die(
-            "Error al consultar el rol del usuario: "
-            .
-            $error
-        );
+    }
+    if (!$usuario || (int)$usuario['activo'] !== 1) {
+        sigenmuniCerrarSesionInvalida('usuario_inactivo');
+    }
+    // Las sesiones previas a esta actualización equivalen a la versión inicial 0.
+    $versionSesion = $_SESSION['version_acceso'] ?? 0;
+    if ((!is_int($versionSesion) && !is_string($versionSesion))
+        || filter_var($versionSesion, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]) === false
+        || (int)$versionSesion !== (int)$usuario['version_acceso']) {
+        sigenmuniCerrarSesionInvalida('acceso_actualizado');
+    }
+    if ((int)($usuario['rol_id'] ?? 0) <= 0 || trim((string)$usuario['rol_nombre']) === '') {
+        sigenmuniCerrarSesionInvalida('rol_invalido');
+    }
+    if ((int)$usuario['rol_activo'] !== 1) {
+        sigenmuniCerrarSesionInvalida('rol_inactivo');
     }
 
+    $_SESSION['id_usuario'] = (int)$usuario['id'];
+    $_SESSION['usuario'] = $usuario['nombre_usuario'];
+    $_SESSION['nombre_completo'] = trim(($usuario['nombre'] ?? '') . ' ' . ($usuario['apellido'] ?? ''));
+    $_SESSION['rol_id'] = (int)$usuario['rol_id'];
+    $_SESSION['rol'] = $usuario['rol_nombre'];
+    $_SESSION['es_admin'] = (int)$usuario['es_admin'];
+    header('Cache-Control: no-store');
 
-    $resultado =
-        $stmt->get_result();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDAR RESULTADO
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        !$resultado
-        ||
-        $resultado->num_rows === 0
-    ) {
-
-        $stmt->close();
-
-        return null;
-    }
-
-
-    $rol =
-        $resultado->fetch_assoc();
-
-
-    $stmt->close();
-
-
-    return $rol;
+    return [
+        'id' => (int)$usuario['rol_id'],
+        'nombre' => $usuario['rol_nombre'],
+        'activo' => (int)$usuario['rol_activo'],
+        'es_admin' => (int)$usuario['es_admin'],
+    ];
 }
 
+function verificarSesion()
+{
+    obtenerRolActual();
+}
 
-/*
-|--------------------------------------------------------------------------
-| SOLO ADMINISTRADORES
-|--------------------------------------------------------------------------
-|
-| Permite:
-|
-| - ADMIN principal
-| - cualquier rol activo con es_admin = 1
-|
-|--------------------------------------------------------------------------
-*/
+/** Conserva la regla existente para el rol ADMIN y los roles es_admin. */
+function sigenmuniRolEsAdmin(array $rol): bool
+{
+    return (int)$rol['es_admin'] === 1 || strtoupper(trim($rol['nombre'])) === 'ADMIN';
+}
+
+function sigenmuniDenegarPermiso(): void
+{
+    header('Location: ' . sigenmuniUrlRuta('inicio', ['error' => 'sin_permiso']));
+    exit;
+}
 
 function soloAdmin()
 {
-    verificarSesion();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER ROL
-    |--------------------------------------------------------------------------
-    */
-
-    $rol =
-        obtenerRolActual();
-
-
-    if (!$rol) {
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'inicio',
-                ['error' => 'sin_permiso']
-            )
-        );
-
-        exit();
+    $rol = obtenerRolActual();
+    if (!sigenmuniRolEsAdmin($rol)) {
+        sigenmuniDenegarPermiso();
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ROL INACTIVO
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        (int)$rol['activo'] !== 1
-    ) {
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'inicio',
-                ['error' => 'rol_inactivo']
-            )
-        );
-
-        exit();
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | VERIFICAR ADMINISTRADOR
-    |--------------------------------------------------------------------------
-    */
-
-    $nombreRol =
-        strtoupper(
-            trim(
-                $rol['nombre']
-                ?? ''
-            )
-        );
-
-
-    $esAdmin =
-        (
-            (int)(
-                $rol['es_admin']
-                ?? 0
-            )
-            ===
-            1
-            ||
-            $nombreRol === 'ADMIN'
-        );
-
-
-    if (!$esAdmin) {
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'inicio',
-                ['error' => 'sin_permiso']
-            )
-        );
-
-        exit();
-    }
-
-
     return true;
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| VERIFICAR PERMISO POR MÓDULO
-|--------------------------------------------------------------------------
-|
-| Reglas:
-|
-| 1. Debe existir sesión.
-| 2. Debe existir rol_id y rol.
-| 3. El rol debe existir en la base.
-| 4. El rol debe estar activo.
-| 5. ADMIN o es_admin = 1 tiene acceso total.
-| 6. Para roles comunes debe existir una fila en rol_modulo_permiso.
-| 7. permitido debe ser = 1.
-|
-|--------------------------------------------------------------------------
-*/
-
 function verificarPermisoModulo($archivoModulo)
 {
-    verificarSesion();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | NORMALIZAR ARCHIVO
-    |--------------------------------------------------------------------------
-    */
-
-    $archivoModulo =
-        trim(
-            (string)$archivoModulo
-        );
-
-
+    $rol = obtenerRolActual();
+    $archivoModulo = trim((string)$archivoModulo);
     if ($archivoModulo === '') {
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'inicio',
-                ['error' => 'sin_permiso']
-            )
-        );
-
-        exit();
+        sigenmuniDenegarPermiso();
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER ROL
-    |--------------------------------------------------------------------------
-    */
-
-    $rol =
-        obtenerRolActual();
-
-
-    if (!$rol) {
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'inicio',
-                ['error' => 'sin_permiso']
-            )
-        );
-
-        exit();
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ROL INACTIVO
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        (int)$rol['activo'] !== 1
-    ) {
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'inicio',
-                ['error' => 'rol_inactivo']
-            )
-        );
-
-        exit();
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ADMINISTRADOR
-    |--------------------------------------------------------------------------
-    |
-    | ADMIN principal o cualquier rol con es_admin = 1
-    | tiene acceso completo.
-    |
-    |--------------------------------------------------------------------------
-    */
-
-    $nombreRol =
-        strtoupper(
-            trim(
-                $rol['nombre']
-                ?? ''
-            )
-        );
-
-
-    if (
-        (int)(
-            $rol['es_admin']
-            ?? 0
-        )
-        ===
-        1
-        ||
-        $nombreRol === 'ADMIN'
-    ) {
-
+    if (sigenmuniRolEsAdmin($rol)) {
         return true;
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ROL COMÚN - VERIFICAR PERMISO
-    |--------------------------------------------------------------------------
-    */
-
-    $conexion =
-        obtenerConexionSeguridad();
-
-
-    $rolId =
-        (int)$rol['id'];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CONSULTAR PERMISO
-    |--------------------------------------------------------------------------
-    */
-
-    $stmt =
-        $conexion->prepare(
-            "
-            SELECT
-                permitido
-            FROM rol_modulo_permiso
-            WHERE rol_id = ?
-              AND archivo = ?
-            LIMIT 1
-            "
-        );
-
-
-    if (!$stmt) {
-
-        die(
-            "Error al preparar la consulta de permisos: "
-            .
-            $conexion->error
-        );
-    }
-
-
-    $stmt->bind_param(
-        "is",
-        $rolId,
-        $archivoModulo
+    $rolId = (int)$rol['id'];
+    $stmt = obtenerConexionSeguridad()->prepare(
+        'SELECT permitido FROM rol_modulo_permiso WHERE rol_id = ? AND archivo = ? LIMIT 1'
     );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | EJECUTAR
-    |--------------------------------------------------------------------------
-    */
-
-    if (!$stmt->execute()) {
-
-        $error =
-            $stmt->error;
-
-
+    if (!$stmt) {
+        throw new RuntimeException('No se pudo comprobar el permiso.');
+    }
+    try {
+        if (!$stmt->bind_param('is', $rolId, $archivoModulo) || !$stmt->execute()) {
+            throw new RuntimeException('No se pudo comprobar el permiso.');
+        }
+        $resultado = $stmt->get_result();
+        if (!$resultado) {
+            throw new RuntimeException('No se pudo comprobar el permiso.');
+        }
+        $datos = $resultado->fetch_assoc();
+    } finally {
         $stmt->close();
-
-
-        die(
-            "Error al verificar el permiso del módulo: "
-            .
-            $error
-        );
     }
-
-
-    $resultado =
-        $stmt->get_result();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | SI NO EXISTE EL PERMISO, SE DENIEGA
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        !$resultado
-        ||
-        $resultado->num_rows === 0
-    ) {
-
-        $stmt->close();
-
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'inicio',
-                ['error' => 'sin_permiso']
-            )
-        );
-
-        exit();
+    if ((int)($datos['permitido'] ?? 0) !== 1) {
+        sigenmuniDenegarPermiso();
     }
-
-
-    $datos =
-        $resultado->fetch_assoc();
-
-
-    $stmt->close();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PERMISO DESACTIVADO
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        (int)(
-            $datos['permitido']
-            ?? 0
-        )
-        !==
-        1
-    ) {
-
-        header(
-            'Location: ' . sigenmuniUrlRuta(
-                'inicio',
-                ['error' => 'sin_permiso']
-            )
-        );
-
-        exit();
-    }
-
-
     return true;
 }

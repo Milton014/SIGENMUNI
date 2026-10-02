@@ -151,7 +151,8 @@ class LiquidacionModelo
     |--------------------------------------------------------------------------
     */
 
-    public function obtenerPorId($id)
+    // Usar $bloquear solo dentro de una transacción: mantiene el bloqueo hasta commit/rollback.
+    public function obtenerPorId($id, bool $bloquear = false)
     {
         $sql = "
             SELECT
@@ -167,6 +168,10 @@ class LiquidacionModelo
             LIMIT 1
         ";
 
+
+        if ($bloquear) {
+            $sql .= ' FOR UPDATE';
+        }
 
         $stmt =
             $this->conexion->prepare(

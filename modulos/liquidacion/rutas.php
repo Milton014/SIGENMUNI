@@ -417,12 +417,9 @@ return function (Router $router, $conexion) {
                     . "<meta charset='UTF-8'>"
                     . "<meta name='viewport' content='width=device-width, initial-scale=1.0'>"
                     . "<title>Error - SIGENMUNI</title>"
-                    . "<style>"
-                    . "body{font-family:Arial,sans-serif;background:#f4f7fb;margin:0;padding:30px;color:#1f2937;}"
-                    . ".mensaje{max-width:700px;margin:50px auto;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;padding:24px;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.08);text-align:center;}"
-                    . ".mensaje h2{margin-top:0;}"
-                    . ".btn{display:inline-block;margin-top:16px;background:#1f2937;color:white;text-decoration:none;padding:10px 14px;border-radius:8px;font-weight:bold;}"
-                    . "</style>"
+                    . "<link rel='stylesheet' href='"
+                    . htmlspecialchars(sigenmuniUrlAsset('css/liquidacion/error_complementaria.css'), ENT_QUOTES, 'UTF-8')
+                    . "'>"
                     . "</head>"
                     . "<body>"
                     . "<div class='mensaje'>"
@@ -1033,15 +1030,34 @@ return function (Router $router, $conexion) {
 
     /*
     |--------------------------------------------------------------------------
-    | IMPRIMIR TODOS LOS RECIBOS - SOLO GET
+    | DESCARGAR RECIBO PDF - SOLO GET
     |--------------------------------------------------------------------------
     |
-    | Genera la vista conjunta de todos los recibos de una liquidación.
+    | Genera el PDF de una liquidación cerrada con el permiso de consulta del recibo.
     | Es una operación de lectura y no requiere CSRF.
     |
     |--------------------------------------------------------------------------
     */
 
+    $router->get(
+        'liquidacion/recibo/pdf',
+        function () use ($conexion) {
+            foreach (['liquidacion_id', 'empleado_id'] as $campo) {
+                if (isset($_GET[$campo]) && !is_string($_GET[$campo])) {
+                    http_response_code(400);
+                    header('Content-Type: text/plain; charset=UTF-8');
+                    echo 'Los parámetros del recibo no tienen un formato válido.';
+                    return;
+                }
+            }
+            require_once __DIR__ . '/controlador/LiquidacionControlador.php';
+            $controlador = new LiquidacionControlador($conexion);
+            $controlador->descargarRecibo();
+        },
+        'reporte_historial_empleado.php'
+    );
+
+    // Vista conjunta de impresión de los recibos de una liquidación.
     $router->get(
         'liquidacion/recibos',
         function () use ($conexion) {

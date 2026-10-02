@@ -1,0 +1,280 @@
+
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f7fb;
+    margin:0;
+    color:#1f2937;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.header{
+    background:linear-gradient(135deg,#0f766e,#14b8a6);
+    color:white;
+    padding:22px 30px;
+    box-shadow:0 4px 14px rgba(0,0,0,.10);
+}
+
+.header h1{
+    margin:0;
+    font-size:30px;
+}
+
+.header p{
+    margin-top:6px;
+    font-size:14px;
+}
+
+/* =========================================
+   CONTENEDOR
+========================================= */
+
+.contenedor{
+    width:95%;
+    max-width:1100px;
+    margin:30px auto;
+}
+
+.panel{
+    background:white;
+    padding:28px;
+    border-radius:18px;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+h2{
+    margin-top:0;
+    margin-bottom:22px;
+    color:#0f766e;
+}
+
+/* =========================================
+   GRID
+========================================= */
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+}
+
+/* =========================================
+   CAMPOS
+========================================= */
+
+.campo{
+    display:flex;
+    flex-direction:column;
+}
+
+label{
+    margin-bottom:6px;
+    font-weight:bold;
+    font-size:14px;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:12px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    outline:none;
+    font-size:14px;
+    transition:0.2s;
+    background:white;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    border-color:#14b8a6;
+    box-shadow:0 0 0 3px rgba(20,184,166,.15);
+}
+
+textarea{
+    min-height:110px;
+    resize:vertical;
+}
+
+/* =========================================
+   BOTONES
+========================================= */
+
+.acciones{
+    margin-top:25px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    background:#0f766e;
+    color:white;
+    padding:11px 16px;
+    border:none;
+    border-radius:10px;
+    text-decoration:none;
+    cursor:pointer;
+    display:inline-block;
+    font-weight:bold;
+    font-size:14px;
+    transition:0.2s;
+}
+
+.btn:hover{
+    opacity:0.92;
+    transform:translateY(-1px);
+}
+
+.btn-sec{
+    background:#1f2937;
+}
+
+/* =========================================
+   MENSAJES
+========================================= */
+
+.mensaje{
+    padding:14px;
+    border-radius:10px;
+    margin-bottom:18px;
+    font-weight:bold;
+}
+
+.error{
+    background:#fee2e2;
+    color:#991b1b;
+    border:1px solid #fecaca;
+}
+
+.input-error{
+    border-color:#dc2626 !important;
+    background:#fff1f2;
+    box-shadow:0 0 0 3px rgba(220,38,38,.12);
+}
+
+.ayuda-campo{
+    margin-top:6px;
+    font-size:12px;
+    color:#64748b;
+    line-height:1.4;
+}
+
+select:disabled{
+    background:#e9ecef;
+    color:#64748b;
+    cursor:not-allowed;
+}
+
+input[readonly]{
+    background:#f1f5f9;
+    color:#475569;
+    cursor:not-allowed;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width:992px){
+
+    .contenedor{
+        width:96%;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width:768px){
+
+    .header{
+        padding:20px;
+        text-align:center;
+    }
+
+    .header h1{
+        font-size:24px;
+    }
+
+    .header p{
+        font-size:13px;
+    }
+
+    .contenedor{
+        width:94%;
+        margin:20px auto;
+    }
+
+    .panel{
+        padding:20px;
+        border-radius:16px;
+    }
+
+    h2{
+        font-size:24px;
+        text-align:center;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+        gap:16px;
+    }
+
+    .acciones{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .btn{
+        width:100%;
+        text-align:center;
+    }
+}
+
+/* =========================================
+   CELULARES PEQUEÑOS
+========================================= */
+
+@media (max-width:480px){
+
+    .header h1{
+        font-size:22px;
+    }
+
+    h2{
+        font-size:22px;
+    }
+
+    .panel{
+        padding:18px;
+    }
+
+    .btn{
+        font-size:13px;
+        padding:10px;
+    }
+
+    label{
+        font-size:13px;
+    }
+}
+
+
+[data-estilo="empleado_editar-1"][data-estilo="empleado_editar-1"][data-estilo="empleado_editar-1"] { display:none; }
+
+[data-estilo="empleado_editar-2"][data-estilo="empleado_editar-2"][data-estilo="empleado_editar-2"] { grid-column:1/-1; }

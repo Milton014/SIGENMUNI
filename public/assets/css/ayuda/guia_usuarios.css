@@ -1,0 +1,543 @@
+
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f7fb;
+    color:#1f2937;
+}
+
+a{
+    color:inherit;
+}
+
+.contenedor{
+    width:94%;
+    max-width:1180px;
+    margin:28px auto 48px;
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.cabecera{
+    background:linear-gradient(135deg,#7c3aed,#8b5cf6);
+    color:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 24px rgba(124,58,237,.18);
+    margin-bottom:22px;
+}
+
+.cabecera-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+}
+
+.cabecera h1{
+    margin:0 0 7px;
+    font-size:30px;
+}
+
+.cabecera p{
+    margin:0;
+    line-height:1.55;
+    opacity:.96;
+}
+
+.acciones{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    display:inline-block;
+    text-decoration:none;
+    border:none;
+    border-radius:10px;
+    padding:11px 15px;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s ease;
+    text-align:center;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+    opacity:.94;
+}
+
+.btn-volver{
+    background:#1f2937;
+    color:white;
+}
+
+.btn-imprimir{
+    background:#facc15;
+    color:#111827;
+}
+
+
+/* =========================================================
+   PANEL / ÍNDICE
+========================================================= */
+
+.panel{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 8px 20px rgba(0,0,0,.06);
+    margin-bottom:22px;
+}
+
+.panel h2{
+    margin:0 0 8px;
+    font-size:22px;
+    color:#7c3aed;
+}
+
+.panel-subtitulo{
+    margin:0 0 17px;
+    color:#64748b;
+    line-height:1.55;
+}
+
+.indice{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+}
+
+.indice a{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:48px;
+    padding:10px;
+    border-radius:11px;
+    background:#f5f3ff;
+    border:1px solid #ddd6fe;
+    color:#5b21b6;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.indice a:hover{
+    background:#ede9fe;
+}
+
+
+/* =========================================================
+   SECCIONES
+========================================================= */
+
+.seccion{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 8px 20px rgba(0,0,0,.06);
+    margin-bottom:20px;
+}
+
+.seccion-header{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:14px;
+}
+
+.icono{
+    width:48px;
+    height:48px;
+    flex:0 0 48px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f5f3ff;
+    border:1px solid #ddd6fe;
+    font-size:24px;
+}
+
+.seccion h2{
+    margin:0;
+    color:#7c3aed;
+    font-size:21px;
+}
+
+.seccion h3{
+    margin:20px 0 8px;
+    color:#334155;
+    font-size:17px;
+}
+
+.seccion p{
+    margin:7px 0;
+    color:#475569;
+    line-height:1.65;
+}
+
+.seccion ul,
+.seccion ol{
+    margin:10px 0 0 22px;
+    padding:0;
+}
+
+.seccion li{
+    margin-bottom:8px;
+    color:#475569;
+    line-height:1.55;
+}
+
+
+/* =========================================================
+   PASOS
+========================================================= */
+
+.pasos{
+    display:grid;
+    gap:12px;
+    margin-top:14px;
+}
+
+.paso{
+    display:grid;
+    grid-template-columns:42px 1fr;
+    gap:12px;
+    align-items:start;
+    padding:14px;
+    border:1px solid #e2e8f0;
+    border-radius:13px;
+    background:#f8fafc;
+}
+
+.numero{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#7c3aed;
+    color:white;
+    font-weight:bold;
+    font-size:14px;
+}
+
+.paso strong{
+    display:block;
+    margin-bottom:4px;
+    color:#1f2937;
+}
+
+.paso p{
+    margin:0;
+}
+
+
+/* =========================================================
+   AVISOS
+========================================================= */
+
+.aviso{
+    margin-top:15px;
+    border-radius:13px;
+    padding:14px 16px;
+    line-height:1.6;
+}
+
+.aviso-info{
+    background:#eff6ff;
+    border:1px solid #bfdbfe;
+    color:#1e40af;
+}
+
+.aviso-ok{
+    background:#ecfdf5;
+    border:1px solid #a7f3d0;
+    color:#065f46;
+}
+
+.aviso-alerta{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+}
+
+.aviso-importante{
+    background:#fef2f2;
+    border:1px solid #fecaca;
+    color:#991b1b;
+}
+
+
+/* =========================================================
+   TABLA
+========================================================= */
+
+.tabla-contenedor{
+    width:100%;
+    overflow-x:auto;
+    margin-top:14px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:760px;
+}
+
+th,
+td{
+    border-bottom:1px solid #e5e7eb;
+    padding:11px 10px;
+    text-align:left;
+    font-size:13px;
+    vertical-align:top;
+}
+
+th{
+    background:#7c3aed;
+    color:white;
+}
+
+td{
+    color:#475569;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+.badge-admin{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.badge-permitido{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.badge-bloqueado{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+
+/* =========================================================
+   FLUJO DE ACCESO
+========================================================= */
+
+.acceso-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin-top:14px;
+}
+
+.acceso-card{
+    border:1px solid #e2e8f0;
+    border-radius:13px;
+    padding:15px;
+    background:#f8fafc;
+}
+
+.acceso-card strong{
+    display:block;
+    margin-bottom:6px;
+    color:#6d28d9;
+}
+
+.acceso-card p{
+    margin:0;
+}
+
+@media(max-width:700px){
+
+    .acceso-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+
+/* =========================================================
+   PROBLEMAS FRECUENTES
+========================================================= */
+
+details{
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:0 15px;
+    margin-bottom:10px;
+    background:white;
+}
+
+summary{
+    cursor:pointer;
+    padding:15px 0;
+    font-weight:bold;
+    color:#334155;
+}
+
+details p{
+    margin:0;
+    padding:0 0 15px;
+}
+
+
+/* =========================================================
+   PIE
+========================================================= */
+
+.pie{
+    text-align:center;
+    color:#64748b;
+    font-size:13px;
+    padding:10px 0;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .indice{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:700px){
+
+    .contenedor{
+        width:97%;
+        margin:12px auto 30px;
+    }
+
+    .cabecera{
+        padding:19px 15px;
+        border-radius:16px;
+    }
+
+    .cabecera-top{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .cabecera h1{
+        font-size:24px;
+        text-align:center;
+    }
+
+    .cabecera p{
+        text-align:center;
+    }
+
+    .acciones{
+        flex-direction:column;
+    }
+
+    .acciones .btn{
+        width:100%;
+    }
+
+    .indice{
+        grid-template-columns:1fr;
+    }
+
+    .panel,
+    .seccion{
+        padding:17px;
+        border-radius:15px;
+    }
+
+    .seccion-header{
+        align-items:flex-start;
+    }
+
+    .paso{
+        grid-template-columns:36px 1fr;
+        padding:12px;
+    }
+}
+
+
+/* =========================================================
+   IMPRESIÓN
+========================================================= */
+
+@media print{
+
+    .sigenmuni-global-header{
+        display:none !important;
+    }
+
+    @page{
+        size:A4 portrait;
+        margin:12mm;
+    }
+
+    body{
+        background:white;
+    }
+
+    .contenedor{
+        width:100%;
+        max-width:none;
+        margin:0;
+    }
+
+    .acciones,
+    .indice{
+        display:none;
+    }
+
+    .cabecera,
+    .panel,
+    .seccion{
+        box-shadow:none;
+    }
+
+    .cabecera{
+        background:white;
+        color:#111827;
+        border:1px solid #d1d5db;
+    }
+
+    .cabecera h1{
+        color:#7c3aed;
+    }
+
+    .seccion,
+    .paso,
+    details{
+        break-inside:avoid;
+    }
+}
+

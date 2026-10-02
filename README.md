@@ -1,5 +1,8 @@
 # SIGENMUNI
 
+La separación de CSS y JavaScript y las verificaciones de esta entrega están
+documentadas en [MIGRACION.md](MIGRACION.md) y [REVISION_CODIGO.md](REVISION_CODIGO.md).
+
 ## Sistema de Gestión Municipal y Liquidación de Sueldos
 
 **SIGENMUNI** es un sistema web desarrollado en **PHP + MySQL** para la gestión administrativa y la liquidación de sueldos de una municipalidad.

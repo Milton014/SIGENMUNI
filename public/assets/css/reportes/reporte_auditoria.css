@@ -1,0 +1,1170 @@
+
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+
+:root{
+    --principal:#4f46e5;
+    --principal-hover:#4338ca;
+    --secundario:#6366f1;
+    --fondo:#f4f7fb;
+    --blanco:#ffffff;
+    --texto:#1f2937;
+    --gris:#6b7280;
+    --borde:#e5e7eb;
+    --sombra:rgba(0,0,0,.10);
+
+    --verde:#16a34a;
+    --verde-suave:#dcfce7;
+
+    --azul:#2563eb;
+    --azul-suave:#dbeafe;
+
+    --naranja:#ea580c;
+    --naranja-suave:#ffedd5;
+
+    --rojo:#dc2626;
+    --rojo-suave:#fee2e2;
+
+    --gris-accion:#475569;
+    --gris-accion-suave:#e2e8f0;
+}
+
+
+body{
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        var(--fondo);
+
+    color:
+        var(--texto);
+
+    min-height:100vh;
+}
+
+
+/* =========================================
+   CONTENEDOR
+========================================= */
+
+.contenedor{
+    width:94%;
+
+    max-width:1500px;
+
+    margin:
+        28px auto 40px;
+}
+
+
+/* =========================================
+   CABECERA DEL REPORTE
+========================================= */
+
+.panel-superior{
+    display:flex;
+
+    justify-content:
+        space-between;
+
+    align-items:center;
+
+    gap:16px;
+
+    flex-wrap:wrap;
+
+    margin-bottom:22px;
+}
+
+
+.titulo-reporte h2{
+    font-size:28px;
+
+    margin-bottom:6px;
+}
+
+
+.titulo-reporte p{
+    color:
+        var(--gris);
+
+    line-height:1.5;
+}
+
+
+.acciones-superiores{
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+}
+
+
+.btn{
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-height:42px;
+
+    padding:
+        10px 16px;
+
+    border:0;
+
+    border-radius:10px;
+
+    text-decoration:none;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:.2s ease;
+
+    font-size:14px;
+
+    font-family:inherit;
+}
+
+
+.btn:hover{
+    transform:
+        translateY(-1px);
+}
+
+
+.btn-volver{
+    background:#374151;
+
+    color:white;
+}
+
+
+.btn-volver:hover{
+    background:#1f2937;
+}
+
+
+.btn-imprimir{
+    background:
+        var(--principal);
+
+    color:white;
+}
+
+
+.btn-imprimir:hover{
+    background:
+        var(--principal-hover);
+}
+
+
+.btn-pdf{
+    background:#dc2626;
+
+    color:white;
+}
+
+
+.btn-pdf:hover{
+    background:#b91c1c;
+}
+
+
+/* =========================================
+   FILTROS
+========================================= */
+
+.panel{
+    background:
+        var(--blanco);
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius:18px;
+
+    box-shadow:
+        0 8px 20px
+        var(--sombra);
+
+    padding:22px;
+
+    margin-bottom:22px;
+}
+
+
+.panel-titulo{
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-bottom:18px;
+}
+
+
+.panel-titulo .icono-panel{
+    width:40px;
+    height:40px;
+
+    border-radius:12px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:#eef2ff;
+
+    font-size:20px;
+}
+
+
+.panel-titulo h3{
+    font-size:19px;
+}
+
+
+.filtros-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(180px,1fr)
+        );
+
+    gap:16px;
+}
+
+
+.campo label{
+    display:block;
+
+    margin-bottom:7px;
+
+    font-weight:bold;
+
+    font-size:13px;
+}
+
+
+.campo input,
+.campo select{
+    width:100%;
+
+    min-height:44px;
+
+    padding:
+        10px 12px;
+
+    border:
+        1px solid #cbd5e1;
+
+    border-radius:10px;
+
+    background:white;
+
+    color:
+        var(--texto);
+
+    font-size:14px;
+
+    outline:none;
+}
+
+
+.campo input:focus,
+.campo select:focus{
+    border-color:
+        var(--secundario);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(99,102,241,.14);
+}
+
+
+.acciones-filtros{
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
+    margin-top:18px;
+}
+
+
+.btn-buscar{
+    background:
+        var(--principal);
+
+    color:white;
+}
+
+
+.btn-buscar:hover{
+    background:
+        var(--principal-hover);
+}
+
+
+.btn-limpiar{
+    background:#e5e7eb;
+
+    color:#374151;
+}
+
+
+.btn-limpiar:hover{
+    background:#d1d5db;
+}
+
+
+/* =========================================
+   MENSAJES
+========================================= */
+
+.mensaje-error{
+    background:#fee2e2;
+
+    color:#991b1b;
+
+    border:
+        1px solid #fecaca;
+
+    padding:14px 16px;
+
+    border-radius:12px;
+
+    margin-bottom:20px;
+
+    font-weight:bold;
+}
+
+
+/* =========================================
+   RESUMEN
+========================================= */
+
+.resumen{
+    display:flex;
+
+    justify-content:
+        space-between;
+
+    align-items:center;
+
+    gap:16px;
+
+    flex-wrap:wrap;
+
+    margin-bottom:16px;
+}
+
+
+.total-box{
+    background:#eef2ff;
+
+    color:#3730a3;
+
+    border:
+        1px solid #c7d2fe;
+
+    padding:
+        10px 14px;
+
+    border-radius:12px;
+
+    font-weight:bold;
+}
+
+
+.leyenda{
+    color:
+        var(--gris);
+
+    font-size:13px;
+}
+
+
+/* =========================================
+   TABLA
+========================================= */
+
+.tabla-contenedor{
+    width:100%;
+
+    overflow:hidden;
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius:14px;
+}
+
+
+table{
+    width:100%;
+
+    border-collapse:
+        collapse;
+
+    table-layout:fixed;
+
+    min-width:0;
+
+    background:white;
+}
+
+
+thead th{
+    background:#eef2ff;
+
+    color:#312e81;
+
+    font-size:12px;
+
+    text-transform:uppercase;
+
+    letter-spacing:.3px;
+
+    padding:
+        12px 10px;
+
+    border-bottom:
+        1px solid
+        #c7d2fe;
+
+    text-align:left;
+
+    white-space:normal;
+
+    overflow-wrap:anywhere;
+
+    word-break:break-word;
+}
+
+
+tbody td{
+    padding:
+        12px 10px;
+
+    border-bottom:
+        1px solid
+        var(--borde);
+
+    font-size:12px;
+
+    vertical-align:top;
+
+    overflow-wrap:anywhere;
+
+    word-break:break-word;
+}
+
+
+tbody tr:hover{
+    background:#fafafa;
+}
+
+
+tbody tr:last-child td{
+    border-bottom:0;
+}
+
+
+.usuario-principal{
+    font-weight:bold;
+
+    color:#111827;
+
+    margin-bottom:3px;
+}
+
+
+.usuario-secundario{
+    color:
+        var(--gris);
+
+    font-size:12px;
+}
+
+
+.registro-principal{
+    font-weight:bold;
+
+    margin-bottom:3px;
+}
+
+
+.registro-secundario{
+    color:
+        var(--gris);
+
+    font-size:12px;
+}
+
+
+.detalle-texto{
+    max-width:none;
+
+    line-height:1.4;
+
+    overflow-wrap:anywhere;
+
+    word-break:break-word;
+}
+
+
+.badge{
+    display:inline-block;
+
+    padding:
+        6px 9px;
+
+    border-radius:999px;
+
+    font-size:11px;
+
+    font-weight:bold;
+
+    white-space:nowrap;
+}
+
+
+.accion-alta{
+    background:
+        var(--verde-suave);
+
+    color:#166534;
+}
+
+
+.accion-edicion{
+    background:
+        var(--azul-suave);
+
+    color:#1d4ed8;
+}
+
+
+.accion-activacion{
+    background:#d1fae5;
+
+    color:#047857;
+}
+
+
+.accion-inactivacion,
+.accion-baja{
+    background:
+        var(--rojo-suave);
+
+    color:#991b1b;
+}
+
+
+.accion-otra{
+    background:
+        var(--gris-accion-suave);
+
+    color:
+        var(--gris-accion);
+}
+
+
+.btn-detalle{
+    background:
+        var(--principal);
+
+    color:white;
+
+    width:100%;
+
+    padding:
+        7px 5px;
+
+    font-size:11px;
+
+    border-radius:8px;
+
+    text-decoration:none;
+
+    display:inline-block;
+
+    text-align:center;
+
+    white-space:normal;
+
+    overflow-wrap:anywhere;
+}
+
+
+.btn-detalle:hover{
+    background:
+        var(--principal-hover);
+}
+
+
+
+/* =========================================
+   ANCHOS DE COLUMNAS - SIN SCROLL HORIZONTAL
+========================================= */
+
+/*
+|--------------------------------------------------------------------------
+| LISTADO PRINCIPAL SIN IP
+|--------------------------------------------------------------------------
+|
+| La dirección IP se conserva en el registro de auditoría y continúa visible
+| dentro de "Ver detalle", pero no se muestra en la tabla principal.
+|
+| Esto libera espacio para Registro afectado y Detalle.
+|
+|--------------------------------------------------------------------------
+*/
+
+table th:nth-child(1),
+table td:nth-child(1){
+    width:11%;
+}
+
+table th:nth-child(2),
+table td:nth-child(2){
+    width:12%;
+}
+
+table th:nth-child(3),
+table td:nth-child(3){
+    width:7%;
+}
+
+table th:nth-child(4),
+table td:nth-child(4){
+    width:13%;
+}
+
+table th:nth-child(5),
+table td:nth-child(5){
+    width:9%;
+}
+
+table th:nth-child(6),
+table td:nth-child(6){
+    width:20%;
+}
+
+table th:nth-child(7),
+table td:nth-child(7){
+    width:22%;
+}
+
+table th:nth-child(8),
+table td:nth-child(8){
+    width:6%;
+}
+
+
+.sin-registros{
+    text-align:center;
+
+    padding:
+        35px 20px;
+
+    color:
+        var(--gris);
+
+    background:#fafafa;
+
+    border:
+        1px dashed #cbd5e1;
+
+    border-radius:14px;
+}
+
+
+/* =========================================
+   DETALLE DE AUDITORÍA
+========================================= */
+
+.detalle-auditoria{
+    margin-top:22px;
+
+    border:
+        2px solid
+        #c7d2fe;
+}
+
+
+.detalle-cabecera{
+    display:flex;
+
+    justify-content:
+        space-between;
+
+    align-items:flex-start;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+    padding-bottom:18px;
+
+    margin-bottom:18px;
+
+    border-bottom:
+        1px solid
+        var(--borde);
+}
+
+
+.detalle-cabecera h3{
+    font-size:21px;
+
+    margin-bottom:5px;
+}
+
+
+.detalle-cabecera p{
+    color:
+        var(--gris);
+}
+
+
+.btn-cerrar{
+    background:#e5e7eb;
+
+    color:#374151;
+}
+
+
+.detalle-meta{
+    display:grid;
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(170px,1fr)
+        );
+
+    gap:12px;
+
+    margin-bottom:20px;
+}
+
+
+.meta-item{
+    background:#f8fafc;
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius:12px;
+
+    padding:12px;
+}
+
+
+.meta-item .titulo{
+    color:
+        var(--gris);
+
+    font-size:11px;
+
+    font-weight:bold;
+
+    text-transform:uppercase;
+
+    margin-bottom:5px;
+}
+
+
+.meta-item .valor{
+    font-size:13px;
+
+    font-weight:bold;
+
+    overflow-wrap:anywhere;
+}
+
+
+.detalle-descripcion{
+    background:#f8fafc;
+
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius:12px;
+
+    padding:14px;
+
+    margin-bottom:20px;
+
+    line-height:1.5;
+}
+
+
+.comparacion-grid{
+    display:grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(280px,1fr)
+        );
+
+    gap:18px;
+}
+
+
+.bloque-datos{
+    border:
+        1px solid
+        var(--borde);
+
+    border-radius:14px;
+
+    overflow:hidden;
+}
+
+
+.bloque-datos h4{
+    padding:
+        12px 14px;
+
+    background:#f8fafc;
+
+    border-bottom:
+        1px solid
+        var(--borde);
+
+    font-size:15px;
+}
+
+
+.bloque-datos table{
+    min-width:0;
+
+    table-layout:fixed;
+}
+
+
+.bloque-datos th{
+    background:white;
+
+    color:
+        var(--gris);
+
+    text-transform:none;
+
+    letter-spacing:0;
+
+    width:42%;
+}
+
+
+.bloque-datos th,
+.bloque-datos td{
+    padding:
+        10px 12px;
+
+    border-bottom:
+        1px solid
+        var(--borde);
+
+    font-size:13px;
+
+    overflow-wrap:anywhere;
+}
+
+
+.bloque-datos td{
+    color:#111827;
+}
+
+
+.bloque-datos tr:last-child th,
+.bloque-datos tr:last-child td{
+    border-bottom:0;
+}
+
+
+.vacio-datos{
+    padding:20px;
+
+    text-align:center;
+
+    color:
+        var(--gris);
+
+    font-size:13px;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.footer{
+    text-align:center;
+
+    color:
+        var(--gris);
+
+    font-size:12px;
+
+    padding:
+        8px 20px 32px;
+}
+
+
+/* =========================================
+   IMPRESIÓN
+========================================= */
+
+@media print{
+
+    @page{
+        size:A4 landscape;
+        margin:8mm;
+    }
+
+
+    body{
+        background:white;
+    }
+
+
+    .sigenmuni-global-header,
+    .acciones-superiores,
+    .panel-filtros,
+    .col-accion,
+    .detalle-auditoria,
+    .footer{
+        display:none !important;
+    }
+
+
+    .contenedor{
+        width:100%;
+
+        max-width:none;
+
+        margin:0;
+    }
+
+
+    .panel{
+        box-shadow:none;
+
+        border:0;
+
+        padding:0;
+    }
+
+
+    .panel-superior{
+        margin-bottom:12px;
+    }
+
+
+    .titulo-reporte h2{
+        font-size:20px;
+    }
+
+
+    .titulo-reporte p{
+        font-size:10px;
+    }
+
+
+    .tabla-contenedor{
+        overflow:visible;
+
+        border:1px solid #d1d5db;
+    }
+
+
+    table{
+        min-width:0;
+
+        width:100%;
+
+        table-layout:fixed;
+    }
+
+
+    thead th,
+    tbody td{
+        font-size:8px;
+
+        padding:5px 4px;
+
+        overflow-wrap:anywhere;
+    }
+
+
+    .detalle-texto{
+        max-width:none;
+    }
+
+
+    tr{
+        page-break-inside:avoid;
+    }
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media(max-width:1100px){
+
+    .tabla-contenedor{
+        overflow:hidden;
+    }
+
+
+    table{
+        min-width:0;
+        table-layout:fixed;
+    }
+
+
+    thead th,
+    tbody td{
+        padding:9px 7px;
+        font-size:11px;
+    }
+
+
+    .filtros-grid{
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(180px,1fr)
+            );
+    }
+
+
+    .detalle-meta{
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(170px,1fr)
+            );
+    }
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media(max-width:700px){
+
+    table th:nth-child(3),
+    table td:nth-child(3),
+    table th:nth-child(4),
+    table td:nth-child(4){
+        display:none;
+    }
+
+
+    thead th,
+    tbody td{
+        padding:7px 4px;
+        font-size:10px;
+    }
+
+
+    .btn-detalle{
+        font-size:9px;
+        padding:6px 3px;
+    }
+
+
+    .contenedor{
+        width:96%;
+
+        margin:
+            18px auto;
+    }
+
+
+    .panel-superior{
+        flex-direction:column;
+
+        align-items:stretch;
+
+        text-align:center;
+    }
+
+
+    .acciones-superiores{
+        flex-direction:column;
+    }
+
+
+    .acciones-superiores .btn{
+        width:100%;
+    }
+
+
+    .filtros-grid{
+        grid-template-columns:1fr;
+    }
+
+
+    .acciones-filtros{
+        flex-direction:column;
+    }
+
+
+    .acciones-filtros .btn{
+        width:100%;
+    }
+
+
+    .detalle-meta{
+        grid-template-columns:1fr;
+    }
+
+
+    .comparacion-grid{
+        grid-template-columns:1fr;
+    }
+
+
+    .detalle-cabecera{
+        flex-direction:column;
+    }
+
+
+    .btn-cerrar{
+        width:100%;
+    }
+}
+
