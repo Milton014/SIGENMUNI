@@ -21,19 +21,14 @@ $rolPermisosId =
 
 
 $rolPermisosAccion =
-    sigenmuniUrlRuta(
-        'usuarios/roles/permisos',
-        [
+    sigenmuniUrlRuta('usuarios/roles/permisos', array_merge($contextoRoles, [
             'id' =>
                 $rolPermisosId
-        ]
-    );
+        ]));
 
 
 $rolPermisosUrlVolver =
-    sigenmuniUrlRuta(
-        'usuarios/roles'
-    );
+    sigenmuniUrlRuta('usuarios/roles', $contextoRoles);
 
 
 $rolPermisosCsrfToken =

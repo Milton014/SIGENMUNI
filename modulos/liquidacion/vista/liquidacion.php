@@ -55,6 +55,9 @@ $liquidacionUrlEstado =
 $liquidacionCsrf =
     sigenmuniCsrfToken();
 
+$paginacionRuta = 'liquidacion';
+$paginacionParametros = $contextoListado;
+$paginacionEntidad = 'liquidaciones';
 ?>
 
 <!DOCTYPE html>
@@ -69,6 +72,7 @@ $liquidacionCsrf =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/liquidacion/liquidacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -352,6 +356,14 @@ require __DIR__
                 </select>
 
 
+<label class="paginacion-tamano" for="por_pagina">Por página
+                    <select id="por_pagina" name="por_pagina" data-paginacion-cantidad>
+                        <?php foreach ([10, 25, 50] as $cantidadPagina): ?>
+                            <option value="<?= $cantidadPagina ?>" <?= $paginacion['por_pagina'] === $cantidadPagina ? 'selected' : '' ?>><?= $cantidadPagina ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+
                 <!-- FILTRAR -->
 
                 <button
@@ -386,6 +398,7 @@ require __DIR__
              LISTADO
         ====================================== -->
 
+        <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
         <?php if (!empty($liquidaciones)): ?>
 
             <div class="tabla-contenedor">
@@ -626,9 +639,7 @@ require __DIR__
                                                 echo htmlspecialchars(
                                                     sigenmuniUrlRuta(
                                                         'liquidacion/ver',
-                                                        [
-                                                            'id' => (int)$fila['id']
-                                                        ]
+                                                        array_merge($contextoListado, ['id' => (int)$fila['id']])
                                                     ),
                                                     ENT_QUOTES,
                                                     'UTF-8'
@@ -1113,6 +1124,7 @@ require __DIR__
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <?php else: ?>

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../../core/Paginacion.php';
+
 class ReporteModelo
 {
     private $conexion;
@@ -133,11 +135,8 @@ class ReporteModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listarEmpleados(
-        $legajo = '',
-        $busqueda = '',
-        $estado = ''
-    ) {
+    private function consultalistarEmpleados($legajo = '', $busqueda = '', $estado = ''): array
+    {
         $sql = "
             SELECT
                 e.id,
@@ -226,17 +225,25 @@ class ReporteModelo
         }
 
 
-        $sql .= "
-            ORDER BY
-                e.apellido ASC,
-                e.nombre ASC
-        ";
+        return [$sql, $tipos, $parametros];
+    }
 
-        return $this->ejecutarConsultaPreparada(
-            $sql,
-            $tipos,
-            $parametros
-        );
+    public function listarEmpleados($legajo = '', $busqueda = '', $estado = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $tipos, $parametros] = $this->consultalistarEmpleados($legajo, $busqueda, $estado);
+        $sql .= ' ORDER BY e.apellido ASC, e.nombre ASC, e.id ASC';
+        $this->limitarReporte($sql, $tipos, $parametros, $limite, $desplazamiento);
+        $filas = $this->ejecutarConsultaPreparada($sql, $tipos, $parametros);
+        return $filas;
+    }
+
+    public function listarEmpleadosPaginado($legajo = '', $busqueda = '', $estado = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarReporte($this->consultalistarEmpleados($legajo, $busqueda, $estado));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listarEmpleados($legajo, $busqueda, $estado,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
     }
 
 
@@ -246,11 +253,8 @@ class ReporteModelo
     |--------------------------------------------------------------------------
     */
 
-    public function buscarEmpleadosHistorial(
-        $legajo = '',
-        $busqueda = '',
-        $estado = ''
-    ) {
+    private function consultabuscarEmpleadosHistorial($legajo = '', $busqueda = '', $estado = ''): array
+    {
         $sql = "
             SELECT
                 e.id,
@@ -323,18 +327,25 @@ class ReporteModelo
         }
 
 
-        $sql .= "
-            ORDER BY
-                e.apellido ASC,
-                e.nombre ASC
-            LIMIT 50
-        ";
+        return [$sql, $tipos, $parametros];
+    }
 
-        return $this->ejecutarConsultaPreparada(
-            $sql,
-            $tipos,
-            $parametros
-        );
+    public function buscarEmpleadosHistorial($legajo = '', $busqueda = '', $estado = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $tipos, $parametros] = $this->consultabuscarEmpleadosHistorial($legajo, $busqueda, $estado);
+        $sql .= ' ORDER BY e.apellido ASC, e.nombre ASC, e.id ASC';
+        $this->limitarReporte($sql, $tipos, $parametros, $limite, $desplazamiento);
+        $filas = $this->ejecutarConsultaPreparada($sql, $tipos, $parametros);
+        return $filas;
+    }
+
+    public function buscarEmpleadosHistorialPaginado($legajo = '', $busqueda = '', $estado = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarReporte($this->consultabuscarEmpleadosHistorial($legajo, $busqueda, $estado));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->buscarEmpleadosHistorial($legajo, $busqueda, $estado,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
     }
 
 
@@ -449,10 +460,8 @@ class ReporteModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listarCategorias(
-        $buscar = '',
-        $activo = ''
-    ) {
+    private function consultalistarCategorias($buscar = '', $activo = ''): array
+    {
         $sql = "
             SELECT
                 cat.id,
@@ -560,28 +569,25 @@ class ReporteModelo
         }
 
 
-        $sql .= "
-            ORDER BY
-                CASE
-                    WHEN CAST(cat.codigo AS UNSIGNED) >= 1000 THEN 1
-                    ELSE 2
-                END,
-                CAST(cat.codigo AS UNSIGNED) ASC,
-                cat.nombre ASC
-        ";
+        return [$sql, $tipos, $parametros];
+    }
 
+    public function listarCategorias($buscar = '', $activo = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $tipos, $parametros] = $this->consultalistarCategorias($buscar, $activo);
+        $sql .= ' ORDER BY CASE WHEN CAST(cat.codigo AS UNSIGNED) >= 1000 THEN 1 ELSE 2 END, CAST(cat.codigo AS UNSIGNED) ASC, cat.nombre ASC, cat.id ASC';
+        $this->limitarReporte($sql, $tipos, $parametros, $limite, $desplazamiento);
+        $filas = $this->ejecutarConsultaPreparada($sql, $tipos, $parametros);
+        return $this->prepararEstadoConfiguracionCategorias($filas);
+    }
 
-        $categorias =
-            $this->ejecutarConsultaPreparada(
-                $sql,
-                $tipos,
-                $parametros
-            );
-
-        return
-            $this->prepararEstadoConfiguracionCategorias(
-                $categorias
-            );
+    public function listarCategoriasPaginado($buscar = '', $activo = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarReporte($this->consultalistarCategorias($buscar, $activo));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listarCategorias($buscar, $activo,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
     }
 
 
@@ -661,11 +667,8 @@ class ReporteModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listarConceptos(
-        $buscar = '',
-        $categoria = '',
-        $activo = ''
-    ) {
+    private function consultalistarConceptos($buscar = '', $categoria = '', $activo = ''): array
+    {
         $sql = "
             SELECT
                 id,
@@ -735,18 +738,25 @@ class ReporteModelo
         }
 
 
-        $sql .= "
-            ORDER BY
-                codigo ASC,
-                nombre ASC
-        ";
+        return [$sql, $tipos, $parametros];
+    }
 
+    public function listarConceptos($buscar = '', $categoria = '', $activo = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $tipos, $parametros] = $this->consultalistarConceptos($buscar, $categoria, $activo);
+        $sql .= ' ORDER BY codigo ASC, nombre ASC, id ASC';
+        $this->limitarReporte($sql, $tipos, $parametros, $limite, $desplazamiento);
+        $filas = $this->ejecutarConsultaPreparada($sql, $tipos, $parametros);
+        return $filas;
+    }
 
-        return $this->ejecutarConsultaPreparada(
-            $sql,
-            $tipos,
-            $parametros
-        );
+    public function listarConceptosPaginado($buscar = '', $categoria = '', $activo = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarReporte($this->consultalistarConceptos($buscar, $categoria, $activo));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listarConceptos($buscar, $categoria, $activo,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
     }
 
 
@@ -793,11 +803,8 @@ class ReporteModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listarLiquidaciones(
-        $periodo = '',
-        $tipo = '',
-        $estado = ''
-    ) {
+    private function consultalistarLiquidaciones($periodo = '', $tipo = '', $estado = ''): array
+    {
         $sql = "
             SELECT
                 l.id,
@@ -880,27 +887,26 @@ class ReporteModelo
         }
 
 
-        $sql .= "
-            GROUP BY
-                l.id,
-                l.tipo_liquidacion,
-                l.periodo,
-                l.fecha_liquidacion,
-                l.descripcion,
-                l.estado,
-                l.created_at
+        $sql .= ' GROUP BY l.id, l.tipo_liquidacion, l.periodo, l.fecha_liquidacion, l.descripcion, l.estado, l.created_at';
+        return [$sql, $tipos, $parametros];
+    }
 
-            ORDER BY
-                l.fecha_liquidacion DESC,
-                l.id DESC
-        ";
+    public function listarLiquidaciones($periodo = '', $tipo = '', $estado = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $tipos, $parametros] = $this->consultalistarLiquidaciones($periodo, $tipo, $estado);
+        $sql .= ' ORDER BY l.fecha_liquidacion DESC, l.id DESC';
+        $this->limitarReporte($sql, $tipos, $parametros, $limite, $desplazamiento);
+        $filas = $this->ejecutarConsultaPreparada($sql, $tipos, $parametros);
+        return $filas;
+    }
 
-
-        return $this->ejecutarConsultaPreparada(
-            $sql,
-            $tipos,
-            $parametros
-        );
+    public function listarLiquidacionesPaginado($periodo = '', $tipo = '', $estado = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarReporte($this->consultalistarLiquidaciones($periodo, $tipo, $estado));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listarLiquidaciones($periodo, $tipo, $estado,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
     }
 
 
@@ -957,7 +963,7 @@ class ReporteModelo
     |--------------------------------------------------------------------------
     */
 
-    public function obtenerHistorialEmpleado($empleadoId)
+    private function consultaobtenerHistorialEmpleado($empleadoId): array
     {
         $sql = "
             SELECT
@@ -981,18 +987,26 @@ class ReporteModelo
 
             WHERE le.empleado_id = ?
 
-            ORDER BY
-                l.fecha_liquidacion DESC,
-                l.id DESC
         ";
+        return [$sql, "i", [$empleadoId]];
+    }
 
-        return $this->ejecutarConsultaPreparada(
-            $sql,
-            "i",
-            [
-                $empleadoId
-            ]
-        );
+    public function obtenerHistorialEmpleado($empleadoId, $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $tipos, $parametros] = $this->consultaobtenerHistorialEmpleado($empleadoId);
+        $sql .= ' ORDER BY l.fecha_liquidacion DESC, l.id DESC';
+        $this->limitarReporte($sql, $tipos, $parametros, $limite, $desplazamiento);
+        $filas = $this->ejecutarConsultaPreparada($sql, $tipos, $parametros);
+        return $filas;
+    }
+
+    public function obtenerHistorialEmpleadoPaginado($empleadoId, $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarReporte($this->consultaobtenerHistorialEmpleado($empleadoId));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->obtenerHistorialEmpleado($empleadoId,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
     }
 
 
@@ -1032,6 +1046,7 @@ class ReporteModelo
                 pl.fecha_hasta,
                 pl.motivo_inicio,
                 pl.motivo_fin,
+                pl.norma_legal_baja,
                 pl.observacion,
                 pl.usuario_alta_id,
                 pl.usuario_cierre_id,
@@ -2127,15 +2142,8 @@ class ReporteModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listarAuditoria(
-        $fechaDesde = '',
-        $fechaHasta = '',
-        $usuario = '',
-        $rol = '',
-        $modulo = '',
-        $accion = '',
-        $entidad = ''
-    ) {
+    private function consultalistarAuditoria($fechaDesde = '', $fechaHasta = '', $usuario = '', $rol = '', $modulo = '', $accion = '', $entidad = ''): array
+    {
         $sql = "
             SELECT
                 a.id,
@@ -2289,18 +2297,25 @@ class ReporteModelo
         |--------------------------------------------------------------------------
         */
 
-        $sql .= "
-            ORDER BY
-                a.fecha_hora DESC,
-                a.id DESC
-        ";
+        return [$sql, $tipos, $parametros];
+    }
 
+    public function listarAuditoria($fechaDesde = '', $fechaHasta = '', $usuario = '', $rol = '', $modulo = '', $accion = '', $entidad = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $tipos, $parametros] = $this->consultalistarAuditoria($fechaDesde, $fechaHasta, $usuario, $rol, $modulo, $accion, $entidad);
+        $sql .= ' ORDER BY a.fecha_hora DESC, a.id DESC';
+        $this->limitarReporte($sql, $tipos, $parametros, $limite, $desplazamiento);
+        $filas = $this->ejecutarConsultaPreparada($sql, $tipos, $parametros);
+        return $filas;
+    }
 
-        return $this->ejecutarConsultaPreparada(
-            $sql,
-            $tipos,
-            $parametros
-        );
+    public function listarAuditoriaPaginado($fechaDesde = '', $fechaHasta = '', $usuario = '', $rol = '', $modulo = '', $accion = '', $entidad = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarReporte($this->consultalistarAuditoria($fechaDesde, $fechaHasta, $usuario, $rol, $modulo, $accion, $entidad));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listarAuditoria($fechaDesde, $fechaHasta, $usuario, $rol, $modulo, $accion, $entidad,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
     }
 
 
@@ -2572,6 +2587,24 @@ class ReporteModelo
     | CONSULTA SIMPLE
     |--------------------------------------------------------------------------
     */
+
+    private function limitarReporte(&$sql, &$tipos, &$parametros, $limite, $desplazamiento): void
+    {
+        // Las exportaciones y consultas completas siguen llamando sin límite.
+        if ($limite === null) return;
+        if (!in_array($limite, [10, 25, 50], true) || !is_int($desplazamiento) || $desplazamiento < 0) {
+            throw new InvalidArgumentException('Límites de paginación no válidos.');
+        }
+        $sql .= ' LIMIT ? OFFSET ?'; $tipos .= 'ii';
+        $parametros[] = $limite; $parametros[] = $desplazamiento;
+    }
+
+    private function contarReporte(array $consulta): int
+    {
+        [$sql, $tipos, $parametros] = $consulta;
+        $filas = $this->ejecutarConsultaPreparada('SELECT COUNT(*) AS total FROM (' . $sql . ') AS reporte_filtrado', $tipos, $parametros);
+        return (int)($filas[0]['total'] ?? 0);
+    }
 
     private function ejecutarConsultaSimple($sql)
     {

@@ -27,19 +27,36 @@ class ConceptoControlador
     |--------------------------------------------------------------------------
     */
 
+    /** Solo se conservan filtros y páginas conocidos; no se aceptan URLs de retorno. */
+    private function contextoListado(): array
+    {
+        $buscar = is_string($_GET['buscar'] ?? null) ? trim($_GET['buscar']) : '';
+        $buscar = mb_check_encoding($buscar, 'UTF-8') ? mb_substr($buscar, 0, 120, 'UTF-8') : '';
+        $categoria = is_string($_GET['categoria'] ?? null) ? trim($_GET['categoria']) : '';
+        if (!$this->modelo->categoriaValida($categoria)) $categoria = '';
+        $activo = is_string($_GET['activo'] ?? null) ? trim($_GET['activo']) : '';
+        if (!in_array($activo, ['', '0', '1'], true)) $activo = '';
+        return array_merge(sigenmuniParametrosPaginacion($_GET), compact('buscar', 'categoria', 'activo'));
+    }
+
+    private function contextoValores(): array
+    {
+        $pagina = sigenmuniParametrosPaginacion([
+            'pagina' => $_GET['pagina_valores'] ?? 1,
+            'por_pagina' => $_GET['por_pagina_valores'] ?? 25,
+        ]);
+        return array_merge($this->contextoListado(), [
+            'pagina_valores' => $pagina['pagina'], 'por_pagina_valores' => $pagina['por_pagina'],
+        ]);
+    }
+
     public function index()
     {
-        $buscar = trim(
-            $_GET['buscar'] ?? ''
-        );
-
-        $categoria = trim(
-            $_GET['categoria'] ?? ''
-        );
-
-        $activo = trim(
-            $_GET['activo'] ?? ''
-        );
+        $contextoListado = $this->contextoListado();
+        $contextoValores = $this->contextoValores();
+        $buscar = $contextoListado['buscar'];
+        $categoria = $contextoListado['categoria'];
+        $activo = $contextoListado['activo'];
 
         $mensaje = "";
         $tipo_mensaje = "";
@@ -136,12 +153,12 @@ class ConceptoControlador
                 $this->modelo->obtenerCategorias();
 
 
-            $conceptos =
-                $this->modelo->listar(
-                    $buscar,
-                    $categoria,
-                    $activo
-                );
+            $resultadoListado = $this->modelo->listarPaginado($buscar, $categoria, $activo,
+                $contextoListado['pagina'], $contextoListado['por_pagina']);
+            $conceptos = $resultadoListado['registros'];
+            $paginacion = $resultadoListado['paginacion'];
+            $contextoListado['pagina'] = $paginacion['pagina'];
+            $contextoValores = array_merge($contextoValores, $contextoListado);
 
 
             /*
@@ -175,6 +192,8 @@ class ConceptoControlador
 
     public function nuevo()
     {
+        $contextoListado = $this->contextoListado();
+        $contextoValores = $this->contextoValores();
         $mensaje = "";
         $tipo_mensaje = "error";
         $basesCalculoPorcentaje = [];
@@ -331,12 +350,9 @@ class ConceptoControlador
                 */
 
                 $urlListado =
-                    sigenmuniUrlRuta(
-                        'conceptos',
-                        [
+                    sigenmuniUrlRuta('conceptos', array_merge($this->contextoListado(), [
                             'ok' => 'nuevo'
-                        ]
-                    );
+                        ]));
 
 
                 header(
@@ -375,6 +391,8 @@ class ConceptoControlador
 
     public function editar()
     {
+        $contextoListado = $this->contextoListado();
+        $contextoValores = $this->contextoValores();
         $id = isset($_GET['id'])
             ? (int)$_GET['id']
             : 0;
@@ -393,9 +411,7 @@ class ConceptoControlador
         if ($id <= 0) {
 
             $urlListado =
-                sigenmuniUrlRuta(
-                    'conceptos'
-                );
+                sigenmuniUrlRuta('conceptos', $this->contextoListado());
 
             header(
                 'Location: ' . $urlListado
@@ -480,9 +496,7 @@ class ConceptoControlador
             if (!$concepto) {
 
                 $urlListado =
-                    sigenmuniUrlRuta(
-                        'conceptos'
-                    );
+                    sigenmuniUrlRuta('conceptos', $this->contextoListado());
 
                 header(
                     'Location: ' . $urlListado
@@ -552,10 +566,11 @@ class ConceptoControlador
             |
             */
 
-            $valoresConcepto =
-                $this->modelo->listarValores(
-                    $id
-                );
+            $resultadoValores = $this->modelo->listarValoresPaginado($id,
+                $contextoValores['pagina_valores'], $contextoValores['por_pagina_valores']);
+            $valoresConcepto = $resultadoValores['registros'];
+            $paginacionValores = $resultadoValores['paginacion'];
+            $contextoValores['pagina_valores'] = $paginacionValores['pagina'];
 
 
             $categoriasValores =
@@ -694,13 +709,10 @@ class ConceptoControlador
                 */
 
                 $urlEditar =
-                    sigenmuniUrlRuta(
-                        'conceptos/editar',
-                        [
+                    sigenmuniUrlRuta('conceptos/editar', array_merge($this->contextoValores(), [
                             'id' => $id,
                             'ok' => 'editar'
-                        ]
-                    );
+                        ]));
 
                 header(
                     'Location: ' . $urlEditar
@@ -868,9 +880,7 @@ class ConceptoControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'conceptos'
-                )
+                sigenmuniUrlRuta('conceptos', $this->contextoListado())
             );
 
             exit();
@@ -893,9 +903,7 @@ class ConceptoControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'conceptos'
-                )
+                sigenmuniUrlRuta('conceptos', $this->contextoListado())
             );
 
             exit();
@@ -920,9 +928,7 @@ class ConceptoControlador
                 header(
                     'Location: '
                     .
-                    sigenmuniUrlRuta(
-                        'conceptos'
-                    )
+                    sigenmuniUrlRuta('conceptos', $this->contextoListado())
                 );
 
                 exit();
@@ -943,9 +949,7 @@ class ConceptoControlador
                 header(
                     'Location: '
                     .
-                    sigenmuniUrlRuta(
-                        'conceptos'
-                    )
+                    sigenmuniUrlRuta('conceptos', $this->contextoListado())
                 );
 
                 exit();
@@ -981,12 +985,9 @@ class ConceptoControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'conceptos',
-                    [
+                sigenmuniUrlRuta('conceptos', array_merge($this->contextoListado(), [
                         'ok' => 'estado'
-                    ]
-                )
+                    ]))
             );
 
             exit();
@@ -1013,6 +1014,8 @@ class ConceptoControlador
 
     public function valores()
     {
+        $contextoListado = $this->contextoListado();
+        $contextoValores = $this->contextoValores();
         $conceptoId = isset($_GET['concepto_id'])
             ? (int)$_GET['concepto_id']
             : 0;
@@ -1108,9 +1111,7 @@ class ConceptoControlador
                 if ($nombreConcepto === null) {
 
                     $urlConceptos =
-                        sigenmuniUrlRuta(
-                            'conceptos'
-                        );
+                        sigenmuniUrlRuta('conceptos', $this->contextoListado());
 
                     header(
                         'Location: ' . $urlConceptos
@@ -1127,10 +1128,11 @@ class ConceptoControlador
             |--------------------------------------------------------------------------
             */
 
-            $valores =
-                $this->modelo->listarValores(
-                    $conceptoId
-                );
+            $resultadoValores = $this->modelo->listarValoresPaginado($conceptoId,
+                $contextoValores['pagina_valores'], $contextoValores['por_pagina_valores']);
+            $valores = $resultadoValores['registros'];
+            $paginacionValores = $resultadoValores['paginacion'];
+            $contextoValores['pagina_valores'] = $paginacionValores['pagina'];
 
 
             /*
@@ -1164,6 +1166,8 @@ class ConceptoControlador
 
     public function nuevoValor()
     {
+        $contextoListado = $this->contextoListado();
+        $contextoValores = $this->contextoValores();
         $conceptoIdSeleccionado =
             isset($_GET['concepto_id'])
                 ? (int)$_GET['concepto_id']
@@ -1409,13 +1413,10 @@ class ConceptoControlador
                 if ($modoIntegrado) {
 
                     $urlDestino =
-                        sigenmuniUrlRuta(
-                            'conceptos/editar',
-                            [
+                        sigenmuniUrlRuta('conceptos/editar', array_merge($this->contextoValores(), [
                                 'id' => (int)$datosGuardar['concepto_id'],
                                 'valor_ok' => 'nuevo'
-                            ]
-                        );
+                            ]));
 
                 } elseif ($retornoValores === 'filtrado') {
 
@@ -1426,23 +1427,17 @@ class ConceptoControlador
 
 
                     $urlDestino =
-                        sigenmuniUrlRuta(
-                            'conceptos/valores',
-                            [
+                        sigenmuniUrlRuta('conceptos/valores', array_merge($this->contextoValores(), [
                                 'concepto_id' => $conceptoIdRetorno,
                                 'ok' => 'nuevo'
-                            ]
-                        );
+                            ]));
 
                 } else {
 
                     $urlDestino =
-                        sigenmuniUrlRuta(
-                            'conceptos/valores',
-                            [
+                        sigenmuniUrlRuta('conceptos/valores', array_merge($this->contextoValores(), [
                                 'ok' => 'nuevo'
-                            ]
-                        );
+                            ]));
                 }
 
 
@@ -1482,6 +1477,8 @@ class ConceptoControlador
 
     public function editarValor()
     {
+        $contextoListado = $this->contextoListado();
+        $contextoValores = $this->contextoValores();
         $id = isset($_GET['id'])
             ? (int)$_GET['id']
             : 0;
@@ -1548,9 +1545,7 @@ class ConceptoControlador
         if ($id <= 0) {
 
             $urlValores =
-                sigenmuniUrlRuta(
-                    'conceptos/valores'
-                );
+                sigenmuniUrlRuta('conceptos/valores', $this->contextoValores());
 
             header(
                 'Location: ' . $urlValores
@@ -1577,9 +1572,7 @@ class ConceptoControlador
             if (!$valor) {
 
                 $urlValores =
-                    sigenmuniUrlRuta(
-                        'conceptos/valores'
-                    );
+                    sigenmuniUrlRuta('conceptos/valores', $this->contextoValores());
 
                 header(
                     'Location: ' . $urlValores
@@ -1823,13 +1816,10 @@ class ConceptoControlador
                 if ($modoIntegrado) {
 
                     $urlDestino =
-                        sigenmuniUrlRuta(
-                            'conceptos/editar',
-                            [
+                        sigenmuniUrlRuta('conceptos/editar', array_merge($this->contextoValores(), [
                                 'id' => (int)$datosActualizar['concepto_id'],
                                 'valor_ok' => 'editar'
-                            ]
-                        );
+                            ]));
 
                 } elseif ($retornoValores === 'filtrado') {
 
@@ -1840,23 +1830,17 @@ class ConceptoControlador
 
 
                     $urlDestino =
-                        sigenmuniUrlRuta(
-                            'conceptos/valores',
-                            [
+                        sigenmuniUrlRuta('conceptos/valores', array_merge($this->contextoValores(), [
                                 'concepto_id' => $conceptoIdRetorno,
                                 'ok' => 'editar'
-                            ]
-                        );
+                            ]));
 
                 } else {
 
                     $urlDestino =
-                        sigenmuniUrlRuta(
-                            'conceptos/valores',
-                            [
+                        sigenmuniUrlRuta('conceptos/valores', array_merge($this->contextoValores(), [
                                 'ok' => 'editar'
-                            ]
-                        );
+                            ]));
                 }
 
 
@@ -2060,10 +2044,7 @@ class ConceptoControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'conceptos/valores',
-                    $parametrosRetorno
-                )
+                sigenmuniUrlRuta('conceptos/valores', array_merge($this->contextoValores(), $parametrosRetorno))
             );
 
             exit();
@@ -2080,9 +2061,7 @@ class ConceptoControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'conceptos/valores'
-                )
+                sigenmuniUrlRuta('conceptos/valores', $this->contextoValores())
             );
 
             exit();
@@ -2107,9 +2086,7 @@ class ConceptoControlador
                 header(
                     'Location: '
                     .
-                    sigenmuniUrlRuta(
-                        'conceptos/valores'
-                    )
+                    sigenmuniUrlRuta('conceptos/valores', $this->contextoValores())
                 );
 
                 exit();
@@ -2204,13 +2181,10 @@ class ConceptoControlador
             if ($modoIntegrado) {
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'conceptos/editar',
-                        [
+                    sigenmuniUrlRuta('conceptos/editar', array_merge($this->contextoValores(), [
                             'id' => $conceptoId,
                             'valor_ok' => 'estado'
-                        ]
-                    );
+                        ]));
 
             } elseif ($retornoValores === 'filtrado') {
 
@@ -2221,23 +2195,17 @@ class ConceptoControlador
 
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'conceptos/valores',
-                        [
+                    sigenmuniUrlRuta('conceptos/valores', array_merge($this->contextoValores(), [
                             'concepto_id' => $conceptoIdRetorno,
                             'ok' => 'estado'
-                        ]
-                    );
+                        ]));
 
             } else {
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'conceptos/valores',
-                        [
+                    sigenmuniUrlRuta('conceptos/valores', array_merge($this->contextoValores(), [
                             'ok' => 'estado'
-                        ]
-                    );
+                        ]));
             }
 
 

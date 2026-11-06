@@ -10,15 +10,11 @@ require_once __DIR__ . '/../../../core/Url.php';
 
 
 $rolNuevoAccion =
-    sigenmuniUrlRuta(
-        'usuarios/roles/nuevo'
-    );
+    sigenmuniUrlRuta('usuarios/roles/nuevo', $contextoRoles);
 
 
 $rolNuevoUrlVolver =
-    sigenmuniUrlRuta(
-        'usuarios/roles'
-    );
+    sigenmuniUrlRuta('usuarios/roles', $contextoRoles);
 
 ?>
 

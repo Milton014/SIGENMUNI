@@ -498,3 +498,11 @@ tbody tr:hover{
     }
 }
 
+
+/* Tamaño de página integrado con los filtros existentes. */
+.filtros { grid-template-columns: minmax(220px, 2fr) minmax(160px, 1fr) auto auto auto; align-items: end; }
+.filtros > input, .filtros > select { align-self: end; }
+.filtros .paginacion-tamano { white-space: nowrap; font-size: 14px; color: #475569; }
+.filtros .paginacion-tamano select { width: auto; min-width: 72px; }
+@media (max-width: 1100px) { .filtros { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 768px) { .filtros { grid-template-columns: 1fr; } }

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../../core/Paginacion.php';
+
 class EmpleadoModelo
 {
     private $conexion;
@@ -23,7 +25,7 @@ class EmpleadoModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listar($busqueda = "")
+    private function consultaListado($busqueda)
     {
         $busqueda =
             trim(
@@ -261,18 +263,53 @@ class EmpleadoModelo
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ORDEN
-        |--------------------------------------------------------------------------
-        */
+        return [$sql, $tipos, $parametros];
+    }
 
+    public function contarListado($busqueda = ''): int
+    {
+        [$consulta, $tipos, $parametros] = $this->consultaListado($busqueda);
+        // Usa exactamente los mismos filtros y relaciones que el listado.
+        $stmt = $this->conexion->prepare('SELECT COUNT(*) AS total FROM (' . $consulta . ') AS empleados_filtrados');
+        if (!$stmt) throw new RuntimeException('No se pudo preparar el conteo de empleados.');
+        try {
+            if ($parametros) $stmt->bind_param($tipos, ...$parametros);
+            if (!$stmt->execute()) throw new RuntimeException('No se pudo contar los empleados.');
+            $fila = $stmt->get_result()->fetch_assoc();
+            return (int)($fila['total'] ?? 0);
+        } finally {
+            $stmt->close();
+        }
+    }
+
+    public function listarPaginado($busqueda = '', $pagina = 1, $porPagina = 25): array
+    {
+        $paginacion = sigenmuniCalcularPaginacion($this->contarListado($busqueda), $pagina, $porPagina);
+        $registros = $paginacion['total'] > 0
+            ? $this->listar($busqueda, $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    public function listar($busqueda = "", $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $tipos, $parametros] = $this->consultaListado($busqueda);
         $sql .= "
             ORDER BY
                 e.apellido ASC,
-                e.nombre ASC
+                e.nombre ASC,
+                e.id ASC
         ";
 
+
+        if ($limite !== null) {
+            if (!in_array($limite, [10, 25, 50], true) || !is_int($desplazamiento) || $desplazamiento < 0) {
+                throw new InvalidArgumentException('Límites de paginación no válidos.');
+            }
+            $sql .= ' LIMIT ? OFFSET ?';
+            $tipos .= 'ii';
+            $parametros[] = $limite;
+            $parametros[] = $desplazamiento;
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -1202,8 +1239,42 @@ class EmpleadoModelo
     |--------------------------------------------------------------------------
     */
 
+    /** Normaliza texto UTF-8 de hasta 100 caracteres; admite registros históricos vacíos. */
+    public static function normalizarNormaLegalAlta($valor): ?string
+    {
+        if ($valor === null) {
+            return null;
+        }
+        if (!is_string($valor)) {
+            throw new InvalidArgumentException('La norma legal de alta debe ser un texto.');
+        }
+        $valor = trim($valor);
+        if ($valor === '') {
+            return null;
+        }
+        if (preg_match('//u', $valor) !== 1
+            || preg_match('/[\x00-\x1F\x7F]/u', $valor)) {
+            throw new InvalidArgumentException('Ingrese la norma legal de alta en una sola línea de texto válido.');
+        }
+        if (preg_match('/\A.{1,100}\z/us', $valor) !== 1) {
+            throw new InvalidArgumentException('La norma legal de alta no puede superar los 100 caracteres.');
+        }
+        return $valor;
+    }
+
+    /** Las nuevas altas requieren una norma, incluso si se omite el formulario. */
+    public static function exigirNormaLegalAlta($valor): string
+    {
+        $norma = self::normalizarNormaLegalAlta($valor);
+        if ($norma === null || preg_match('/\A[\p{Z}\s]*\z/u', $norma) === 1) {
+            throw new InvalidArgumentException('Complete la norma legal de alta (Decreto o Resolución).');
+        }
+        return $norma;
+    }
+
     public function guardar($datos)
     {
+        $normaLegalAlta = self::exigirNormaLegalAlta($datos['norma_legal_alta'] ?? null);
         /*
         |--------------------------------------------------------------------------
         | ALTA DE EMPLEADO + PERÍODO LABORAL INICIAL
@@ -1232,6 +1303,7 @@ class EmpleadoModelo
                     dni,
                     cuil,
                     fecha_alta,
+                    norma_legal_alta,
                     fecha_baja,
                     telefono,
                     email,
@@ -1242,7 +1314,7 @@ class EmpleadoModelo
                 VALUES (
                     ?, ?, ?, ?, ?,
                     ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, 1
+                    ?, ?, ?, ?, ?, ?, ?, 1
                 )
             ";
 
@@ -1332,7 +1404,7 @@ class EmpleadoModelo
 
 
             $stmt->bind_param(
-                "iiiiisssssssssss",
+                "iiiiissssssssssss",
                 $institucionId,
                 $oficinaId,
                 $situacionId,
@@ -1344,6 +1416,7 @@ class EmpleadoModelo
                 $dni,
                 $cuil,
                 $fechaAlta,
+                $normaLegalAlta,
                 $fechaBaja,
                 $telefono,
                 $email,
@@ -1420,6 +1493,7 @@ class EmpleadoModelo
         $id,
         $datos
     ) {
+        $normaLegalAlta = self::normalizarNormaLegalAlta($datos['norma_legal_alta'] ?? null);
         $sql = "
             UPDATE empleado
             SET
@@ -1434,6 +1508,7 @@ class EmpleadoModelo
                 dni = ?,
                 cuil = ?,
                 fecha_alta = ?,
+                norma_legal_alta = ?,
                 fecha_baja = ?,
                 telefono = ?,
                 email = ?,
@@ -1508,7 +1583,7 @@ class EmpleadoModelo
 
 
         $stmt->bind_param(
-            "iiiiisssssssssssi",
+            "iiiiissssssssssssi",
             $institucionId,
             $oficinaId,
             $situacionId,
@@ -1520,6 +1595,7 @@ class EmpleadoModelo
             $dni,
             $cuil,
             $fechaAlta,
+            $normaLegalAlta,
             $fechaBaja,
             $telefono,
             $email,
@@ -1554,12 +1630,33 @@ class EmpleadoModelo
     |--------------------------------------------------------------------------
     */
 
+    /** Norma del cierre de un período: opcional, una línea de hasta 100 caracteres. */
+    public static function normalizarNormaLegalBaja($valor): ?string
+    {
+        if ($valor === null) return null;
+        if (!is_string($valor)) {
+            throw new InvalidArgumentException('La norma legal de baja debe ser un texto.');
+        }
+        $valor = trim($valor);
+        if ($valor === '') return null;
+        if (preg_match('//u', $valor) !== 1
+            || preg_match('/[\x00-\x1F\x7F]/u', $valor)) {
+            throw new InvalidArgumentException('Ingrese la norma legal de baja en una sola línea de texto válido.');
+        }
+        if (preg_match('/\A[\p{Z}\s]*\z/u', $valor) === 1) return null;
+        if (preg_match('/\A.{1,100}\z/us', $valor) !== 1) {
+            throw new InvalidArgumentException('La norma legal de baja no puede superar los 100 caracteres.');
+        }
+        return $valor;
+    }
+
     public function cambiarEstado(
         $id,
         $activo,
         $fechaEfectiva = null,
         $observacion = null,
-        $usuarioId = null
+        $usuarioId = null,
+        $normaLegalBaja = null
     ) {
         $id =
             (int)$id;
@@ -1647,6 +1744,9 @@ class EmpleadoModelo
                 : $observacion;
 
 
+        $normaLegalBaja = $activo === 0
+            ? self::normalizarNormaLegalBaja($normaLegalBaja) : null;
+
         $this->conexion->begin_transaction();
 
 
@@ -1699,7 +1799,8 @@ class EmpleadoModelo
                     $fechaEfectiva,
                     'Inactivación',
                     $observacionBD,
-                    $usuarioId
+                    $usuarioId,
+                    $normaLegalBaja
                 );
 
 
@@ -1868,6 +1969,7 @@ class EmpleadoModelo
                 pl.fecha_hasta,
                 pl.motivo_inicio,
                 pl.motivo_fin,
+                pl.norma_legal_baja,
                 pl.observacion,
                 pl.usuario_alta_id,
                 pl.usuario_cierre_id,
@@ -2011,6 +2113,7 @@ class EmpleadoModelo
                 fecha_hasta,
                 motivo_inicio,
                 motivo_fin,
+                norma_legal_baja,
                 observacion,
                 usuario_alta_id,
                 usuario_cierre_id,
@@ -2415,8 +2518,10 @@ class EmpleadoModelo
         $fechaHasta,
         $motivoFin = 'Inactivación',
         $observacion = null,
-        $usuarioCierreId = null
+        $usuarioCierreId = null,
+        $normaLegalBaja = null
     ) {
+        $normaLegalBaja = self::normalizarNormaLegalBaja($normaLegalBaja);
         $empleadoId =
             (int)$empleadoId;
 
@@ -2530,6 +2635,7 @@ class EmpleadoModelo
             SET
                 fecha_hasta = ?,
                 motivo_fin = ?,
+                norma_legal_baja = ?,
                 observacion =
                     CASE
                         WHEN ? IS NULL
@@ -2562,9 +2668,10 @@ class EmpleadoModelo
 
 
         $stmt->bind_param(
-            "ssssii",
+            "sssssii",
             $fechaHasta,
             $motivoFinBD,
+            $normaLegalBaja,
             $observacionBD,
             $observacionBD,
             $usuarioCierreId,
@@ -2586,8 +2693,11 @@ class EmpleadoModelo
         }
 
 
+        if ($stmt->affected_rows !== 1) {
+            $stmt->close();
+            throw new RuntimeException('El período laboral ya fue cerrado o cambió. Recargue la página antes de inactivar.');
+        }
         $stmt->close();
-
 
         return true;
     }
@@ -3087,7 +3197,7 @@ class EmpleadoModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listarConceptosAsignados(
+    private function consultaConceptosAsignados(
         $buscarEmpleado = "",
         $conceptoId = 0,
         $estado = ""
@@ -3309,12 +3419,35 @@ class EmpleadoModelo
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ORDEN
-        |--------------------------------------------------------------------------
-        */
+        return [$sql, $types, $params];
+    }
 
+    public function contarConceptosAsignados($buscarEmpleado = '', $conceptoId = 0, $estado = ''): int
+    {
+        [$sql, $types, $params] = $this->consultaConceptosAsignados($buscarEmpleado, $conceptoId, $estado);
+        $stmt = $this->conexion->prepare('SELECT COUNT(*) AS total FROM (' . $sql . ') AS asignaciones_filtradas');
+        if (!$stmt) throw new RuntimeException('No se pudo preparar el conteo de asignaciones.');
+        try {
+            if ($params) $stmt->bind_param($types, ...$params);
+            if (!$stmt->execute()) throw new RuntimeException('No se pudo contar las asignaciones.');
+            return (int)($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+        } finally {
+            $stmt->close();
+        }
+    }
+
+    public function listarConceptosAsignadosPaginado($buscarEmpleado = '', $conceptoId = 0, $estado = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarConceptosAsignados($buscarEmpleado, $conceptoId, $estado);
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listarConceptosAsignados($buscarEmpleado, $conceptoId, $estado,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    public function listarConceptosAsignados($buscarEmpleado = '', $conceptoId = 0, $estado = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $types, $params] = $this->consultaConceptosAsignados($buscarEmpleado, $conceptoId, $estado);
         $sql .= "
             ORDER BY
                 e.apellido ASC,
@@ -3323,6 +3456,17 @@ class EmpleadoModelo
                 ec.id DESC
         ";
 
+
+        // Sin límite se conserva el comportamiento de las consultas completas.
+        if ($limite !== null) {
+            if (!in_array($limite, [10, 25, 50], true) || !is_int($desplazamiento) || $desplazamiento < 0) {
+                throw new InvalidArgumentException('Límites de paginación no válidos.');
+            }
+            $sql .= ' LIMIT ? OFFSET ?';
+            $types .= 'ii';
+            $params[] = $limite;
+            $params[] = $desplazamiento;
+        }
 
         $stmt =
             $this->conexion->prepare(

@@ -12,13 +12,15 @@ require_once __DIR__ . '/../../../core/Csrf.php';
 
 $empleadoNuevoAccion =
     sigenmuniUrlRuta(
-        'empleados/nuevo'
+        'empleados/nuevo',
+        $contextoListado ?? []
     );
 
 
 $empleadoNuevoVolver =
     sigenmuniUrlRuta(
-        'empleados'
+        'empleados',
+        $contextoListado ?? []
     );
 
 
@@ -296,6 +298,18 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
                 </div>
 
+
+                <!-- NORMA LEGAL DEL ALTA INICIAL -->
+                <div class="campo">
+                    <label for="norma_legal_alta">Norma legal de alta *</label>
+                    <input type="text" name="norma_legal_alta" id="norma_legal_alta"
+                        required maxlength="100" placeholder="Ej.: Decreto N.º 123/2026"
+                        aria-describedby="ayuda_norma_legal_alta"
+                        value="<?= htmlspecialchars($datos['norma_legal_alta'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                    <div class="ayuda-campo" id="ayuda_norma_legal_alta">
+                        Indique Decreto o Resolución, número y año del alta inicial.
+                    </div>
+                </div>
 
                 <!-- TELÉFONO -->
 

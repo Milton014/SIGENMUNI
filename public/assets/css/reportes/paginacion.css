@@ -1,0 +1,13 @@
+.tamano-reporte { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; font-size: 14px; color: #475569; }
+.tamano-reporte select, .tamano-reporte button { border: 1px solid #cbd5e1; border-radius: 8px; min-height: 40px; padding: 9px 12px; font: inherit; }
+.tamano-reporte select { background: white; color: #1f2937; }
+.tamano-reporte button { background: #0f766e; color: white; cursor: pointer; }
+.tamano-reporte select:focus-visible, .tamano-reporte button:focus-visible { outline: 3px solid #0f766e; outline-offset: 2px; }
+@media (max-width: 600px) { .tamano-reporte { justify-content: flex-start; } }
+@media (max-width: 768px) { .lista-empleados table { min-width: 0; } }
+@media (max-width: 768px) {
+    .tabla-auditoria-paginada { overflow-x: auto; }
+    .tabla-auditoria-paginada table { min-width: 900px; }
+    .tabla-auditoria-paginada th, .tabla-auditoria-paginada td { font-size: 12px; }
+}
+@media print { .tamano-reporte, .paginacion-controles { display: none; } }

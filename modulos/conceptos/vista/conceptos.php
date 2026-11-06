@@ -29,21 +29,15 @@ $conceptosAccionBuscar =
 
 
 $conceptosUrlNuevo =
-    sigenmuniUrlRuta(
-        'conceptos/nuevo'
-    );
+    sigenmuniUrlRuta('conceptos/nuevo', $contextoListado);
 
 
 $conceptosUrlValores =
-    sigenmuniUrlRuta(
-        'conceptos/valores'
-    );
+    sigenmuniUrlRuta('conceptos/valores', $contextoValores);
 
 
 $conceptosUrlEstado =
-    sigenmuniUrlRuta(
-        'conceptos/estado'
-    );
+    sigenmuniUrlRuta('conceptos/estado', $contextoListado);
 
 
 $conceptosCsrfToken =
@@ -55,6 +49,9 @@ $conceptosUrlMenu =
     'inicio'
 );
 
+$paginacionRuta = 'conceptos';
+$paginacionParametros = $contextoListado;
+$paginacionEntidad = 'conceptos';
 ?>
 
 <!DOCTYPE html>
@@ -70,6 +67,8 @@ $conceptosUrlMenu =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/conceptos/conceptos.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/conceptos/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 
@@ -186,6 +185,8 @@ require __DIR__
             <input
                 type="text"
                 name="buscar"
+                maxlength="120"
+                aria-label="Buscar por código o nombre"
                 placeholder="Buscar por código o nombre"
                 value="<?php
                     echo htmlspecialchars(
@@ -199,7 +200,7 @@ require __DIR__
 
             <!-- TIPO DE CONCEPTO -->
 
-            <select name="categoria">
+            <select name="categoria" aria-label="Categoría del concepto">
 
                 <option value="">
                     -- Todos los tipos de concepto --
@@ -239,7 +240,7 @@ require __DIR__
 
             <!-- ESTADO -->
 
-            <select name="activo">
+            <select name="activo" aria-label="Estado del concepto">
 
                 <option value="">
                     -- Todos los estados --
@@ -272,6 +273,13 @@ require __DIR__
 
             <!-- BUSCAR -->
 
+<label class="paginacion-tamano" for="por_pagina">Por página
+                <select id="por_pagina" name="por_pagina" data-paginacion-cantidad>
+                    <?php foreach ([10, 25, 50] as $cantidadPagina): ?>
+                        <option value="<?= $cantidadPagina ?>" <?= $paginacion['por_pagina'] === $cantidadPagina ? 'selected' : '' ?>><?= $cantidadPagina ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
             <button
                 type="submit"
                 class="btn btn-buscar"
@@ -290,6 +298,8 @@ require __DIR__
             </a>
 
         </form>
+
+        <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <!-- =====================================
@@ -680,12 +690,9 @@ require __DIR__
                                     <a
                                         href="<?php
                                             echo htmlspecialchars(
-                                                sigenmuniUrlRuta(
-                                                    'conceptos/editar',
-                                                    [
+                                                sigenmuniUrlRuta('conceptos/editar', array_merge($contextoValores, [
                                                         'id' => (int)$fila['id']
-                                                    ]
-                                                ),
+                                                    ])),
                                                 ENT_QUOTES,
                                                 'UTF-8'
                                             );
@@ -781,6 +788,7 @@ require __DIR__
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <?php else: ?>
@@ -800,6 +808,7 @@ require __DIR__
 
 
 <script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/conceptos/conceptos.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/conceptos/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

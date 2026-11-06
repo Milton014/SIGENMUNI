@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../../core/Paginacion.php';
+
 class ConceptoModelo
 {
     private $conexion;
@@ -23,7 +25,51 @@ class ConceptoModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listar(
+    private function contarConsultaListado(array $consulta): int
+    {
+        [$sql, $types, $params] = $consulta;
+        $stmt = $this->conexion->prepare('SELECT COUNT(*) AS total FROM (' . $sql . ') AS registros_filtrados');
+        if (!$stmt) throw new RuntimeException('No se pudo preparar el conteo del listado.');
+        try {
+            if ($params) $stmt->bind_param($types, ...$params);
+            if (!$stmt->execute()) throw new RuntimeException('No se pudo contar el listado.');
+            return (int)($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+        } finally {
+            $stmt->close();
+        }
+    }
+
+    private function aplicarLimiteListado(&$sql, &$types, &$params, $limite, $desplazamiento): void
+    {
+        if ($limite === null) return; // Conserva las consultas completas existentes.
+        if (!in_array($limite, [10, 25, 50], true) || !is_int($desplazamiento) || $desplazamiento < 0) {
+            throw new InvalidArgumentException('Límites de paginación no válidos.');
+        }
+        $sql .= ' LIMIT ? OFFSET ?';
+        $types .= 'ii';
+        $params[] = $limite;
+        $params[] = $desplazamiento;
+    }
+
+    public function listarPaginado($buscar = '', $categoria = '', $activo = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarConsultaListado($this->consultaListado($buscar, $categoria, $activo));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listar($buscar, $categoria, $activo,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    public function listarValoresPaginado($conceptoId = 0, $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarConsultaListado($this->consultaValores($conceptoId));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listarValores($conceptoId,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    private function consultaListado(
         $buscar = "",
         $categoria = "",
         $activo = ""
@@ -91,12 +137,20 @@ class ConceptoModelo
             $types .= "i";
         }
 
+        return [$sql, $types, $params];
+    }
+
+    public function listar($buscar = '', $categoria = '', $activo = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $types, $params] = $this->consultaListado($buscar, $categoria, $activo);
         $sql .= "
             ORDER BY
                 codigo ASC,
-                nombre ASC
+                nombre ASC,
+                id ASC
         ";
 
+        $this->aplicarLimiteListado($sql, $types, $params, $limite, $desplazamiento);
         $stmt = $this->conexion->prepare($sql);
 
         if (!$stmt) {
@@ -1030,7 +1084,7 @@ class ConceptoModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listarValores(
+    private function consultaValores(
         $conceptoId = 0
     ) {
         $sql = "
@@ -1071,6 +1125,12 @@ class ConceptoModelo
             ";
         }
 
+        return [$sql, $conceptoId > 0 ? 'i' : '', $conceptoId > 0 ? [$conceptoId] : []];
+    }
+
+    public function listarValores($conceptoId = 0, $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $types, $params] = $this->consultaValores($conceptoId);
         $sql .= "
             ORDER BY
                 c.nombre ASC,
@@ -1084,6 +1144,7 @@ class ConceptoModelo
                 cv.id DESC
         ";
 
+        $this->aplicarLimiteListado($sql, $types, $params, $limite, $desplazamiento);
         $stmt = $this->conexion->prepare($sql);
 
         if (!$stmt) {
@@ -1093,12 +1154,7 @@ class ConceptoModelo
             );
         }
 
-        if ($conceptoId > 0) {
-            $stmt->bind_param(
-                "i",
-                $conceptoId
-            );
-        }
+        if ($params) $stmt->bind_param($types, ...$params);
 
         if (!$stmt->execute()) {
 

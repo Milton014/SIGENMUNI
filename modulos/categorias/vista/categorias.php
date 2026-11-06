@@ -28,15 +28,11 @@ $categoriasAccionBuscar =
 
 
 $categoriasUrlNueva =
-    sigenmuniUrlRuta(
-        'categorias/nueva'
-    );
+    sigenmuniUrlRuta('categorias/nueva', $contextoListado);
 
 
 $categoriasUrlEstado =
-    sigenmuniUrlRuta(
-        'categorias/estado'
-    );
+    sigenmuniUrlRuta('categorias/estado', $contextoListado);
 
 
 $categoriasCsrfToken =
@@ -63,6 +59,7 @@ $categoriasCsrfToken =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/categorias/categorias.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 
@@ -161,6 +158,7 @@ require __DIR__
             method="GET"
             action="<?php echo htmlspecialchars($categoriasAccionBuscar, ENT_QUOTES, 'UTF-8'); ?>"
             class="filtros"
+            id="filtrosCategorias"
         >
 
             <input
@@ -172,6 +170,8 @@ require __DIR__
             <input
                 type="text"
                 name="buscar"
+                maxlength="120"
+                aria-label="Buscar por código o nombre"
                 placeholder="Buscar por código o nombre"
                 value="<?php
                     echo htmlspecialchars(
@@ -183,7 +183,7 @@ require __DIR__
             >
 
 
-            <select name="activo">
+            <select name="activo" aria-label="Estado de la categoría">
 
                 <option value="">
                     -- Todos los estados --
@@ -226,6 +226,15 @@ require __DIR__
             </select>
 
 
+            <label class="paginacion-tamano" for="por_pagina">
+                Por página
+                <select id="por_pagina" name="por_pagina">
+                    <?php foreach ([10, 25, 50] as $cantidad): ?>
+                        <option value="<?= $cantidad ?>" <?= $paginacion['por_pagina'] === $cantidad ? 'selected' : '' ?>><?= $cantidad ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+
             <button
                 type="submit"
                 class="btn btn-buscar"
@@ -254,10 +263,7 @@ require __DIR__
 
                 Total de categorías encontradas:
                 <?php
-                echo count(
-                    $categorias
-                    ?? []
-                );
+                echo (int)$paginacion['total'];
                 ?>
 
             </div>
@@ -268,6 +274,13 @@ require __DIR__
         <!-- =====================================
              LISTADO
         ====================================== -->
+
+        <?php
+        $paginacionRuta = 'categorias';
+        $paginacionParametros = $contextoListado;
+        $paginacionEntidad = 'categorías';
+        require __DIR__ . '/../../../componentes/paginacion.php';
+        ?>
 
         <?php if (!empty($categorias)): ?>
 
@@ -479,13 +492,10 @@ require __DIR__
                                         <a
                                             href="<?php
                                                 echo htmlspecialchars(
-                                                    sigenmuniUrlRuta(
-                                                        'categorias/editar',
-                                                        [
+                                                    sigenmuniUrlRuta('categorias/editar', array_merge($contextoListado, [
                                                             'id' =>
                                                                 (int)$categoriaFila['id']
-                                                        ]
-                                                    ),
+                                                        ])),
                                                     ENT_QUOTES,
                                                     'UTF-8'
                                                 );
@@ -611,6 +621,7 @@ require __DIR__
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
         <?php else: ?>
 

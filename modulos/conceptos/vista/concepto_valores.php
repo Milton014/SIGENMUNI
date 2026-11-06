@@ -16,15 +16,11 @@ require_once __DIR__ . '/../../../core/Csrf.php';
 
 
 $conceptoValoresUrlTodos =
-    sigenmuniUrlRuta(
-        'conceptos/valores'
-    );
+    sigenmuniUrlRuta('conceptos/valores', array_merge($contextoListado, ['por_pagina_valores' => $contextoValores['por_pagina_valores']]));
 
 
 $conceptoValoresUrlConceptos =
-    sigenmuniUrlRuta(
-        'conceptos'
-    );
+    sigenmuniUrlRuta('conceptos', $contextoListado);
 
 
 $retornoValores =
@@ -60,21 +56,22 @@ if (
 
 
 $conceptoValoresUrlNuevo =
-    sigenmuniUrlRuta(
-        'conceptos/valores/nuevo',
-        $conceptoValoresParametrosNuevo
-    );
+    sigenmuniUrlRuta('conceptos/valores/nuevo', array_merge($contextoValores, $conceptoValoresParametrosNuevo));
 
 
 $conceptoValoresUrlEstado =
-    sigenmuniUrlRuta(
-        'conceptos/valores/estado'
-    );
+    sigenmuniUrlRuta('conceptos/valores/estado', $contextoValores);
 
 
 $conceptoValoresCsrf =
     sigenmuniCsrfToken();
 
+$paginacion = $paginacionValores ?? sigenmuniCalcularPaginacion(0);
+$paginacionRuta = 'conceptos/valores';
+$paginacionParametros = array_merge($contextoValores, ['concepto_id' => $conceptoId]);
+$paginacionEntidad = 'valores';
+$paginacionClavePagina = 'pagina_valores';
+$paginacionClaveCantidad = 'por_pagina_valores';
 ?>
 
 <!DOCTYPE html>
@@ -90,6 +87,8 @@ $conceptoValoresCsrf =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/conceptos/concepto_valores.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/conceptos/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -249,6 +248,22 @@ $conceptoValoresCsrf =
              TABLA
         ====================================== -->
 
+<form method="get" action="<?= htmlspecialchars(sigenmuniUrlEntrada(), ENT_QUOTES, 'UTF-8') ?>" class="filtro-paginacion-valores" data-form-paginacion>
+                <input type="hidden" name="r" value="conceptos/valores">
+                <input type="hidden" name="concepto_id" value="<?= (int)$conceptoId ?>">
+                <?php foreach ($contextoListado as $claveFiltro => $valorFiltro): ?>
+                    <input type="hidden" name="<?= htmlspecialchars($claveFiltro, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars((string)$valorFiltro, ENT_QUOTES, 'UTF-8') ?>">
+                <?php endforeach; ?>
+                <label class="paginacion-tamano" for="por_pagina_valores">Por página
+                <select id="por_pagina_valores" name="por_pagina_valores" data-paginacion-cantidad>
+                    <?php foreach ([10, 25, 50] as $cantidadPagina): ?>
+                        <option value="<?= $cantidadPagina ?>" <?= $paginacion['por_pagina'] === $cantidadPagina ? 'selected' : '' ?>><?= $cantidadPagina ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+                <button type="submit" class="paginacion-aplicar">Aplicar</button>
+            </form>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
         <?php if (!empty($valores)): ?>
 
             <div class="tabla-contenedor">
@@ -525,9 +540,7 @@ $conceptoValoresCsrf =
                                     <a
                                         href="<?php
                                             echo htmlspecialchars(
-                                                sigenmuniUrlRuta(
-                                                    'conceptos/valores/editar',
-                                                    array_filter(
+                                                sigenmuniUrlRuta('conceptos/valores/editar', array_merge($contextoValores, array_filter(
                                                         [
                                                             'id' => (int)$fila['id'],
                                                             'retorno' => $retornoValores,
@@ -539,8 +552,7 @@ $conceptoValoresCsrf =
                                                         static function ($valor) {
                                                             return $valor !== null;
                                                         }
-                                                    )
-                                                ),
+                                                    ))),
                                                 ENT_QUOTES,
                                                 'UTF-8'
                                             );
@@ -640,6 +652,7 @@ $conceptoValoresCsrf =
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <?php else: ?>
@@ -659,6 +672,7 @@ $conceptoValoresCsrf =
 
 
 <script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/conceptos/concepto_valores.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/conceptos/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

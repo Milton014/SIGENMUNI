@@ -21,11 +21,37 @@ class LiquidacionControlador
         $this->modelo = new LiquidacionModelo($conexion);
     }
 
+    /** Conserva únicamente filtros y páginas conocidos, nunca una URL de retorno. */
+    private function contextoListado(): array
+    {
+        $contexto = sigenmuniParametrosPaginacion($_GET);
+        foreach (['periodo' => 'periodoValido', 'tipo_liquidacion' => 'tipoValido', 'estado' => 'estadoValido'] as $clave => $validador) {
+            $valor = is_string($_GET[$clave] ?? null) ? trim($_GET[$clave]) : '';
+            $contexto[$clave] = $valor !== '' && $this->modelo->$validador($valor) ? $valor : '';
+        }
+        return $contexto;
+    }
+
+    private function contextoResumen(): array
+    {
+        $pagina = sigenmuniParametrosPaginacion([
+            'pagina' => $_GET['pagina_empleados'] ?? 1,
+            'por_pagina' => $_GET['por_pagina_empleados'] ?? 25,
+        ]);
+        $busqueda = is_string($_GET['buscar_empleado'] ?? null) ? trim($_GET['buscar_empleado']) : '';
+        $busqueda = mb_check_encoding($busqueda, 'UTF-8') ? mb_substr($busqueda, 0, 120, 'UTF-8') : '';
+        return [
+            'buscar_empleado' => $busqueda,
+            'pagina_empleados' => $pagina['pagina'],
+            'por_pagina_empleados' => $pagina['por_pagina'],
+        ];
+    }
+
     public function index()
     {
-        $periodo = trim($_GET['periodo'] ?? '');
-        $tipo = trim($_GET['tipo_liquidacion'] ?? '');
-        $estado = trim($_GET['estado'] ?? '');
+        $periodo = (is_string($_GET['periodo'] ?? null) ? trim($_GET['periodo']) : '');
+        $tipo = (is_string($_GET['tipo_liquidacion'] ?? null) ? trim($_GET['tipo_liquidacion']) : '');
+        $estado = (is_string($_GET['estado'] ?? null) ? trim($_GET['estado']) : '');
 
         $mensaje = "";
         $tipo_mensaje = "";
@@ -182,11 +208,12 @@ class LiquidacionControlador
             $tipos = $this->modelo->obtenerTipos();
             $estados = $this->modelo->obtenerEstados();
 
-            $liquidaciones = $this->modelo->listar(
-                $periodo,
-                $tipo,
-                $estado
-            );
+            $contextoListado = $this->contextoListado();
+            $resultadoListado = $this->modelo->listarPaginado($periodo, $tipo, $estado,
+                $contextoListado['pagina'], $contextoListado['por_pagina']);
+            $liquidaciones = $resultadoListado['registros'];
+            $paginacion = $resultadoListado['paginacion'];
+            $contextoListado['pagina'] = $paginacion['pagina'];
 
 
             /*
@@ -4021,6 +4048,8 @@ class LiquidacionControlador
 
     public function ver()
     {
+        $contextoListado = $this->contextoListado();
+        $contextoResumen = $this->contextoResumen();
         $liquidacionId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
         $empleadoDetalleId = isset($_GET['empleado_id'])
@@ -4060,9 +4089,13 @@ class LiquidacionControlador
                 exit();
             }
 
-            $resumenEmpleados = $this->modelo->obtenerResumenEmpleados(
-                $liquidacionId
+            $resultadoResumen = $this->modelo->obtenerResumenEmpleadosPaginado(
+                $liquidacionId, $contextoResumen['buscar_empleado'],
+                $contextoResumen['pagina_empleados'], $contextoResumen['por_pagina_empleados']
             );
+            $resumenEmpleados = $resultadoResumen['registros'];
+            $paginacion = $resultadoResumen['paginacion'];
+            $contextoResumen['pagina_empleados'] = $paginacion['pagina'];
 
             $totales = $this->modelo->obtenerTotales($liquidacionId);
 
@@ -4500,6 +4533,8 @@ class LiquidacionControlador
 
     public function recibo()
     {
+        $contextoListado = $this->contextoListado();
+        $contextoResumen = $this->contextoResumen();
         $liquidacionId = isset($_GET['liquidacion_id'])
             ? (int)$_GET['liquidacion_id']
             : 0;

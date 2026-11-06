@@ -11,15 +11,11 @@ require_once __DIR__ . '/../../../core/Csrf.php';
 */
 
 $empleadoConceptoNuevoAccion =
-    sigenmuniUrlRuta(
-        'empleado-conceptos/nuevo'
-    );
+    sigenmuniUrlRuta('empleado-conceptos/nuevo', $contextoAsignaciones);
 
 
 $empleadoConceptoNuevoCancelar =
-    sigenmuniUrlRuta(
-        'empleado-conceptos'
-    );
+    sigenmuniUrlRuta('empleado-conceptos', $contextoAsignaciones);
 
 
 $empleadoConceptoNuevoCsrf =

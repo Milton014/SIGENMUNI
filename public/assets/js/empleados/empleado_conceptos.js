@@ -16,3 +16,8 @@ return confirm('¿Seguro que desea activar este registro de asignación?');
     });
 });
 
+
+// El formulario conserva filtros y omite pagina para volver al inicio del resultado.
+document.getElementById('por_pagina')?.addEventListener('change', function () {
+    this.form.requestSubmit();
+});

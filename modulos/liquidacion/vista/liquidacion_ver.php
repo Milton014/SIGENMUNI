@@ -18,85 +18,27 @@ $liquidacionVerId =
     );
 
 
-$liquidacionVerVolver =
-    sigenmuniUrlRuta(
-        'liquidacion'
-    );
-
-
-$liquidacionVerCerrarDetalle =
-    sigenmuniUrlRuta(
-        'liquidacion/ver',
-        [
-            'id' =>
-                $liquidacionVerId
-        ]
-    );
-
-
-$liquidacionVerProcesar =
-    sigenmuniUrlRuta(
-        'liquidacion/procesar'
-    );
-
-
-$liquidacionVerRecibosTodos =
-    sigenmuniUrlRuta(
-        'liquidacion/recibos',
-        [
-            'liquidacion_id' =>
-                $liquidacionVerId
-        ]
-    );
-
-
-$liquidacionVerCsrf =
-    sigenmuniCsrfToken();
-
-
-$liquidacionVerUrlDetalle =
-    function (
-        $empleadoId
-    ) use (
-        $liquidacionVerId
-    ) {
-
-        $parametros = [
-            'id' =>
-                $liquidacionVerId,
-
-            'empleado_id' =>
-                (int)$empleadoId
-        ];
-
-
-        return
-            sigenmuniUrlRuta(
-                'liquidacion/ver',
-                $parametros
-            );
-    };
-
-
-$liquidacionVerUrlRecibo =
-    function (
-        $empleadoId
-    ) use (
-        $liquidacionVerId
-    ) {
-
-        return
-            sigenmuniUrlRuta(
-                'liquidacion/recibo',
-                [
-                    'liquidacion_id' =>
-                        $liquidacionVerId,
-
-                    'empleado_id' =>
-                        (int)$empleadoId
-                ]
-            );
-    };
+$parametrosResumen = array_merge($contextoListado, $contextoResumen, ['id' => $liquidacionVerId]);
+$liquidacionVerVolver = sigenmuniUrlRuta('liquidacion', $contextoListado);
+$liquidacionVerCerrarDetalle = sigenmuniUrlRuta('liquidacion/ver', $parametrosResumen);
+$liquidacionVerProcesar = sigenmuniUrlRuta('liquidacion/procesar');
+// La impresión conserva la liquidación completa, independientemente de la página o búsqueda.
+$liquidacionVerRecibosTodos = sigenmuniUrlRuta('liquidacion/recibos', ['liquidacion_id' => $liquidacionVerId]);
+$liquidacionVerCsrf = sigenmuniCsrfToken();
+$liquidacionVerUrlDetalle = static function ($empleadoId) use ($parametrosResumen) {
+    return sigenmuniUrlRuta('liquidacion/ver', array_merge($parametrosResumen, ['empleado_id' => (int)$empleadoId]));
+};
+$liquidacionVerUrlRecibo = static function ($empleadoId) use ($contextoListado, $contextoResumen, $liquidacionVerId) {
+    return sigenmuniUrlRuta('liquidacion/recibo', array_merge($contextoListado, $contextoResumen,
+        ['liquidacion_id' => $liquidacionVerId, 'empleado_id' => (int)$empleadoId]));
+};
+$paginacionRuta = 'liquidacion/ver';
+$paginacionParametros = $parametrosResumen;
+$paginacionEntidad = 'empleados';
+$paginacionClavePagina = 'pagina_empleados';
+$paginacionClaveCantidad = 'por_pagina_empleados';
+$parametrosLimpiar = array_merge($contextoListado, ['id' => $liquidacionVerId,
+    'por_pagina_empleados' => $paginacion['por_pagina']]);
 
 ?>
 
@@ -112,6 +54,7 @@ $liquidacionVerUrlRecibo =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/liquidacion/liquidacion_ver.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -638,24 +581,31 @@ $liquidacionVerUrlRecibo =
         </h3>
 
 
-        <?php if (
-            !empty(
-                $resumenEmpleados
-            )
-        ): ?>
-
-
-            <div class="buscador-empleados" id="buscadorEmpleados" hidden>
-                <label for="buscarEmpleado">Buscar por legajo, nombre o apellido</label>
-                <div class="buscador-empleados-controles">
-                    <input type="search" id="buscarEmpleado" placeholder="Ej.: 24 o Alexander Alarcón"
-                        autocomplete="off" aria-controls="resumenEmpleados" aria-describedby="resultadoBusquedaEmpleados">
-                    <button type="button" id="limpiarBusquedaEmpleado" class="btn btn-volver">Limpiar</button>
-                </div>
-                <p id="resultadoBusquedaEmpleados" role="status" aria-live="polite"></p>
-                <p class="buscador-empleados-ayuda">La búsqueda filtra el listado. Los totales generales y la impresión de todos los recibos corresponden a la liquidación completa.</p>
+        <form class="buscador-empleados" id="buscadorEmpleados" method="get" action="<?= htmlspecialchars(sigenmuniUrlEntrada(), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="r" value="liquidacion/ver">
+            <input type="hidden" name="id" value="<?= $liquidacionVerId ?>">
+            <?php foreach ($contextoListado as $claveFiltro => $valorFiltro): ?>
+                <input type="hidden" name="<?= htmlspecialchars($claveFiltro, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars((string)$valorFiltro, ENT_QUOTES, 'UTF-8') ?>">
+            <?php endforeach; ?>
+            <label for="buscarEmpleado">Buscar por legajo, nombre o apellido</label>
+            <div class="buscador-empleados-controles">
+                <input type="search" id="buscarEmpleado" name="buscar_empleado" maxlength="120"
+                    value="<?= htmlspecialchars($contextoResumen['buscar_empleado'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                    placeholder="Ej.: 24 o Alexander Alarcón" autocomplete="off">
+                <label class="paginacion-tamano" for="por_pagina_empleados">Por página
+                    <select id="por_pagina_empleados" name="por_pagina_empleados" data-paginacion-cantidad>
+                        <?php foreach ([10, 25, 50] as $cantidadPagina): ?>
+                            <option value="<?= $cantidadPagina ?>" <?= $paginacion['por_pagina'] === $cantidadPagina ? 'selected' : '' ?>><?= $cantidadPagina ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <button type="submit" class="btn btn-detalle">Buscar</button>
+                <a href="<?= htmlspecialchars(sigenmuniUrlRuta('liquidacion/ver', $parametrosLimpiar), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-volver">Limpiar</a>
             </div>
-            <p id="sinCoincidenciasEmpleados" class="sin-datos" hidden>No se encontraron empleados con esa búsqueda.</p>
+            <p class="buscador-empleados-ayuda">Busca en toda la liquidación. El legajo se busca por número completo. Los totales generales y la impresión de todos los recibos corresponden a la liquidación completa.</p>
+        </form>
+        <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
+        <?php if (!empty($resumenEmpleados)): ?>
 
             <div class="tabla-contenedor">
 
@@ -904,6 +854,7 @@ $liquidacionVerUrlRecibo =
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <?php else: ?>
@@ -911,7 +862,9 @@ $liquidacionVerUrlRecibo =
 
             <div class="sin-datos">
 
-                Esta liquidación todavía no tiene empleados procesados.
+                <?= $contextoResumen['buscar_empleado'] !== ''
+                    ? 'No se encontraron empleados con esa búsqueda.'
+                    : 'Esta liquidación todavía no tiene empleados procesados.' ?>
 
             </div>
 

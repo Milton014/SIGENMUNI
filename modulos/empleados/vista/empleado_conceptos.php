@@ -21,9 +21,7 @@ $empleadoConceptosAccionBuscar =
 
 
 $empleadoConceptosUrlNuevo =
-    sigenmuniUrlRuta(
-        'empleado-conceptos/nuevo'
-    );
+    sigenmuniUrlRuta('empleado-conceptos/nuevo', $contextoAsignaciones);
 
 
 $empleadoConceptosUrlMenu =
@@ -33,14 +31,15 @@ $empleadoConceptosUrlMenu =
 
 
 $empleadoConceptosUrlEstado =
-    sigenmuniUrlRuta(
-        'empleado-conceptos/estado'
-    );
+    sigenmuniUrlRuta('empleado-conceptos/estado', $contextoAsignaciones);
 
 
 $empleadoConceptosCsrf =
     sigenmuniCsrfToken();
 
+$paginacionRuta = 'empleado-conceptos';
+$paginacionParametros = $contextoAsignaciones;
+$paginacionEntidad = 'asignaciones';
 ?>
 
 <!DOCTYPE html>
@@ -56,6 +55,7 @@ $empleadoConceptosCsrf =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/empleados/empleado_conceptos.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -190,6 +190,8 @@ require __DIR__
             <input
                 type="text"
                 name="buscar_empleado"
+                maxlength="120"
+                aria-label="Buscar por apellido, nombre o legajo exacto"
                 placeholder="Apellido, nombre o legajo exacto"
                 value="<?php
                     echo htmlspecialchars(
@@ -201,7 +203,7 @@ require __DIR__
             >
 
 
-            <select name="concepto_id">
+            <select name="concepto_id" aria-label="Concepto">
 
                 <option value="">
                     -- Todos los conceptos --
@@ -239,7 +241,7 @@ require __DIR__
             </select>
 
 
-            <select name="estado">
+            <select name="estado" aria-label="Estado de la asignación">
 
                 <option value="">
                     -- Todos los estados --
@@ -292,6 +294,14 @@ require __DIR__
             </select>
 
 
+            <label class="paginacion-tamano" for="por_pagina">Por página
+                <select id="por_pagina" name="por_pagina">
+                    <?php foreach ([10, 25, 50] as $cantidadPagina): ?>
+                        <option value="<?= $cantidadPagina ?>" <?= $paginacion['por_pagina'] === $cantidadPagina ? 'selected' : '' ?>><?= $cantidadPagina ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+
             <button
                 type="submit"
                 class="btn btn-buscar"
@@ -314,6 +324,8 @@ require __DIR__
             </a>
 
         </form>
+
+        <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <!-- =====================================
@@ -675,12 +687,9 @@ require __DIR__
                                     <a
                                         href="<?php
                                             echo htmlspecialchars(
-                                                sigenmuniUrlRuta(
-                                                    'empleado-conceptos/ver',
-                                                    [
+                                                sigenmuniUrlRuta('empleado-conceptos/ver', array_merge($contextoAsignaciones, [
                                                         'id' => (int)$fila['id']
-                                                    ]
-                                                ),
+                                                    ])),
                                                 ENT_QUOTES,
                                                 'UTF-8'
                                             );
@@ -698,12 +707,9 @@ require __DIR__
                                         <a
                                             href="<?php
                                                 echo htmlspecialchars(
-                                                    sigenmuniUrlRuta(
-                                                        'empleado-conceptos/editar',
-                                                        [
+                                                    sigenmuniUrlRuta('empleado-conceptos/editar', array_merge($contextoAsignaciones, [
                                                             'id' => (int)$fila['id']
-                                                        ]
-                                                    ),
+                                                        ])),
                                                     ENT_QUOTES,
                                                     'UTF-8'
                                                 );
@@ -864,6 +870,7 @@ require __DIR__
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <?php else: ?>

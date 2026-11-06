@@ -4,6 +4,7 @@ require_once __DIR__ . '/../modelo/EmpleadoModelo.php';
 require_once __DIR__ . '/../../../core/Auditoria.php';
 require_once __DIR__ . '/../../../core/Csrf.php';
 require_once __DIR__ . '/../../../core/Url.php';
+require_once __DIR__ . '/../../../core/Paginacion.php';
 
 
 class EmpleadoControlador
@@ -31,11 +32,17 @@ class EmpleadoControlador
     |--------------------------------------------------------------------------
     */
 
+    /** Solo conserva parámetros del listado; nunca acepta una URL de retorno. */
+    private function contextoListado(): array
+    {
+        $busqueda = is_string($_GET['busqueda'] ?? null) ? trim($_GET['busqueda']) : '';
+        return ['busqueda' => $busqueda] + sigenmuniParametrosPaginacion($_GET);
+    }
+
     public function index()
     {
-        $busqueda = trim(
-            $_GET['busqueda'] ?? ''
-        );
+        $contextoListado = $this->contextoListado();
+        $busqueda = $contextoListado['busqueda'];
 
         $mensaje = "";
         $tipo_mensaje = "";
@@ -82,10 +89,12 @@ class EmpleadoControlador
 
         try {
 
-            $empleados =
-                $this->modelo->listar(
-                    $busqueda
-                );
+            $resultadoListado = $this->modelo->listarPaginado(
+                $busqueda, $contextoListado['pagina'], $contextoListado['por_pagina']
+            );
+            $empleados = $resultadoListado['registros'];
+            $paginacion = $resultadoListado['paginacion'];
+            $contextoListado['pagina'] = $paginacion['pagina'];
 
 
             require __DIR__
@@ -113,6 +122,7 @@ class EmpleadoControlador
 
     public function nuevo()
     {
+        $contextoListado = $this->contextoListado();
         $mensaje = "";
         $tipo_mensaje = "error";
 
@@ -131,6 +141,7 @@ class EmpleadoControlador
             'dni' => '',
             'cuil' => '',
             'fecha_alta' => '',
+            'norma_legal_alta' => '',
 
             'telefono' => '',
             'email' => '',
@@ -297,8 +308,14 @@ class EmpleadoControlador
                 $datos['domicilio'] =
                     trim($_POST['domicilio'] ?? '');
 
+                $normaLegalRecibida = $_POST['norma_legal_alta'] ?? '';
+                $datos['norma_legal_alta'] = is_string($normaLegalRecibida)
+                    ? trim($normaLegalRecibida) : '';
+
                 $datos['observaciones'] =
                     trim($_POST['observaciones'] ?? '');
+
+                EmpleadoModelo::exigirNormaLegalAlta($normaLegalRecibida);
 
 
                 /*
@@ -596,6 +613,7 @@ class EmpleadoControlador
                                     ],
                                     $datosAdministrativosAuditoria,
                                     [
+                                        'norma_legal_alta' => EmpleadoModelo::normalizarNormaLegalAlta($datosGuardar['norma_legal_alta']),
                                         'fecha_alta' =>
                                             $datosGuardar['fecha_alta']
                                     ]
@@ -617,9 +635,7 @@ class EmpleadoControlador
                 $urlListado =
                     sigenmuniUrlRuta(
                         'empleados',
-                        [
-                            'ok' => 'nuevo'
-                        ]
+                        array_merge($contextoListado, ['ok' => 'nuevo'])
                     );
 
 
@@ -653,6 +669,7 @@ class EmpleadoControlador
 
     public function ver()
     {
+        $contextoListado = $this->contextoListado();
         $id =
             isset($_GET['id'])
                 ? (int) $_GET['id']
@@ -667,7 +684,8 @@ class EmpleadoControlador
 
         $urlListado =
             sigenmuniUrlRuta(
-                'empleados'
+                'empleados',
+                $contextoListado
             );
 
 
@@ -731,6 +749,7 @@ class EmpleadoControlador
 
     public function editar()
     {
+        $contextoListado = $this->contextoListado();
         $id =
             isset($_GET['id'])
                 ? (int) $_GET['id']
@@ -749,7 +768,8 @@ class EmpleadoControlador
 
         $urlListado =
             sigenmuniUrlRuta(
-                'empleados'
+                'empleados',
+                $contextoListado
             );
 
 
@@ -927,8 +947,14 @@ class EmpleadoControlador
                 $datos['domicilio'] =
                     trim($_POST['domicilio'] ?? '');
 
+                $normaLegalRecibida = $_POST['norma_legal_alta'] ?? ($empleado['norma_legal_alta'] ?? '');
+                $datos['norma_legal_alta'] = is_string($normaLegalRecibida)
+                    ? trim($normaLegalRecibida) : '';
+
                 $datos['observaciones'] =
                     trim($_POST['observaciones'] ?? '');
+
+                EmpleadoModelo::normalizarNormaLegalAlta($normaLegalRecibida);
 
 
                 /*
@@ -1211,6 +1237,7 @@ class EmpleadoControlador
                         ],
                         $datosAdministrativosAnteriores,
                         [
+                            'norma_legal_alta' => $empleado['norma_legal_alta'] ?? null,
                             'fecha_alta' =>
                                 $empleado['fecha_alta']
                                 ?? null,
@@ -1245,6 +1272,7 @@ class EmpleadoControlador
                             | fecha_alta no es modificable desde la edición general.
                             | Se conserva como fotografía histórica del alta inicial.
                             */
+                            'norma_legal_alta' => EmpleadoModelo::normalizarNormaLegalAlta($datos['norma_legal_alta']),
                             'fecha_alta' =>
                                 $datos['fecha_alta'],
 
@@ -1309,9 +1337,7 @@ class EmpleadoControlador
                 $urlDestino =
                     sigenmuniUrlRuta(
                         'empleados',
-                        [
-                            'ok' => 'editar'
-                        ]
+                        array_merge($contextoListado, ['ok' => 'editar'])
                     );
 
 
@@ -1358,6 +1384,9 @@ class EmpleadoControlador
                 | vinculada al historial laboral.
                 |
                 */
+
+                $empleado['norma_legal_alta'] = $datos['norma_legal_alta']
+                    ?? ($empleadoAnterior['norma_legal_alta'] ?? '');
 
                 $empleado['fecha_alta'] =
                     $empleadoAnterior['fecha_alta']
@@ -1407,6 +1436,7 @@ class EmpleadoControlador
 
     public function estado()
     {
+        $contextoListado = $this->contextoListado();
         $id =
             isset($_GET['id'])
                 ? (int)$_GET['id']
@@ -1439,7 +1469,8 @@ class EmpleadoControlador
 
         $urlListado =
             sigenmuniUrlRuta(
-                'empleados'
+                'empleados',
+                $contextoListado
             );
 
 
@@ -1520,6 +1551,7 @@ class EmpleadoControlador
 
         $observacion =
             '';
+        $normaLegalBaja = '';
 
 
         try {
@@ -1631,6 +1663,10 @@ class EmpleadoControlador
                 }
 
 
+                $normaLegalRecibida = $accion === 'inactivar'
+                    ? ($_POST['norma_legal_baja'] ?? null) : null;
+                $normaLegalBaja = is_string($normaLegalRecibida) ? trim($normaLegalRecibida) : '';
+
                 $fechaEfectiva =
                     trim(
                         (string)(
@@ -1647,6 +1683,8 @@ class EmpleadoControlador
                             ?? ''
                         )
                     );
+
+                $normaLegalBajaBD = EmpleadoModelo::normalizarNormaLegalBaja($normaLegalRecibida);
 
 
                 /*
@@ -1853,7 +1891,8 @@ class EmpleadoControlador
                         $activoNuevo,
                         $fechaEfectiva,
                         $observacion,
-                        $usuarioId
+                        $usuarioId,
+                        $normaLegalBajaBD
                     );
 
 
@@ -1938,6 +1977,13 @@ class EmpleadoControlador
                     ];
 
 
+                if ($activoNuevo === 0) {
+                    $datosAnteriores['periodo_laboral_id'] = (int)($periodoActual['id'] ?? 0);
+                    $datosAnteriores['norma_legal_baja'] = $periodoActual['norma_legal_baja'] ?? null;
+                    $datosNuevos['periodo_laboral_id'] = (int)($periodoActual['id'] ?? 0);
+                    $datosNuevos['norma_legal_baja'] = $normaLegalBajaBD;
+                }
+
                 $auditoriaRegistrada =
                     Auditoria::registrar(
                         $this->conexion,
@@ -1983,9 +2029,7 @@ class EmpleadoControlador
                 $urlDestino =
                     sigenmuniUrlRuta(
                         'empleados',
-                        [
-                            'ok' => 'estado'
-                        ]
+                        array_merge($contextoListado, ['ok' => 'estado'])
                     );
 
 
@@ -2024,53 +2068,29 @@ class EmpleadoControlador
     |--------------------------------------------------------------------------
     */
 
+    /** Contexto de navegación independiente del listado general de empleados. */
+    private function contextoAsignaciones(): array
+    {
+        $busqueda = is_string($_GET['buscar_empleado'] ?? null) ? trim($_GET['buscar_empleado']) : '';
+        $busqueda = mb_check_encoding($busqueda, 'UTF-8') ? mb_substr($busqueda, 0, 120, 'UTF-8') : '';
+        $concepto = $_GET['concepto_id'] ?? 0;
+        $concepto = is_string($concepto) || is_int($concepto)
+            ? filter_var($concepto, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) : false;
+        $estado = is_string($_GET['estado'] ?? null) ? trim($_GET['estado']) : '';
+        if (!in_array($estado, ['', 'vigente', 'programado', 'finalizado', 'inactivo'], true)) $estado = '';
+        return array_merge(sigenmuniParametrosPaginacion($_GET), [
+            'buscar_empleado' => $busqueda,
+            'concepto_id' => $concepto === false ? 0 : $concepto,
+            'estado' => $estado,
+        ]);
+    }
+
     public function conceptos()
     {
-        $buscarEmpleado =
-            trim(
-                $_GET['buscar_empleado']
-                ?? ''
-            );
-
-
-        $conceptoId =
-            isset($_GET['concepto_id'])
-                ? (int)$_GET['concepto_id']
-                : 0;
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | FILTRO DE ESTADO / VIGENCIA
-        |--------------------------------------------------------------------------
-        */
-
-        $estado =
-            trim(
-                $_GET['estado']
-                ?? ''
-            );
-
-
-        $estadosPermitidos = [
-            '',
-            'vigente',
-            'programado',
-            'finalizado',
-            'inactivo'
-        ];
-
-
-        if (
-            !in_array(
-                $estado,
-                $estadosPermitidos,
-                true
-            )
-        ) {
-            $estado = '';
-        }
-
+        $contextoAsignaciones = $this->contextoAsignaciones();
+        $buscarEmpleado = $contextoAsignaciones['buscar_empleado'];
+        $conceptoId = $contextoAsignaciones['concepto_id'];
+        $estado = $contextoAsignaciones['estado'];
 
         $mensaje = "";
         $tipo_mensaje = "";
@@ -2181,13 +2201,13 @@ class EmpleadoControlador
                     ->obtenerConceptosActivos();
 
 
-            $asignaciones =
-                $this->modelo
-                    ->listarConceptosAsignados(
-                        $buscarEmpleado,
-                        $conceptoId,
-                        $estado
-                    );
+            $resultadoListado = $this->modelo->listarConceptosAsignadosPaginado(
+                $buscarEmpleado, $conceptoId, $estado,
+                $contextoAsignaciones['pagina'], $contextoAsignaciones['por_pagina']
+            );
+            $asignaciones = $resultadoListado['registros'];
+            $paginacion = $resultadoListado['paginacion'];
+            $contextoAsignaciones['pagina'] = $paginacion['pagina'];
 
 
             require __DIR__
@@ -2216,6 +2236,7 @@ class EmpleadoControlador
 
     public function nuevoConcepto()
     {
+        $contextoAsignaciones = $this->contextoAsignaciones();
         $mensaje = "";
         $tipo_mensaje = "error";
 
@@ -2342,12 +2363,9 @@ class EmpleadoControlador
 
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'empleado-conceptos',
-                        [
+                    sigenmuniUrlRuta('empleado-conceptos', array_merge($this->contextoAsignaciones(), [
                             'ok' => 'nuevo'
-                        ]
-                    );
+                        ]));
 
 
 
@@ -2381,6 +2399,7 @@ class EmpleadoControlador
 
     public function verConcepto()
     {
+        $contextoAsignaciones = $this->contextoAsignaciones();
         $id =
             isset($_GET['id'])
                 ? (int) $_GET['id']
@@ -2396,9 +2415,7 @@ class EmpleadoControlador
         if ($id <= 0) {
 
             $urlDestino =
-                sigenmuniUrlRuta(
-                    'empleado-conceptos'
-                );
+                sigenmuniUrlRuta('empleado-conceptos', $this->contextoAsignaciones());
 
 
 
@@ -2428,9 +2445,7 @@ class EmpleadoControlador
             if (!$asignacion) {
 
                 $urlDestino =
-                sigenmuniUrlRuta(
-                    'empleado-conceptos'
-                );
+                sigenmuniUrlRuta('empleado-conceptos', $this->contextoAsignaciones());
 
 
 
@@ -2475,6 +2490,7 @@ class EmpleadoControlador
 
     public function editarConcepto()
     {
+        $contextoAsignaciones = $this->contextoAsignaciones();
         $id =
             isset($_GET['id'])
                 ? (int) $_GET['id']
@@ -2494,9 +2510,7 @@ class EmpleadoControlador
         if ($id <= 0) {
 
             $urlDestino =
-                sigenmuniUrlRuta(
-                    'empleado-conceptos'
-                );
+                sigenmuniUrlRuta('empleado-conceptos', $this->contextoAsignaciones());
 
 
 
@@ -2526,9 +2540,7 @@ class EmpleadoControlador
             if (!$asignacion) {
 
                 $urlDestino =
-                sigenmuniUrlRuta(
-                    'empleado-conceptos'
-                );
+                sigenmuniUrlRuta('empleado-conceptos', $this->contextoAsignaciones());
 
 
 
@@ -2597,12 +2609,9 @@ class EmpleadoControlador
             if ($esRegistroHistoricoFinalizado) {
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'empleado-conceptos/ver',
-                        [
+                    sigenmuniUrlRuta('empleado-conceptos/ver', array_merge($this->contextoAsignaciones(), [
                             'id' => $id
-                        ]
-                    );
+                        ]));
 
 
 
@@ -2873,12 +2882,9 @@ class EmpleadoControlador
 
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'empleado-conceptos',
-                        [
+                    sigenmuniUrlRuta('empleado-conceptos', array_merge($this->contextoAsignaciones(), [
                             'ok' => 'editar'
-                        ]
-                    );
+                        ]));
 
 
 
@@ -3058,10 +3064,7 @@ class EmpleadoControlador
 
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'empleado-conceptos',
-                        $parametros
-                    );
+                    sigenmuniUrlRuta('empleado-conceptos', array_merge($this->contextoAsignaciones(), $parametros));
 
 
 

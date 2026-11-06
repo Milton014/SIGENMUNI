@@ -15,14 +15,10 @@ require_once __DIR__ . '/../../../core/Url.php';
 require_once __DIR__ . '/../../../core/Csrf.php';
 
 $categoriaNuevaAccion =
-    sigenmuniUrlRuta(
-        'categorias/nueva'
-    );
+    sigenmuniUrlRuta('categorias/nueva', $contextoListado);
 
 $categoriaNuevaCancelar =
-    sigenmuniUrlRuta(
-        'categorias'
-    );
+    sigenmuniUrlRuta('categorias', $contextoListado);
 
 $categoriaNuevaCsrf =
     sigenmuniCsrfToken();

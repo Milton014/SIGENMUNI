@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../../core/Paginacion.php';
+
 class CategoriaModelo
 {
     private $conexion;
@@ -9,7 +11,97 @@ class CategoriaModelo
         $this->conexion = $conexion;
     }
 
-    public function listar($buscar = '', $activo = '')
+    private function filtrosListado($buscar, $activo): array
+    {
+        $sql = ' WHERE 1 = 1 ';
+        $params = [];
+        $types = '';
+
+        $buscar = trim((string)$buscar);
+
+        if ($buscar !== '') {
+
+            /*
+            |--------------------------------------------------------------------------
+            | BÚSQUEDA NUMÉRICA
+            |--------------------------------------------------------------------------
+            |
+            | Si el usuario ingresa un número, se busca exclusivamente por
+            | código exacto.
+            |
+            | Ejemplo:
+            |
+            | 1    -> código 1
+            | 19   -> código 19
+            | 1001 -> código 1001
+            |
+            | Así evitamos que buscar "1" también encuentre nombres como
+            | Categoría 18, Categoría 19 o Categoría 21.
+            |
+            |--------------------------------------------------------------------------
+            */
+
+            if (ctype_digit($buscar)) {
+
+                $sql .= " AND c.codigo = ? ";
+
+                $codigoBuscar = (int)$buscar;
+
+                $params[] = $codigoBuscar;
+
+                $types .= 'i';
+
+            } else {
+
+                /*
+                |--------------------------------------------------------------------------
+                | BÚSQUEDA POR NOMBRE
+                |--------------------------------------------------------------------------
+                |
+                | Cuando el usuario escribe texto, se permite coincidencia parcial.
+                |
+                |--------------------------------------------------------------------------
+                */
+
+                $sql .= " AND c.nombre LIKE ? ";
+
+                $like = '%' . $buscar . '%';
+
+                $params[] = $like;
+
+                $types .= 's';
+            }
+        }
+
+        if ($activo !== '' && ((string)$activo === '0' || (string)$activo === '1')) {
+            $sql .= " AND c.activo = ? ";
+            $params[] = (int)$activo;
+            $types .= 'i';
+        }
+
+        return [$sql, $types, $params];
+    }
+
+    public function listarPaginado($buscar = '', $activo = '', $pagina = 1, $porPagina = 25): array
+    {
+        [$where, $types, $params] = $this->filtrosListado($buscar, $activo);
+        // El conteo no necesita calcular los importes salariales de cada categoría.
+        $stmt = $this->conexion->prepare('SELECT COUNT(*) AS total FROM categoria c' . $where);
+        if (!$stmt) throw new RuntimeException('No se pudo preparar el conteo de categorías.');
+        try {
+            if ($params) $stmt->bind_param($types, ...$params);
+            if (!$stmt->execute()) throw new RuntimeException('No se pudo contar las categorías.');
+            $total = (int)($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+        } finally {
+            $stmt->close();
+        }
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listar($buscar, $activo,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    public function listar($buscar = '', $activo = '', $limite = null, $desplazamiento = 0)
     {
         $sql = "
             SELECT
@@ -100,73 +192,10 @@ class CategoriaModelo
                 ) AS suplemento_especial_actual
 
             FROM categoria c
-            WHERE 1 = 1
         ";
 
-        $params = [];
-        $types = '';
-
-        $buscar = trim((string)$buscar);
-
-        if ($buscar !== '') {
-
-            /*
-            |--------------------------------------------------------------------------
-            | BÚSQUEDA NUMÉRICA
-            |--------------------------------------------------------------------------
-            |
-            | Si el usuario ingresa un número, se busca exclusivamente por
-            | código exacto.
-            |
-            | Ejemplo:
-            |
-            | 1    -> código 1
-            | 19   -> código 19
-            | 1001 -> código 1001
-            |
-            | Así evitamos que buscar "1" también encuentre nombres como
-            | Categoría 18, Categoría 19 o Categoría 21.
-            |
-            |--------------------------------------------------------------------------
-            */
-
-            if (ctype_digit($buscar)) {
-
-                $sql .= " AND c.codigo = ? ";
-
-                $codigoBuscar = (int)$buscar;
-
-                $params[] = $codigoBuscar;
-
-                $types .= 'i';
-
-            } else {
-
-                /*
-                |--------------------------------------------------------------------------
-                | BÚSQUEDA POR NOMBRE
-                |--------------------------------------------------------------------------
-                |
-                | Cuando el usuario escribe texto, se permite coincidencia parcial.
-                |
-                |--------------------------------------------------------------------------
-                */
-
-                $sql .= " AND c.nombre LIKE ? ";
-
-                $like = '%' . $buscar . '%';
-
-                $params[] = $like;
-
-                $types .= 's';
-            }
-        }
-
-        if ($activo !== '' && ((string)$activo === '0' || (string)$activo === '1')) {
-            $sql .= " AND c.activo = ? ";
-            $params[] = (int)$activo;
-            $types .= 'i';
-        }
+        [$where, $types, $params] = $this->filtrosListado($buscar, $activo);
+        $sql .= $where;
 
         $sql .= "
             ORDER BY
@@ -175,9 +204,20 @@ class CategoriaModelo
                     ELSE 2
                 END,
                 c.codigo ASC,
-                c.nombre ASC
+                c.nombre ASC,
+                c.id ASC
         ";
 
+        // Sin límite se mantiene el listado completo para los demás usos del modelo.
+        if ($limite !== null) {
+            if (!in_array($limite, [10, 25, 50], true) || !is_int($desplazamiento) || $desplazamiento < 0) {
+                throw new InvalidArgumentException('Límites de paginación no válidos.');
+            }
+            $sql .= ' LIMIT ? OFFSET ?';
+            $types .= 'ii';
+            $params[] = $limite;
+            $params[] = $desplazamiento;
+        }
         $stmt = $this->conexion->prepare($sql);
 
         if (!$stmt) {

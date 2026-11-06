@@ -22,26 +22,26 @@
 */
 
 $host =
-    $_ENV['DB_HOST']
-    ?? '';
+    $_ENV['DB_HOST'];
+    
 
 $puerto =
     (int)(
         $_ENV['DB_PORT']
-        ?? 3306
+        
     );
 
 $user =
-    $_ENV['DB_USERNAME']
-    ?? '';
+    $_ENV['DB_USERNAME'];
+    
 
 $pass =
-    $_ENV['DB_PASSWORD']
-    ?? '';
+    $_ENV['DB_PASSWORD'];
+    
 
 $db =
-    $_ENV['DB_DATABASE']
-    ?? '';
+    $_ENV['DB_DATABASE'];
+    
 
 
 /*

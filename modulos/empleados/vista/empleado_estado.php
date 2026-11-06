@@ -20,19 +20,20 @@ $empleadoEstadoId =
 $empleadoEstadoAccion =
     sigenmuniUrlRuta(
         'empleados/estado',
-        [
+        array_merge($contextoListado ?? [], [
             'id' => $empleadoEstadoId,
             'accion' => (string)(
                 $accion
                 ?? ''
             )
-        ]
+        ])
     );
 
 
 $empleadoEstadoCancelar =
     sigenmuniUrlRuta(
-        'empleados'
+        'empleados',
+        $contextoListado ?? []
     );
 
 
@@ -258,8 +259,20 @@ $empleadoEstadoCsrf =
             </div>
 
 
-            <div class="campo">
+            <?php if (($accion ?? '') === 'inactivar'): ?>
+                <div class="campo">
+                    <label for="norma_legal_baja">Norma legal de baja</label>
+                    <input type="text" id="norma_legal_baja" name="norma_legal_baja"
+                        maxlength="100" placeholder="Ej.: Resolución N.º 85/2026"
+                        aria-describedby="ayuda_norma_legal_baja"
+                        value="<?= htmlspecialchars($normaLegalBaja ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                    <div class="ayuda" id="ayuda_norma_legal_baja">
+                        Opcional. Indique Decreto o Resolución, número y año. Se guardará en este período laboral. Máximo 100 caracteres.
+                    </div>
+                </div>
+            <?php endif; ?>
 
+            <div class="campo">
                 <label for="observacion">
                     Motivo / Observación
                 </label>
@@ -297,6 +310,7 @@ $empleadoEstadoCsrf =
                                     <th>Desde</th>
                                     <th>Hasta</th>
                                     <th>Estado</th>
+                                    <th>Norma legal de baja</th>
                                 </tr>
                             </thead>
 
@@ -358,8 +372,14 @@ $empleadoEstadoCsrf =
 
                                     </td>
 
+                                    <td class="norma-legal-baja">
+                                        <?php if (empty($periodo['fecha_hasta'])): ?>
+                                            —
+                                        <?php else: ?>
+                                            <?= htmlspecialchars(($periodo['norma_legal_baja'] ?? '') !== '' ? $periodo['norma_legal_baja'] : 'Norma legal no registrada', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
-
                             <?php endforeach; ?>
 
                             </tbody>

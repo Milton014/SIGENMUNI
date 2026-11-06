@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../../core/Paginacion.php';
+
 class UsuarioModelo
 {
     private $conexion;
@@ -9,7 +11,89 @@ class UsuarioModelo
         $this->conexion = $conexion;
     }
 
-    public function listar()
+    private function filtrosListado($buscar, $activo, bool $roles): array
+    {
+        $sql = ' WHERE 1 = 1'; $types = ''; $params = [];
+        $buscar = trim((string)$buscar);
+        if ($buscar !== '') {
+            if (!$roles && ctype_digit($buscar)) {
+                $sql .= ' AND u.dni = ?'; $types .= 's'; $params[] = $buscar;
+            } else {
+                $campos = $roles ? ['nombre', 'descripcion'] : ['u.nombre', 'u.apellido', 'u.nombre_usuario', 'u.email'];
+                // Todas las palabras deben coincidir; permite nombre y apellido en cualquier orden.
+                foreach (preg_split('/\s+/u', $buscar, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $palabra) {
+                    $condiciones = [];
+                    foreach ($campos as $campo) {
+                        $condiciones[] = $campo . ' LIKE ?'; $types .= 's'; $params[] = '%' . $palabra . '%';
+                    }
+                    $sql .= ' AND (' . implode(' OR ', $condiciones) . ')';
+                }
+            }
+        }
+        if (in_array((string)$activo, ['0', '1'], true)) {
+            $sql .= $roles ? ' AND activo = ?' : ' AND u.activo = ?';
+            $types .= 'i'; $params[] = (int)$activo;
+        }
+        return [$sql, $types, $params];
+    }
+
+    private function ejecutarListado(array $consulta, string $orden, $limite, $desplazamiento): array
+    {
+        [$sql, $types, $params] = $consulta;
+        $sql .= ' ORDER BY ' . $orden; // Orden interno fijo, nunca recibido desde la URL.
+        if ($limite !== null) {
+            if (!in_array($limite, [10, 25, 50], true) || !is_int($desplazamiento) || $desplazamiento < 0) {
+                throw new InvalidArgumentException('Límites de paginación no válidos.');
+            }
+            $sql .= ' LIMIT ? OFFSET ?'; $types .= 'ii';
+            $params[] = $limite; $params[] = $desplazamiento;
+        }
+        $stmt = $this->conexion->prepare($sql);
+        if (!$stmt) throw new RuntimeException('No se pudo preparar el listado.');
+        try {
+            if ($params) $stmt->bind_param($types, ...$params);
+            if (!$stmt->execute()) throw new RuntimeException('No se pudo consultar el listado.');
+            $resultado = $stmt->get_result(); $filas = [];
+            while ($fila = $resultado->fetch_assoc()) $filas[] = $fila;
+            return $filas;
+        } finally {
+            $stmt->close();
+        }
+    }
+
+    private function contarListado(array $consulta): int
+    {
+        [$sql, $types, $params] = $consulta;
+        $stmt = $this->conexion->prepare('SELECT COUNT(*) AS total FROM (' . $sql . ') AS registros_filtrados');
+        if (!$stmt) throw new RuntimeException('No se pudo preparar el conteo del listado.');
+        try {
+            if ($params) $stmt->bind_param($types, ...$params);
+            if (!$stmt->execute()) throw new RuntimeException('No se pudo contar el listado.');
+            return (int)($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+        } finally {
+            $stmt->close();
+        }
+    }
+
+    public function listarPaginado($buscar = '', $activo = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarListado($this->consultaUsuariosListado($buscar, $activo));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listar($buscar, $activo,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    public function listarRolesPaginado($buscar = '', $activo = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarListado($this->consultaRolesListado($buscar, $activo));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listarRoles($buscar, $activo,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    private function consultaUsuariosListado($buscar, $activo): array
     {
         $sql = "
             SELECT
@@ -27,21 +111,18 @@ class UsuarioModelo
                 r.es_admin
             FROM usuario u
             LEFT JOIN rol r ON u.rol_id = r.id
-            ORDER BY u.id DESC
         ";
+        [$where, $types, $params] = $this->filtrosListado($buscar, $activo, false);
+        return [$sql . $where, $types, $params];
+    }
 
-        $resultado = $this->conexion->query($sql);
-
-        if (!$resultado) {
-            throw new Exception(
-                "Error al consultar los usuarios: "
-                . $this->conexion->error
-            );
-        }
-
+    public function listar($buscar = '', $activo = '', $limite = null, $desplazamiento = 0)
+    {
+        $filas = $this->ejecutarListado($this->consultaUsuariosListado($buscar, $activo),
+            'u.id DESC', $limite, $desplazamiento);
         $usuarios = [];
 
-        while ($fila = $resultado->fetch_assoc()) {
+        foreach ($filas as $fila) {
             $usuarios[] = [
                 'id' => (int)$fila['id'],
                 'nombre' => $fila['nombre'],
@@ -151,7 +232,7 @@ class UsuarioModelo
         return $roles;
     }
 
-    public function listarRoles()
+    private function consultaRolesListado($buscar, $activo): array
     {
         $sql = "
             SELECT
@@ -162,21 +243,18 @@ class UsuarioModelo
                 es_admin,
                 created_at
             FROM rol
-            ORDER BY nombre ASC
         ";
+        [$where, $types, $params] = $this->filtrosListado($buscar, $activo, true);
+        return [$sql . $where, $types, $params];
+    }
 
-        $resultado = $this->conexion->query($sql);
-
-        if (!$resultado) {
-            throw new Exception(
-                "Error al consultar los roles: "
-                . $this->conexion->error
-            );
-        }
-
+    public function listarRoles($buscar = '', $activo = '', $limite = null, $desplazamiento = 0)
+    {
+        $filas = $this->ejecutarListado($this->consultaRolesListado($buscar, $activo),
+            'nombre ASC, id ASC', $limite, $desplazamiento);
         $roles = [];
 
-        while ($fila = $resultado->fetch_assoc()) {
+        foreach ($filas as $fila) {
             $roles[] = [
                 'id' => (int)$fila['id'],
                 'nombre' => $fila['nombre'],

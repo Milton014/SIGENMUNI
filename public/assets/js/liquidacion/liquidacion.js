@@ -107,3 +107,8 @@ function confirmarProcesamiento(tipoLiquidacion){
     );
 }
 
+
+// Cambiar cantidad vuelve a la primera página conservando los filtros del formulario.
+document.querySelectorAll('[data-paginacion-cantidad]').forEach(campo => {
+    campo.addEventListener('change', () => campo.form.requestSubmit());
+});

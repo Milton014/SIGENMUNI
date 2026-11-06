@@ -31,8 +31,41 @@ class UsuarioControlador
     |--------------------------------------------------------------------------
     */
 
+    private function filtroTexto(string $clave): string
+    {
+        $valor = is_string($_GET[$clave] ?? null) ? trim($_GET[$clave]) : '';
+        return mb_check_encoding($valor, 'UTF-8') ? mb_substr($valor, 0, 120, 'UTF-8') : '';
+    }
+
+    private function filtroEstado(string $clave): string
+    {
+        $valor = $this->filtroTexto($clave);
+        return in_array($valor, ['', '0', '1'], true) ? $valor : '';
+    }
+
+    /** Las URLs de retorno solo contienen los parámetros conocidos de los listados. */
+    private function contextoUsuarios(): array
+    {
+        return array_merge(sigenmuniParametrosPaginacion($_GET), [
+            'buscar' => $this->filtroTexto('buscar'), 'activo' => $this->filtroEstado('activo'),
+        ]);
+    }
+
+    private function contextoRoles(): array
+    {
+        $p = sigenmuniParametrosPaginacion([
+            'pagina' => $_GET['pagina_roles'] ?? 1, 'por_pagina' => $_GET['por_pagina_roles'] ?? 25,
+        ]);
+        return array_merge($this->contextoUsuarios(), [
+            'buscar_rol' => $this->filtroTexto('buscar_rol'), 'activo_rol' => $this->filtroEstado('activo_rol'),
+            'pagina_roles' => $p['pagina'], 'por_pagina_roles' => $p['por_pagina'],
+        ]);
+    }
+
     public function index()
     {
+        $contextoUsuarios = $this->contextoUsuarios();
+        $contextoRoles = $this->contextoRoles();
         $mensaje = "";
         $error = "";
 
@@ -109,9 +142,12 @@ class UsuarioControlador
 
         try {
 
-            $usuarios =
-                $this->modelo
-                    ->listar();
+            $resultado = $this->modelo->listarPaginado($contextoUsuarios['buscar'], $contextoUsuarios['activo'],
+                $contextoUsuarios['pagina'], $contextoUsuarios['por_pagina']);
+            $usuarios = $resultado['registros'];
+            $paginacion = $resultado['paginacion'];
+            $contextoUsuarios['pagina'] = $paginacion['pagina'];
+            $contextoRoles = array_merge($contextoRoles, $contextoUsuarios);
 
 
             require __DIR__
@@ -139,6 +175,8 @@ class UsuarioControlador
 
     public function nuevo()
     {
+        $contextoUsuarios = $this->contextoUsuarios();
+        $contextoRoles = $this->contextoRoles();
         $error = "";
 
 
@@ -284,13 +322,10 @@ class UsuarioControlador
 
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'usuarios',
-                        [
+                    sigenmuniUrlRuta('usuarios', array_merge($this->contextoUsuarios(), [
                             'ok' =>
                                 'nuevo'
-                        ]
-                    );
+                        ]));
 
 
                 header(
@@ -343,6 +378,8 @@ class UsuarioControlador
 
     public function editar()
     {
+        $contextoUsuarios = $this->contextoUsuarios();
+        $contextoRoles = $this->contextoRoles();
         $id =
             isset($_GET['id'])
                 ?
@@ -354,13 +391,10 @@ class UsuarioControlador
         if ($id <= 0) {
 
             $urlDestino =
-                sigenmuniUrlRuta(
-                    'usuarios',
-                    [
+                sigenmuniUrlRuta('usuarios', array_merge($this->contextoUsuarios(), [
                         'error' =>
                             'parametros_invalidos'
-                    ]
-                );
+                    ]));
 
 
             header(
@@ -388,13 +422,10 @@ class UsuarioControlador
             if (!$usuario) {
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'usuarios',
-                        [
+                    sigenmuniUrlRuta('usuarios', array_merge($this->contextoUsuarios(), [
                             'error' =>
                                 'usuario_no_existe'
-                        ]
-                    );
+                        ]));
 
 
                 header(
@@ -519,13 +550,10 @@ class UsuarioControlador
 
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'usuarios',
-                        [
+                    sigenmuniUrlRuta('usuarios', array_merge($this->contextoUsuarios(), [
                             'ok' =>
                                 'editar'
-                        ]
-                    );
+                        ]));
 
 
                 header(
@@ -589,10 +617,7 @@ class UsuarioControlador
             function (array $parametros = []) {
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'usuarios',
-                        $parametros
-                    );
+                    sigenmuniUrlRuta('usuarios', array_merge($this->contextoUsuarios(), $parametros));
 
 
                 header(
@@ -968,6 +993,8 @@ class UsuarioControlador
 
     public function roles()
     {
+        $contextoUsuarios = $this->contextoUsuarios();
+        $contextoRoles = $this->contextoRoles();
         $mensaje = "";
         $error = "";
 
@@ -1043,9 +1070,11 @@ class UsuarioControlador
 
         try {
 
-            $roles =
-                $this->modelo
-                    ->listarRoles();
+            $resultado = $this->modelo->listarRolesPaginado($contextoRoles['buscar_rol'], $contextoRoles['activo_rol'],
+                $contextoRoles['pagina_roles'], $contextoRoles['por_pagina_roles']);
+            $roles = $resultado['registros'];
+            $paginacion = $resultado['paginacion'];
+            $contextoRoles['pagina_roles'] = $paginacion['pagina'];
 
 
             /*
@@ -1095,6 +1124,8 @@ class UsuarioControlador
 
     public function nuevoRol()
     {
+        $contextoUsuarios = $this->contextoUsuarios();
+        $contextoRoles = $this->contextoRoles();
         $error = "";
 
 
@@ -1206,10 +1237,7 @@ class UsuarioControlador
                 header(
                     'Location: '
                     .
-                    sigenmuniUrlRuta(
-                        'usuarios/roles',
-                        ['ok' => 'nuevo']
-                    )
+                    sigenmuniUrlRuta('usuarios/roles', array_merge($this->contextoRoles(), ['ok' => 'nuevo']))
                 );
 
                 exit();
@@ -1235,6 +1263,8 @@ class UsuarioControlador
 
     public function editarRol()
     {
+        $contextoUsuarios = $this->contextoUsuarios();
+        $contextoRoles = $this->contextoRoles();
         $id =
             isset($_GET['id'])
                 ?
@@ -1248,10 +1278,7 @@ class UsuarioControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'usuarios/roles',
-                    ['error' => 'parametros_invalidos']
-                )
+                sigenmuniUrlRuta('usuarios/roles', array_merge($this->contextoRoles(), ['error' => 'parametros_invalidos']))
             );
 
             exit();
@@ -1275,10 +1302,7 @@ class UsuarioControlador
                 header(
                     'Location: '
                     .
-                    sigenmuniUrlRuta(
-                        'usuarios/roles',
-                        ['error' => 'rol_no_existe']
-                    )
+                    sigenmuniUrlRuta('usuarios/roles', array_merge($this->contextoRoles(), ['error' => 'rol_no_existe']))
                 );
 
                 exit();
@@ -1420,10 +1444,7 @@ class UsuarioControlador
                 header(
                     'Location: '
                     .
-                    sigenmuniUrlRuta(
-                        'usuarios/roles',
-                        ['ok' => 'editar']
-                    )
+                    sigenmuniUrlRuta('usuarios/roles', array_merge($this->contextoRoles(), ['ok' => 'editar']))
                 );
 
                 exit();
@@ -1473,10 +1494,7 @@ class UsuarioControlador
             function (array $parametros = []) {
 
                 $urlDestino =
-                    sigenmuniUrlRuta(
-                        'usuarios/roles',
-                        $parametros
-                    );
+                    sigenmuniUrlRuta('usuarios/roles', array_merge($this->contextoRoles(), $parametros));
 
 
                 header(
@@ -1744,6 +1762,8 @@ class UsuarioControlador
 
     public function permisosRol()
     {
+        $contextoUsuarios = $this->contextoUsuarios();
+        $contextoRoles = $this->contextoRoles();
         $id =
             isset($_GET['id'])
                 ?
@@ -1757,10 +1777,7 @@ class UsuarioControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'usuarios/roles',
-                    ['error' => 'parametros_invalidos']
-                )
+                sigenmuniUrlRuta('usuarios/roles', array_merge($this->contextoRoles(), ['error' => 'parametros_invalidos']))
             );
 
             exit();
@@ -1790,10 +1807,7 @@ class UsuarioControlador
                 header(
                     'Location: '
                     .
-                    sigenmuniUrlRuta(
-                        'usuarios/roles',
-                        ['error' => 'rol_no_existe']
-                    )
+                    sigenmuniUrlRuta('usuarios/roles', array_merge($this->contextoRoles(), ['error' => 'rol_no_existe']))
                 );
 
                 exit();
@@ -1962,10 +1976,7 @@ class UsuarioControlador
                     header(
                         'Location: '
                         .
-                        sigenmuniUrlRuta(
-                            'usuarios/roles',
-                            ['ok' => 'permisos']
-                        )
+                        sigenmuniUrlRuta('usuarios/roles', array_merge($this->contextoRoles(), ['ok' => 'permisos']))
                     );
 
                     exit();

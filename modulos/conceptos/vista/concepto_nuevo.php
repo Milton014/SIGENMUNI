@@ -16,15 +16,11 @@ require_once __DIR__ . '/../../../core/Csrf.php';
 
 
 $conceptoNuevoAccion =
-    sigenmuniUrlRuta(
-        'conceptos/nuevo'
-    );
+    sigenmuniUrlRuta('conceptos/nuevo', $contextoListado);
 
 
 $conceptoNuevoVolver =
-    sigenmuniUrlRuta(
-        'conceptos'
-    );
+    sigenmuniUrlRuta('conceptos', $contextoListado);
 
 
 $conceptoNuevoCsrf =

@@ -95,6 +95,8 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/reporte_historial_empleado.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -310,6 +312,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
                     Limpiar
                 </a>
 
+                <input type="hidden" name="por_pagina" value="<?= $paginacion['por_pagina'] ?>">
             </form>
 
         </div>
@@ -319,6 +322,17 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
             <h2>Resultados</h2>
 
+            <?php if ($filtrar): ?>
+            <?php
+        $paginacionRuta = 'reportes/historial-empleado';
+        $paginacionParametros = $contextoHistorial;
+        $paginacionEntidad = 'empleados';
+        $paginacionClavePagina = 'pagina'; $paginacionClaveCantidad = 'por_pagina';
+        require __DIR__ . '/../../../componentes/paginacion_reporte.php';
+        ?>
+
+
+            <?php endif; ?>
             <?php if (!empty($empleados)): ?>
 
                 <div class="tabla-contenedor">
@@ -420,13 +434,10 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
                                     <a
                                         href="<?php
                                             echo htmlspecialchars(
-                                                sigenmuniUrlRuta(
-                                                    'reportes/historial-empleado',
-                                                    [
+                                                sigenmuniUrlRuta('reportes/historial-empleado', array_merge($contextoHistorial, ['pagina_historial' => 1, 
                                                         'empleado_id' =>
                                                             (int)$fila['id']
-                                                    ]
-                                                ),
+                                                    ])),
                                                 ENT_QUOTES,
                                                 'UTF-8'
                                             );
@@ -447,6 +458,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
                     </table>
 
                 </div>
+                    <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
             <?php else: ?>
 
@@ -658,6 +670,9 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
                                 <li class="historial-laboral-evento historial-laboral-baja">
                                     <strong>Baja o inactivación registrada</strong>
                                     <span class="historial-laboral-fecha"><?= htmlspecialchars(date('d/m/Y', strtotime($periodoLaboral['fecha_hasta'])), ENT_QUOTES, 'UTF-8') ?></span>
+                                    <p class="historial-norma-baja">Norma legal de baja:
+                                        <?= htmlspecialchars(($periodoLaboral['norma_legal_baja'] ?? '') !== '' ? $periodoLaboral['norma_legal_baja'] : 'Norma legal no registrada', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                                    </p>
                                     <?php if (!empty($periodoLaboral['motivo_fin'])): ?>
                                         <p>Motivo: <?= htmlspecialchars($periodoLaboral['motivo_fin'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
                                     <?php endif; ?>
@@ -676,6 +691,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
                 </h2>
 
                 <div class="acciones-exportar">
+                    <a class="btn btn-volver" href="<?= htmlspecialchars(sigenmuniUrlRuta('reportes/historial-empleado', $contextoHistorial), ENT_QUOTES, 'UTF-8') ?>">Volver a la búsqueda</a>
 
                     <a
                         href="<?php
@@ -704,6 +720,16 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
                     </a>
 
                 </div>
+
+
+                <?php $paginacion = $paginacionHistorial; ?>
+                <?php
+        $paginacionRuta = 'reportes/historial-empleado';
+        $paginacionParametros = array_merge($contextoHistorial, ['empleado_id' => (int)$empleadoId]);
+        $paginacionEntidad = 'liquidaciones';
+        $paginacionClavePagina = 'pagina_historial'; $paginacionClaveCantidad = 'por_pagina_historial';
+        require __DIR__ . '/../../../componentes/paginacion_reporte.php';
+        ?>
 
 
                 <?php if (!empty($historial)): ?>
@@ -907,9 +933,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
                                             <a
                                                 href="<?php
                                                     echo htmlspecialchars(
-                                                        sigenmuniUrlRuta(
-                                                            'liquidacion/recibo',
-                                                            [
+                                                        sigenmuniUrlRuta('liquidacion/recibo', array_merge($contextoHistorial, [
                                                                 'liquidacion_id' =>
                                                                     (int)$fila[
                                                                         'liquidacion_id'
@@ -920,8 +944,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
                                                                 'origen' =>
                                                                     'historial'
-                                                            ]
-                                                        ),
+                                                            ])),
                                                         ENT_QUOTES,
                                                         'UTF-8'
                                                     );
@@ -950,6 +973,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
                         </table>
 
                     </div>
+                    <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
                 <?php else: ?>
 
@@ -981,6 +1005,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 </div>
 
 <script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/reportes/reporte_historial_empleado.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/reportes/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

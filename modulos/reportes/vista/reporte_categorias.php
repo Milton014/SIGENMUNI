@@ -67,6 +67,8 @@ $reporteCategoriasUrlExcel =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/reporte_categorias.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -274,6 +276,7 @@ $reporteCategoriasUrlExcel =
                 Limpiar
             </a>
 
+            <input type="hidden" name="por_pagina" value="<?= $paginacion['por_pagina'] ?>">
         </form>
 
     </div>
@@ -332,7 +335,15 @@ $reporteCategoriasUrlExcel =
         </div>
 
 
-        <?php if (!empty($categorias)): ?>
+        <?php
+        $paginacionRuta = 'reportes/categorias';
+        $paginacionParametros = $reporteCategoriasFiltros;
+        $paginacionEntidad = 'categorias';
+        $paginacionClavePagina = 'pagina'; $paginacionClaveCantidad = 'por_pagina';
+        require __DIR__ . '/../../../componentes/paginacion_reporte.php';
+        ?>
+
+<?php if (!empty($categorias)): ?>
 
             <div class="tabla-contenedor">
 
@@ -604,6 +615,7 @@ $reporteCategoriasUrlExcel =
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
         <?php else: ?>
 
@@ -620,6 +632,7 @@ $reporteCategoriasUrlExcel =
 
 </div>
 
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/reportes/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

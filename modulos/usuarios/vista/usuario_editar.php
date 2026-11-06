@@ -20,19 +20,14 @@ $usuarioEditarId =
 
 
 $usuarioEditarAccion =
-    sigenmuniUrlRuta(
-        'usuarios/editar',
-        [
+    sigenmuniUrlRuta('usuarios/editar', array_merge($contextoUsuarios, [
             'id' =>
                 $usuarioEditarId
-        ]
-    );
+        ]));
 
 
 $usuarioEditarUrlVolver =
-    sigenmuniUrlRuta(
-        'usuarios'
-    );
+    sigenmuniUrlRuta('usuarios', $contextoUsuarios);
 
 ?>
 

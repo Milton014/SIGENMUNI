@@ -11,19 +11,20 @@ require_once __DIR__ . '/../../../core/Url.php';
 
 $empleadoVerVolver =
     sigenmuniUrlRuta(
-        'empleados'
+        'empleados',
+        $contextoListado ?? []
     );
 
 
 $empleadoVerEditar =
     sigenmuniUrlRuta(
         'empleados/editar',
-        [
+        array_merge($contextoListado ?? [], [
             'id' => (int)(
                 $empleado['id']
                 ?? 0
             )
-        ]
+        ])
     );
 
 
@@ -271,6 +272,14 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
             </div>
 
+
+            <!-- NORMA LEGAL DEL ALTA INICIAL -->
+            <div class="item">
+                <div class="titulo">Norma legal de alta</div>
+                <div class="valor norma-legal-alta">
+                    <?= htmlspecialchars(($empleado['norma_legal_alta'] ?? '') !== '' && $empleado['norma_legal_alta'] !== null ? $empleado['norma_legal_alta'] : 'No registrada', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                </div>
+            </div>
 
             <!-- TELÉFONO -->
 

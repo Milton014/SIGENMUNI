@@ -23,7 +23,7 @@
 define(
     'SMTP_HOST',
     $_ENV['MAIL_HOST']
-    ?? 'smtp.gmail.com'
+    
 );
 
 
@@ -41,7 +41,7 @@ define(
     'SMTP_PORT',
     (int)(
         $_ENV['MAIL_PORT']
-        ?? 587
+        
     )
 );
 
@@ -55,7 +55,7 @@ define(
 define(
     'SMTP_USER',
     $_ENV['MAIL_USERNAME']
-    ?? ''
+    
 );
 
 
@@ -73,7 +73,7 @@ define(
 define(
     'SMTP_PASS',
     $_ENV['MAIL_PASSWORD']
-    ?? ''
+    
 );
 
 
@@ -90,10 +90,10 @@ define(
 define(
     'SMTP_FROM',
     $_ENV['MAIL_FROM_ADDRESS']
-    ??
+    
     (
         $_ENV['MAIL_USERNAME']
-        ?? ''
+        
     )
 );
 

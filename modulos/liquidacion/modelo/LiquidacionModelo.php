@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../../../core/Paginacion.php';
+
 class LiquidacionModelo
 {
     private $conexion;
@@ -23,7 +25,53 @@ class LiquidacionModelo
     |--------------------------------------------------------------------------
     */
 
-    public function listar(
+    /** Consulta de conteo con los mismos filtros y relaciones que el listado. */
+    private function contarConsultaListado(array $consulta): int
+    {
+        [$sql, $types, $params] = $consulta;
+        $stmt = $this->conexion->prepare('SELECT COUNT(*) AS total FROM (' . $sql . ') AS registros_filtrados');
+        if (!$stmt) throw new RuntimeException('No se pudo preparar el conteo del listado.');
+        try {
+            if ($params) $stmt->bind_param($types, ...$params);
+            if (!$stmt->execute()) throw new RuntimeException('No se pudo contar el listado.');
+            return (int)($stmt->get_result()->fetch_assoc()['total'] ?? 0);
+        } finally {
+            $stmt->close();
+        }
+    }
+
+    private function aplicarLimiteListado(&$sql, &$types, &$params, $limite, $desplazamiento): void
+    {
+        // null conserva las consultas completas usadas por impresión y otros procesos.
+        if ($limite === null) return;
+        if (!in_array($limite, [10, 25, 50], true) || !is_int($desplazamiento) || $desplazamiento < 0) {
+            throw new InvalidArgumentException('Límites de paginación no válidos.');
+        }
+        $sql .= ' LIMIT ? OFFSET ?';
+        $types .= 'ii';
+        $params[] = $limite;
+        $params[] = $desplazamiento;
+    }
+
+    public function listarPaginado($periodo = '', $tipo = '', $estado = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarConsultaListado($this->consultaListado($periodo, $tipo, $estado));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->listar($periodo, $tipo, $estado,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    public function obtenerResumenEmpleadosPaginado($liquidacionId, $busqueda = '', $pagina = 1, $porPagina = 25): array
+    {
+        $total = $this->contarConsultaListado($this->consultaResumenEmpleados($liquidacionId, $busqueda));
+        $paginacion = sigenmuniCalcularPaginacion($total, $pagina, $porPagina);
+        $registros = $total > 0 ? $this->obtenerResumenEmpleados($liquidacionId, $busqueda,
+            $paginacion['por_pagina'], $paginacion['desplazamiento']) : [];
+        return ['registros' => $registros, 'paginacion' => $paginacion];
+    }
+
+    private function consultaListado(
         $periodo = "",
         $tipo = "",
         $estado = ""
@@ -78,10 +126,18 @@ class LiquidacionModelo
         }
 
 
+        return [$sql, $types, $params];
+    }
+
+    public function listar($periodo = '', $tipo = '', $estado = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $types, $params] = $this->consultaListado($periodo, $tipo, $estado);
         $sql .= "
             ORDER BY id DESC
         ";
 
+
+        $this->aplicarLimiteListado($sql, $types, $params, $limite, $desplazamiento);
 
         $stmt =
             $this->conexion->prepare(
@@ -5914,9 +5970,8 @@ class LiquidacionModelo
     |--------------------------------------------------------------------------
     */
 
-    public function obtenerResumenEmpleados(
-        $liquidacionId
-    ) {
+    private function consultaResumenEmpleados($liquidacionId, string $busqueda): array
+    {
         $sql = "
             SELECT
                 le.id,
@@ -5939,11 +5994,33 @@ class LiquidacionModelo
                 ON le.empleado_id = e.id
 
             WHERE le.liquidacion_id = ?
-
-            ORDER BY
-                e.apellido ASC,
-                e.nombre ASC
         ";
+
+        $types = 'i';
+        $params = [$liquidacionId];
+        $busqueda = trim($busqueda);
+        if ($busqueda !== '' && preg_match('/^[0-9]+$/D', $busqueda)) {
+            // Legajo completo, con ceros iniciales opcionales y sin convertir a float.
+            $legajo = ltrim($busqueda, '0');
+            $sql .= ' AND e.nro_legajo REGEXP ?';
+            $params[] = $legajo === '' ? '^0+$' : '^0*' . $legajo . '$';
+            $types .= 's';
+        } elseif ($busqueda !== '') {
+            foreach (preg_split('/[\s,]+/u', $busqueda, -1, PREG_SPLIT_NO_EMPTY) ?: [] as $palabra) {
+                // Las palabras pueden estar en cualquier orden. %, _ y ! son literales.
+                $sql .= " AND CONCAT(e.apellido, ' ', e.nombre) LIKE ? ESCAPE '!'";
+                $params[] = '%' . strtr($palabra, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+                $types .= 's';
+            }
+        }
+        return [$sql, $types, $params];
+    }
+
+    public function obtenerResumenEmpleados($liquidacionId, $busqueda = '', $limite = null, $desplazamiento = 0)
+    {
+        [$sql, $types, $params] = $this->consultaResumenEmpleados($liquidacionId, $busqueda);
+        $sql .= ' ORDER BY e.apellido ASC, e.nombre ASC, le.id ASC';
+        $this->aplicarLimiteListado($sql, $types, $params, $limite, $desplazamiento);
 
 
         $stmt =
@@ -5961,10 +6038,7 @@ class LiquidacionModelo
         }
 
 
-        $stmt->bind_param(
-            "i",
-            $liquidacionId
-        );
+        $stmt->bind_param($types, ...$params);
 
 
         if (!$stmt->execute()) {

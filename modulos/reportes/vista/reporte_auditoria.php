@@ -528,6 +528,10 @@ foreach (
 }
 
 
+$filtrosDetalleLimpios = array_merge($filtrosDetalleLimpios, [
+    'pagina' => $paginacion['pagina'], 'por_pagina' => $paginacion['por_pagina'],
+]);
+
 $queryFiltros =
     http_build_query(
         $filtrosDetalleLimpios
@@ -595,6 +599,8 @@ if ($auditoriaDetalle) {
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/reporte_auditoria.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 
@@ -1093,6 +1099,7 @@ require __DIR__
 
             </div>
 
+            <input type="hidden" name="por_pagina" value="<?= $paginacion['por_pagina'] ?>">
         </form>
 
     </div>
@@ -1124,10 +1131,18 @@ require __DIR__
         </div>
 
 
-        <?php if (!empty($auditorias)): ?>
+        <?php
+        $paginacionRuta = 'reportes/auditoria';
+        $paginacionParametros = $auditoriaFiltros;
+        $paginacionEntidad = 'registros';
+        $paginacionClavePagina = 'pagina'; $paginacionClaveCantidad = 'por_pagina';
+        require __DIR__ . '/../../../componentes/paginacion_reporte.php';
+        ?>
+
+<?php if (!empty($auditorias)): ?>
 
 
-            <div class="tabla-contenedor">
+            <div class="tabla-contenedor tabla-auditoria-paginada">
 
                 <table>
 
@@ -1390,6 +1405,7 @@ require __DIR__
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <?php else: ?>
@@ -1848,6 +1864,7 @@ require __DIR__
 </div>
 
 
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/reportes/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../modelo/ReporteModelo.php';
+require_once __DIR__ . '/../servicio/ContextoHistorial.php';
 
 
 class ReporteControlador
@@ -354,6 +355,8 @@ class ReporteControlador
 
     public function empleados()
     {
+        $parametrosPaginacion = sigenmuniParametrosPaginacion($_GET);
+        $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
         $legajo =
             trim(
                 $_GET['legajo']
@@ -433,22 +436,15 @@ class ReporteControlador
             |
             */
 
-            $empleados =
-                $this->modelo
-                    ->listarEmpleados(
-                        $legajo,
-                        $busqueda,
-                        $estado
-                    );
-
-
-            $totalEmpleados =
-                count(
-                    $empleados
-                );
+            $resultado = $this->modelo->listarEmpleadosPaginado($legajo, $busqueda, $estado,
+                    $parametrosPaginacion['pagina'], $parametrosPaginacion['por_pagina']);
+                $empleados = $resultado['registros'];
+                $paginacion = $resultado['paginacion'];
+                $totalEmpleados = $paginacion['total'];
 
 
         } catch (Exception $e) {
+            $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
 
             $error =
                 $e->getMessage();
@@ -678,6 +674,9 @@ class ReporteControlador
 
     public function historialEmpleado()
     {
+        $contextoHistorial = sigenmuniContextoHistorialReporte($_GET);
+        $paginacion = sigenmuniCalcularPaginacion(0, 1, $contextoHistorial['por_pagina']);
+        $paginacionHistorial = sigenmuniCalcularPaginacion(0, 1, $contextoHistorial['por_pagina_historial']);
         $empleadoId =
             isset($_GET['empleado_id'])
                 ?
@@ -687,24 +686,15 @@ class ReporteControlador
 
 
         $legajo =
-            trim(
-                $_GET['legajo']
-                ?? ''
-            );
+            $contextoHistorial['legajo'];
 
 
         $busqueda =
-            trim(
-                $_GET['busqueda']
-                ?? ''
-            );
+            $contextoHistorial['busqueda'];
 
 
         $estado =
-            trim(
-                $_GET['estado']
-                ?? ''
-            );
+            $contextoHistorial['estado'];
 
 
         /*
@@ -848,11 +838,11 @@ class ReporteControlador
                 |--------------------------------------------------------------------------
                 */
 
-                $historial =
-                    $this->modelo
-                        ->obtenerHistorialEmpleado(
-                            $empleadoId
-                        );
+                $resultado = $this->modelo->obtenerHistorialEmpleadoPaginado($empleadoId,
+                    $contextoHistorial['pagina_historial'], $contextoHistorial['por_pagina_historial']);
+                $historial = $resultado['registros'];
+                $paginacionHistorial = $resultado['paginacion'];
+                $contextoHistorial['pagina_historial'] = $paginacionHistorial['pagina'];
 
 
                 $queryStringHistorial =
@@ -885,13 +875,11 @@ class ReporteControlador
                 |
                 */
 
-                $empleados =
-                    $this->modelo
-                        ->buscarEmpleadosHistorial(
-                            $legajo,
-                            $busqueda,
-                            $estado
-                        );
+                $resultado = $this->modelo->buscarEmpleadosHistorialPaginado($legajo, $busqueda, $estado,
+                    $contextoHistorial['pagina'], $contextoHistorial['por_pagina']);
+                $empleados = $resultado['registros'];
+                $paginacion = $resultado['paginacion'];
+                $contextoHistorial['pagina'] = $paginacion['pagina'];
             }
 
 
@@ -1080,6 +1068,8 @@ class ReporteControlador
 
     public function conceptos()
     {
+        $parametrosPaginacion = sigenmuniParametrosPaginacion($_GET);
+        $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
         /*
         |--------------------------------------------------------------------------
         | BÚSQUEDA GENERAL
@@ -1230,22 +1220,15 @@ class ReporteControlador
 
         try {
 
-            $conceptos =
-                $this->modelo
-                    ->listarConceptos(
-                        $buscar,
-                        $tipoConcepto,
-                        $activo
-                    );
-
-
-            $totalConceptos =
-                count(
-                    $conceptos
-                );
+            $resultado = $this->modelo->listarConceptosPaginado($buscar, $tipoConcepto, $activo,
+                    $parametrosPaginacion['pagina'], $parametrosPaginacion['por_pagina']);
+                $conceptos = $resultado['registros'];
+                $paginacion = $resultado['paginacion'];
+                $totalConceptos = $paginacion['total'];
 
 
         } catch (Exception $e) {
+            $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
 
             $error =
                 $e->getMessage();
@@ -1550,6 +1533,8 @@ class ReporteControlador
 
     public function categorias()
     {
+        $parametrosPaginacion = sigenmuniParametrosPaginacion($_GET);
+        $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
         $buscar =
             trim(
                 $_GET['buscar']
@@ -1586,21 +1571,15 @@ class ReporteControlador
 
         try {
 
-            $categorias =
-                $this->modelo
-                    ->listarCategorias(
-                        $buscar,
-                        $activo
-                    );
-
-
-            $totalCategorias =
-                count(
-                    $categorias
-                );
+            $resultado = $this->modelo->listarCategoriasPaginado($buscar, $activo,
+                    $parametrosPaginacion['pagina'], $parametrosPaginacion['por_pagina']);
+                $categorias = $resultado['registros'];
+                $paginacion = $resultado['paginacion'];
+                $totalCategorias = $paginacion['total'];
 
 
         } catch (Exception $e) {
+            $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
 
             $error =
                 $e->getMessage();
@@ -1779,6 +1758,8 @@ class ReporteControlador
 
     public function liquidaciones()
     {
+        $parametrosPaginacion = sigenmuniParametrosPaginacion($_GET);
+        $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
         /*
         |--------------------------------------------------------------------------
         | FILTROS
@@ -1939,23 +1920,16 @@ class ReporteControlador
 
             if ($error === '') {
 
-                $liquidaciones =
-                    $this->modelo
-                        ->listarLiquidaciones(
-                            $periodo,
-                            $tipo,
-                            $estado
-                        );
-
-
-                $totalLiquidaciones =
-                    count(
-                        $liquidaciones
-                    );
+                $resultado = $this->modelo->listarLiquidacionesPaginado($periodo, $tipo, $estado,
+                    $parametrosPaginacion['pagina'], $parametrosPaginacion['por_pagina']);
+                $liquidaciones = $resultado['registros'];
+                $paginacion = $resultado['paginacion'];
+                $totalLiquidaciones = $paginacion['total'];
             }
 
 
         } catch (Exception $e) {
+            $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
 
             $error =
                 $e->getMessage();
@@ -2381,6 +2355,8 @@ class ReporteControlador
 
     public function auditoria()
     {
+        $parametrosPaginacion = sigenmuniParametrosPaginacion($_GET);
+        $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
         $fechaDesde =
             trim(
                 $_GET['fecha_desde']
@@ -2567,23 +2543,11 @@ class ReporteControlador
 
             if ($error === '') {
 
-                $auditorias =
-                    $this->modelo
-                        ->listarAuditoria(
-                            $fechaDesde,
-                            $fechaHasta,
-                            $usuario,
-                            $rol,
-                            $modulo,
-                            $accion,
-                            $entidad
-                        );
-
-
-                $totalAuditorias =
-                    count(
-                        $auditorias
-                    );
+                $resultado = $this->modelo->listarAuditoriaPaginado($fechaDesde, $fechaHasta, $usuario, $rol, $modulo, $accion, $entidad,
+                    $parametrosPaginacion['pagina'], $parametrosPaginacion['por_pagina']);
+                $auditorias = $resultado['registros'];
+                $paginacion = $resultado['paginacion'];
+                $totalAuditorias = $paginacion['total'];
             }
 
 
@@ -2611,6 +2575,7 @@ class ReporteControlador
 
 
         } catch (Exception $e) {
+            $paginacion = sigenmuniCalcularPaginacion(0, 1, $parametrosPaginacion['por_pagina']);
 
             $error =
                 $e->getMessage();

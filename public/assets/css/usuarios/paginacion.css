@@ -1,0 +1,19 @@
+.filtros-listado {
+    display: grid;
+    grid-template-columns: minmax(240px, 2fr) minmax(160px, 1fr) 100px auto auto;
+    align-items: end;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+.filtros-listado label { display: grid; gap: 6px; color: #475569; font-size: 13px; font-weight: 600; min-width: 0; }
+.filtros-listado input, .filtros-listado select { width: 100%; min-width: 0; min-height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font: inherit; color: #1f2937; background: white; }
+.filtros-listado input:focus-visible, .filtros-listado select:focus-visible { outline: 3px solid #0f766e; outline-offset: 2px; }
+.filtros-listado .btn { min-height: 42px; display: inline-flex; justify-content: center; align-items: center; }
+.filtros-listado .btn-filtrar { background: #0f766e; color: white; }
+.filtros-listado .btn-limpiar { background: #64748b; color: white; }
+@media (max-width: 1000px) { .filtros-listado { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .filtros-listado { grid-template-columns: 1fr; } }

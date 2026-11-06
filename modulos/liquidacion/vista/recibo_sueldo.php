@@ -40,14 +40,14 @@ $reciboOrigen =
 */
 
 if ($reciboOrigen === 'historial') {
+    require_once __DIR__ . '/../../reportes/servicio/ContextoHistorial.php';
 
     $reciboUrlVolver =
         sigenmuniUrlRuta(
             'reportes/historial-empleado',
-            [
-                'empleado_id' =>
-                    $reciboEmpleadoId
-            ]
+            array_merge(sigenmuniContextoHistorialReporte($_GET), [
+                'empleado_id' => $reciboEmpleadoId,
+            ])
         );
 
 } else {
@@ -55,10 +55,7 @@ if ($reciboOrigen === 'historial') {
     $reciboUrlVolver =
         sigenmuniUrlRuta(
             'liquidacion/ver',
-            [
-                'id' =>
-                    $reciboLiquidacionId
-            ]
+            array_merge($contextoListado, $contextoResumen, ['id' => $reciboLiquidacionId])
         );
 }
 

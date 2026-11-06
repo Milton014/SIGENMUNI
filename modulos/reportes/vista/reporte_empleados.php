@@ -91,6 +91,8 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/reporte_empleados.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 
@@ -381,6 +383,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
             </a>
 
 
+            <input type="hidden" name="por_pagina" value="<?= $paginacion['por_pagina'] ?>">
         </form>
 
 
@@ -453,7 +456,15 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
              TABLA
         ====================================== -->
 
-        <?php if (!empty($empleados)): ?>
+        <?php
+        $paginacionRuta = 'reportes/empleados';
+        $paginacionParametros = $reporteEmpleadosFiltros;
+        $paginacionEntidad = 'empleados';
+        $paginacionClavePagina = 'pagina'; $paginacionClaveCantidad = 'por_pagina';
+        require __DIR__ . '/../../../componentes/paginacion_reporte.php';
+        ?>
+
+<?php if (!empty($empleados)): ?>
 
 
             <div class="tabla-contenedor">
@@ -847,6 +858,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
 
         <?php else: ?>
@@ -870,6 +882,7 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 
 
 <script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/reportes/reporte_empleados.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/reportes/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

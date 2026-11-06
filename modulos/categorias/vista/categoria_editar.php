@@ -20,17 +20,12 @@ $categoriaEditarId =
     );
 
 $categoriaEditarAccion =
-    sigenmuniUrlRuta(
-        'categorias/editar',
-        [
+    sigenmuniUrlRuta('categorias/editar', array_merge($contextoListado, [
             'id' => $categoriaEditarId
-        ]
-    );
+        ]));
 
 $categoriaEditarCancelar =
-    sigenmuniUrlRuta(
-        'categorias'
-    );
+    sigenmuniUrlRuta('categorias', $contextoListado);
 
 $categoriaEditarCsrf =
     sigenmuniCsrfToken();

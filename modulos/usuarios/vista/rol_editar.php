@@ -20,19 +20,14 @@ $rolEditarId =
 
 
 $rolEditarAccion =
-    sigenmuniUrlRuta(
-        'usuarios/roles/editar',
-        [
+    sigenmuniUrlRuta('usuarios/roles/editar', array_merge($contextoRoles, [
             'id' =>
                 $rolEditarId
-        ]
-    );
+        ]));
 
 
 $rolEditarUrlVolver =
-    sigenmuniUrlRuta(
-        'usuarios/roles'
-    );
+    sigenmuniUrlRuta('usuarios/roles', $contextoRoles);
 
 ?>
 

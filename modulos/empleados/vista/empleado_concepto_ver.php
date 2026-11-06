@@ -10,21 +10,16 @@ require_once __DIR__ . '/../../../core/Url.php';
 */
 
 $empleadoConceptoVerVolver =
-    sigenmuniUrlRuta(
-        'empleado-conceptos'
-    );
+    sigenmuniUrlRuta('empleado-conceptos', $contextoAsignaciones);
 
 
 $empleadoConceptoVerEditar =
-    sigenmuniUrlRuta(
-        'empleado-conceptos/editar',
-        [
+    sigenmuniUrlRuta('empleado-conceptos/editar', array_merge($contextoAsignaciones, [
             'id' => (int)(
                 $asignacion['id']
                 ?? 0
             )
-        ]
-    );
+        ]));
 
 ?>
 

@@ -55,21 +55,22 @@ class CategoriaControlador
     |--------------------------------------------------------------------------
     */
 
+    /** Conserva únicamente los filtros y la página del listado. */
+    private function contextoListado(): array
+    {
+        $buscar = is_string($_GET['buscar'] ?? null) ? trim($_GET['buscar']) : '';
+        $buscar = mb_check_encoding($buscar, 'UTF-8') ? mb_substr($buscar, 0, 120, 'UTF-8') : '';
+        $activo = is_string($_GET['activo'] ?? null) ? trim($_GET['activo']) : '';
+        if (!in_array($activo, ['', '0', '1'], true)) $activo = '';
+        return array_merge(sigenmuniParametrosPaginacion($_GET), compact('buscar', 'activo'));
+    }
+
     public function index()
     {
-        $buscar =
-            trim(
-                $_GET['buscar']
-                ?? ''
-            );
-
-
-        $activo =
-            trim(
-                $_GET['activo']
-                ?? ''
-            );
-
+        $contextoListado = $this->contextoListado();
+        $buscar = $contextoListado['buscar'];
+        $activo = $contextoListado['activo'];
+        $paginacion = sigenmuniCalcularPaginacion(0, 1, $contextoListado['por_pagina']);
 
         $mensaje = '';
 
@@ -185,12 +186,11 @@ class CategoriaControlador
 
         try {
 
-            $categorias =
-                $this->modelo
-                    ->listar(
-                        $buscar,
-                        $activo
-                    );
+            $resultado = $this->modelo->listarPaginado($buscar, $activo,
+                $contextoListado['pagina'], $contextoListado['por_pagina']);
+            $categorias = $resultado['registros'];
+            $paginacion = $resultado['paginacion'];
+            $contextoListado['pagina'] = $paginacion['pagina'];
 
         } catch (Exception $e) {
 
@@ -219,6 +219,7 @@ class CategoriaControlador
 
     public function nuevo()
     {
+        $contextoListado = $this->contextoListado();
         $mensaje = '';
 
         $tipo_mensaje = '';
@@ -375,12 +376,9 @@ class CategoriaControlador
 
 
                 $urlListado =
-                    sigenmuniUrlRuta(
-                        'categorias',
-                        [
+                    sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                             'ok' => 'nuevo'
-                        ]
-                    );
+                        ]));
 
 
                 header(
@@ -415,6 +413,7 @@ class CategoriaControlador
 
     public function editar()
     {
+        $contextoListado = $this->contextoListado();
         $id =
             isset(
                 $_GET['id']
@@ -432,12 +431,9 @@ class CategoriaControlador
         ) {
 
             $urlListado =
-                sigenmuniUrlRuta(
-                    'categorias',
-                    [
+                sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                         'error' => 'id'
-                    ]
-                );
+                    ]));
 
 
             header(
@@ -460,12 +456,9 @@ class CategoriaControlador
             if (!$categoria) {
 
                 $urlListado =
-                    sigenmuniUrlRuta(
-                        'categorias',
-                        [
+                    sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                             'error' => 'no_existe'
-                        ]
-                    );
+                        ]));
 
 
                 header(
@@ -620,12 +613,9 @@ class CategoriaControlador
 
 
                     $urlListado =
-                        sigenmuniUrlRuta(
-                            'categorias',
-                            [
+                        sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                                 'ok' => 'editar'
-                            ]
-                        );
+                            ]));
 
 
                     header(
@@ -812,12 +802,9 @@ class CategoriaControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'categorias',
-                    [
+                sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                         'error' => 'csrf'
-                    ]
-                )
+                    ]))
             );
 
             exit;
@@ -839,12 +826,9 @@ class CategoriaControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'categorias',
-                    [
+                sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                         'error' => 'id'
-                    ]
-                )
+                    ]))
             );
 
             exit;
@@ -871,12 +855,9 @@ class CategoriaControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'categorias',
-                    [
+                sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                         'error' => 'estado'
-                    ]
-                )
+                    ]))
             );
 
             exit;
@@ -897,12 +878,9 @@ class CategoriaControlador
                 header(
                     'Location: '
                     .
-                    sigenmuniUrlRuta(
-                        'categorias',
-                        [
+                    sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                             'error' => 'no_existe'
-                        ]
-                    )
+                        ]))
                 );
 
                 exit;
@@ -932,12 +910,9 @@ class CategoriaControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'categorias',
-                    [
+                sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                         'ok' => 'estado'
-                    ]
-                )
+                    ]))
             );
 
             exit;
@@ -948,12 +923,9 @@ class CategoriaControlador
             header(
                 'Location: '
                 .
-                sigenmuniUrlRuta(
-                    'categorias',
-                    [
+                sigenmuniUrlRuta('categorias', array_merge($this->contextoListado(), [
                         'error' => 'estado'
-                    ]
-                )
+                    ]))
             );
 
             exit;

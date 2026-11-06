@@ -16,3 +16,11 @@ return confirm('¿Seguro que desea activar esta categoría?');
     });
 });
 
+
+const cantidadCategorias = document.getElementById('por_pagina');
+if (cantidadCategorias) {
+    cantidadCategorias.addEventListener('change', function () {
+        const formulario = document.getElementById('filtrosCategorias');
+        if (formulario) formulario.requestSubmit();
+    });
+}

@@ -281,3 +281,5 @@ textarea{
     }
 }
 
+
+.norma-legal-baja { overflow-wrap: anywhere; max-width: 260px; min-width: 150px; }

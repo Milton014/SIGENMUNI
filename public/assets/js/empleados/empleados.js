@@ -16,3 +16,8 @@ return confirm('¿Desea activar este empleado?');
     });
 });
 
+
+// El formulario no envía una página, por lo que cambiar la cantidad vuelve al inicio.
+document.getElementById('por_pagina')?.addEventListener('change', function () {
+    this.form.requestSubmit();
+});

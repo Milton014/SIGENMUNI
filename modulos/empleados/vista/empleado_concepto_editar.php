@@ -19,19 +19,14 @@ $empleadoConceptoEditarId =
 
 
 $empleadoConceptoEditarAccion =
-    sigenmuniUrlRuta(
-        'empleado-conceptos/editar',
-        [
+    sigenmuniUrlRuta('empleado-conceptos/editar', array_merge($contextoAsignaciones, [
             'id' =>
                 $empleadoConceptoEditarId
-        ]
-    );
+        ]));
 
 
 $empleadoConceptoEditarCancelar =
-    sigenmuniUrlRuta(
-        'empleado-conceptos'
-    );
+    sigenmuniUrlRuta('empleado-conceptos', $contextoAsignaciones);
 
 
 $empleadoConceptoEditarCsrf =

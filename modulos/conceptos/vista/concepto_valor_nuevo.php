@@ -97,21 +97,15 @@ if ($modoIntegrado) {
 
 
 $valorNuevoAccion =
-    sigenmuniUrlRuta(
-        'conceptos/valores/nuevo',
-        $valorNuevoParametros
-    );
+    sigenmuniUrlRuta('conceptos/valores/nuevo', array_merge($contextoValores, $valorNuevoParametros));
 
 
 if ($modoIntegrado) {
 
     $valorNuevoCancelar =
-        sigenmuniUrlRuta(
-            'conceptos/editar',
-            [
+        sigenmuniUrlRuta('conceptos/editar', array_merge($contextoValores, [
                 'id' => (int)$datosValor['concepto_id']
-            ]
-        );
+            ]));
 
 } else {
 
@@ -127,10 +121,7 @@ if ($modoIntegrado) {
     }
 
     $valorNuevoCancelar =
-        sigenmuniUrlRuta(
-            'conceptos/valores',
-            $parametrosListado
-        );
+        sigenmuniUrlRuta('conceptos/valores', array_merge($contextoValores, $parametrosListado));
 }
 
 

@@ -16,7 +16,8 @@ require_once __DIR__ . '/../../../core/Url.php';
 
 $empleadosUrlListado =
     sigenmuniUrlRuta(
-        'empleados'
+        'empleados',
+        ['por_pagina' => $paginacion['por_pagina']]
     );
 
 
@@ -26,7 +27,8 @@ $empleadosAccionBuscar =
 
 $empleadosUrlNuevo =
     sigenmuniUrlRuta(
-        'empleados/nuevo'
+        'empleados/nuevo',
+        $contextoListado
     );
 
 
@@ -67,6 +69,8 @@ if (!function_exists('formatearCuitUnidadOrganizacion')) {
 <head>
 
 <meta charset="UTF-8">
+
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -201,6 +205,7 @@ require __DIR__
                 <input
                     type="text"
                     name="busqueda"
+                    aria-label="Buscar empleados"
                     placeholder="Buscar por legajo, apellido, nombre, DNI, CUIL o email"
                     value="<?php
                         echo htmlspecialchars(
@@ -211,6 +216,15 @@ require __DIR__
                     ?>"
                 >
 
+
+                <div class="paginacion-tamano">
+                    <label for="por_pagina">Registros por página</label>
+                    <select name="por_pagina" id="por_pagina">
+                        <?php foreach ([10, 25, 50] as $cantidad): ?>
+                            <option value="<?= $cantidad ?>" <?= $paginacion['por_pagina'] === $cantidad ? 'selected' : '' ?>><?= $cantidad ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
                 <button
                     type="submit"
@@ -241,6 +255,13 @@ require __DIR__
         <!-- =====================================
              TABLA DE EMPLEADOS
         ====================================== -->
+
+        <?php
+        $paginacionRuta = 'empleados';
+        $paginacionParametros = $contextoListado;
+        $paginacionEntidad = 'empleados';
+        require __DIR__ . '/../../../componentes/paginacion.php';
+        ?>
 
         <?php if (!empty($empleados)): ?>
 
@@ -631,6 +652,7 @@ require __DIR__
                                                 sigenmuniUrlRuta(
                                                     'empleados/ver',
                                                     [
+                                                        ...$contextoListado,
                                                         'id' => (int)$fila['id']
                                                     ]
                                                 ),
@@ -652,6 +674,7 @@ require __DIR__
                                                 sigenmuniUrlRuta(
                                                     'empleados/editar',
                                                     [
+                                                        ...$contextoListado,
                                                         'id' => (int)$fila['id']
                                                     ]
                                                 ),
@@ -675,6 +698,7 @@ require __DIR__
                                                     sigenmuniUrlRuta(
                                                         'empleados/estado',
                                                         [
+                                                            ...$contextoListado,
                                                             'id' => (int)$fila['id'],
                                                             'accion' => 'inactivar'
                                                         ]
@@ -697,6 +721,7 @@ require __DIR__
                                                     sigenmuniUrlRuta(
                                                         'empleados/estado',
                                                         [
+                                                            ...$contextoListado,
                                                             'id' => (int)$fila['id'],
                                                             'accion' => 'activar'
                                                         ]
@@ -742,6 +767,10 @@ require __DIR__
             </div>
 
 
+        <?php endif; ?>
+
+        <?php if ($paginacion['paginas'] > 1): ?>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
         <?php endif; ?>
 
 

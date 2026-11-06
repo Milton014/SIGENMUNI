@@ -23,18 +23,13 @@ $conceptoEditarId =
 
 
 $conceptoEditarAccion =
-    sigenmuniUrlRuta(
-        'conceptos/editar',
-        [
+    sigenmuniUrlRuta('conceptos/editar', array_merge($contextoValores, [
             'id' => $conceptoEditarId
-        ]
-    );
+        ]));
 
 
 $conceptoEditarVolver =
-    sigenmuniUrlRuta(
-        'conceptos'
-    );
+    sigenmuniUrlRuta('conceptos', $contextoListado);
 
 
 $conceptoEditarCsrf =
@@ -42,20 +37,21 @@ $conceptoEditarCsrf =
 
 
 $conceptoEditarUrlNuevoValor =
-    sigenmuniUrlRuta(
-        'conceptos/valores/nuevo',
-        [
+    sigenmuniUrlRuta('conceptos/valores/nuevo', array_merge($contextoValores, [
             'concepto_id' => $conceptoEditarId,
             'origen' => 'concepto'
-        ]
-    );
+        ]));
 
 
 $conceptoEditarUrlEstadoValor =
-    sigenmuniUrlRuta(
-        'conceptos/valores/estado'
-    );
+    sigenmuniUrlRuta('conceptos/valores/estado', $contextoValores);
 
+$paginacion = $paginacionValores ?? sigenmuniCalcularPaginacion(0);
+$paginacionRuta = 'conceptos/editar';
+$paginacionParametros = array_merge($contextoValores, ['id' => $conceptoEditarId]);
+$paginacionEntidad = 'valores';
+$paginacionClavePagina = 'pagina_valores';
+$paginacionClaveCantidad = 'por_pagina_valores';
 ?>
 
 <!DOCTYPE html>
@@ -70,6 +66,8 @@ $conceptoEditarUrlEstadoValor =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/conceptos/concepto_editar.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/conceptos/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -197,7 +195,7 @@ $esConceptoConValoresCategoria =
                 );
             ?>"
             method="POST"
-            id="formConcepto"
+            id="formConcepto" data-cambios-pendientes="<?= ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' ? '1' : '0' ?>"
             novalidate
         >
 
@@ -723,7 +721,7 @@ $esConceptoConValoresCategoria =
 
     <?php if ($esConceptoConValoresCategoria): ?>
 
-        <div class="panel panel-valores">
+        <div class="panel panel-valores" data-valores-integrados>
 
             <div class="valores-header">
 
@@ -756,6 +754,23 @@ $esConceptoConValoresCategoria =
 
             </div>
 
+
+<form method="get" action="<?= htmlspecialchars(sigenmuniUrlEntrada(), ENT_QUOTES, 'UTF-8') ?>" class="filtro-paginacion-valores" data-form-paginacion>
+                <input type="hidden" name="r" value="conceptos/editar">
+                <input type="hidden" name="id" value="<?= (int)$conceptoEditarId ?>">
+                <?php foreach ($contextoListado as $claveFiltro => $valorFiltro): ?>
+                    <input type="hidden" name="<?= htmlspecialchars($claveFiltro, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars((string)$valorFiltro, ENT_QUOTES, 'UTF-8') ?>">
+                <?php endforeach; ?>
+                <label class="paginacion-tamano" for="por_pagina_valores">Por página
+                <select id="por_pagina_valores" name="por_pagina_valores" data-paginacion-cantidad>
+                    <?php foreach ([10, 25, 50] as $cantidadPagina): ?>
+                        <option value="<?= $cantidadPagina ?>" <?= $paginacion['por_pagina'] === $cantidadPagina ? 'selected' : '' ?>><?= $cantidadPagina ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+                <button type="submit" class="paginacion-aplicar">Aplicar</button>
+            </form>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
             <?php if (!empty($valoresConcepto)): ?>
 
@@ -902,13 +917,10 @@ $esConceptoConValoresCategoria =
                                             <a
                                                 href="<?php
                                                     echo htmlspecialchars(
-                                                        sigenmuniUrlRuta(
-                                                            'conceptos/valores/editar',
-                                                            [
+                                                        sigenmuniUrlRuta('conceptos/valores/editar', array_merge($contextoValores, [
                                                                 'id' => (int)$valor['id'],
                                                                 'origen' => 'concepto'
-                                                            ]
-                                                        ),
+                                                            ])),
                                                         ENT_QUOTES,
                                                         'UTF-8'
                                                     );
@@ -999,6 +1011,7 @@ $esConceptoConValoresCategoria =
                     </table>
 
                 </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
             <?php else: ?>
 
@@ -1021,6 +1034,7 @@ $esConceptoConValoresCategoria =
 
 <script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/conceptos/concepto_editar.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/conceptos/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

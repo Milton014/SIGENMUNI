@@ -11,15 +11,11 @@ require_once __DIR__ . '/../../../core/Csrf.php';
 
 
 $usuariosUrlNuevo =
-    sigenmuniUrlRuta(
-        'usuarios/nuevo'
-    );
+    sigenmuniUrlRuta('usuarios/nuevo', $contextoUsuarios);
 
 
 $usuariosUrlRoles =
-    sigenmuniUrlRuta(
-        'usuarios/roles'
-    );
+    sigenmuniUrlRuta('usuarios/roles', $contextoRoles);
 
 
 $usuariosUrlMenu =
@@ -29,9 +25,7 @@ $usuariosUrlMenu =
 
 
 $usuariosUrlEstado =
-    sigenmuniUrlRuta(
-        'usuarios/estado'
-    );
+    sigenmuniUrlRuta('usuarios/estado', $contextoUsuarios);
 
 
 $usuariosCsrfToken =
@@ -51,6 +45,8 @@ $usuariosCsrfToken =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/usuarios/usuarios.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/usuarios/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -205,6 +201,42 @@ require __DIR__
         <!-- =================================
              TABLA
         ================================== -->
+
+        <form class="filtros-listado" method="GET" action="<?= htmlspecialchars(sigenmuniUrlEntrada(), ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="r" value="usuarios">
+            <label for="buscar">
+                Buscar
+                <input type="search" id="buscar" name="buscar" maxlength="120"
+                    placeholder="Nombre, usuario, DNI o email"
+                    value="<?= htmlspecialchars($contextoUsuarios['buscar'], ENT_QUOTES, 'UTF-8') ?>">
+            </label>
+            <label for="activo">
+                Estado del usuario
+                <select id="activo" name="activo">
+                    <?php foreach (['' => 'Todos los estados', '1' => 'Activos', '0' => 'Inactivos'] as $valor => $texto): ?>
+                        <option value="<?= $valor ?>" <?= $contextoUsuarios['activo'] === (string)$valor ? 'selected' : '' ?>><?= $texto ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <label for="por_pagina">
+                Por página
+                <select id="por_pagina" name="por_pagina" data-cantidad-listado>
+                    <?php foreach ([10, 25, 50] as $valor): ?>
+                        <option value="<?= $valor ?>" <?= $paginacion['por_pagina'] === $valor ? 'selected' : '' ?>><?= $valor ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <button class="btn btn-filtrar" type="submit">Buscar</button>
+            <a class="btn btn-limpiar" href="<?= htmlspecialchars(sigenmuniUrlRuta('usuarios'), ENT_QUOTES, 'UTF-8') ?>">Limpiar</a>
+        </form>
+        <?php
+        $paginacionRuta = 'usuarios';
+        $paginacionParametros = $contextoUsuarios;
+        $paginacionEntidad = 'usuarios';
+        $paginacionClavePagina = 'pagina';
+        $paginacionClaveCantidad = 'por_pagina';
+        require __DIR__ . '/../../../componentes/paginacion.php';
+        ?>
 
         <div class="tabla-responsive">
 
@@ -487,13 +519,10 @@ require __DIR__
                                         class="btn btn-editar"
                                         href="<?php
                                             echo htmlspecialchars(
-                                                sigenmuniUrlRuta(
-                                                        'usuarios/editar',
-                                                        [
+                                                sigenmuniUrlRuta('usuarios/editar', array_merge($contextoUsuarios, [
                                                             'id' =>
                                                                 (int)$u['id']
-                                                        ]
-                                                    ),
+                                                        ])),
                                                 ENT_QUOTES,
                                                 'UTF-8'
                                             );
@@ -632,7 +661,7 @@ require __DIR__
 
                 <div class="sin-datos">
 
-                    No hay usuarios registrados.
+                    No se encontraron usuarios con los filtros seleccionados.
 
                 </div>
 
@@ -643,6 +672,10 @@ require __DIR__
         </div>
 
 
+        <?php if (!empty($usuarios)): ?>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
+        <?php endif; ?>
+
     </div>
 
 
@@ -650,6 +683,7 @@ require __DIR__
 
 
 <script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/usuarios/usuarios.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/usuarios/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>

@@ -70,6 +70,8 @@ $reporteConceptosUrlExcel =
 
 <link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/reporte_conceptos.css'), ENT_QUOTES, 'UTF-8') ?>">
 
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/compartido/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
+<link rel="stylesheet" href="<?= htmlspecialchars(sigenmuniUrlAsset('css/reportes/paginacion.css'), ENT_QUOTES, 'UTF-8') ?>">
 </head>
 
 <body>
@@ -328,6 +330,7 @@ $reporteConceptosUrlExcel =
                 Limpiar
             </a>
 
+            <input type="hidden" name="por_pagina" value="<?= $paginacion['por_pagina'] ?>">
         </form>
 
     </div>
@@ -385,7 +388,15 @@ $reporteConceptosUrlExcel =
         </div>
 
 
-        <?php if (!empty($conceptos)): ?>
+        <?php
+        $paginacionRuta = 'reportes/conceptos';
+        $paginacionParametros = $reporteConceptosFiltros;
+        $paginacionEntidad = 'conceptos';
+        $paginacionClavePagina = 'pagina'; $paginacionClaveCantidad = 'por_pagina';
+        require __DIR__ . '/../../../componentes/paginacion_reporte.php';
+        ?>
+
+<?php if (!empty($conceptos)): ?>
 
             <div class="tabla-contenedor">
 
@@ -864,6 +875,7 @@ $reporteConceptosUrlExcel =
                 </table>
 
             </div>
+            <?php require __DIR__ . '/../../../componentes/paginacion.php'; ?>
 
         <?php else: ?>
 
@@ -880,6 +892,7 @@ $reporteConceptosUrlExcel =
 
 </div>
 
+<script src="<?= htmlspecialchars(sigenmuniUrlAsset('js/reportes/paginacion.js'), ENT_QUOTES, 'UTF-8') ?>"></script>
 </body>
 
 </html>
